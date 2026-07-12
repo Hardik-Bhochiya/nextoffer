@@ -188,30 +188,7 @@ nextoffer/
 
 ---
 
-## 👥 Team
 
-**Hardik**
-
-* Requirement Analysis
-* System Design
-* UI/UX Design
-* Frontend Development
-* Authentication
-* Dashboard Development
-* API Integration
-* GitHub Management
-* Documentation
-
-**Dhruv**
-
-* Backend Development
-* MongoDB Database Design
-* REST API Development
-* AI Integration
-* Backend Testing
-* Security
-* Deployment
-* Database Optimization
 
 ---
 
