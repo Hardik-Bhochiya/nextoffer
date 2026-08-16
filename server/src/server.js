@@ -10,6 +10,8 @@ import roadmapRoutes from './routes/roadmapRoutes.js';
 import projectRoutes from './routes/projectRoutes.js';
 import noteRoutes from './routes/noteRoutes.js';
 import revisionRoutes from './routes/revisionRoutes.js';
+import plannerRoutes from './routes/plannerRoutes.js';
+import searchRoutes from './routes/searchRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
 
@@ -23,13 +25,15 @@ app.use(cors({ origin: '*' }));
 app.use(express.json());
 app.use(morgan('dev'));
 
-// API Routes
+// API Routes (matching Use Case & Class Diagrams)
 app.use('/api/auth', authRoutes);
 app.use('/api/dsa', dsaRoutes);
 app.use('/api/roadmap', roadmapRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/notes', noteRoutes);
 app.use('/api/revision', revisionRoutes);
+app.use('/api/planner', plannerRoutes);
+app.use('/api/search', searchRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/analytics', analyticsRoutes);
 

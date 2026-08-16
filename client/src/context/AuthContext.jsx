@@ -5,11 +5,17 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState({
+    id: 'usr-1',
+    userId: 'usr-1',
+    fullName: 'Hardik Bhochiya',
     name: 'Hardik Bhochiya',
     email: 'hardik@nextoffer.dev',
+    role: 'Student',
+    college: 'Gujarat Technological University',
+    branch: 'Computer Engineering',
+    graduationYear: '2026',
     targetRole: 'Full Stack SDE',
-    dreamCompany: 'Google / Tier-1 Tech',
-    gradYear: '2026',
+    dreamCompany: 'Google / Microsoft / Tier-1 Tech',
     streak: 12,
     readinessScore: 84,
   });
@@ -42,14 +48,19 @@ export const AuthProvider = ({ children }) => {
         return { success: true };
       }
     } catch (err) {
-      // Local fallback for smooth demo experience
       if (email && password) {
         const fallbackUser = {
+          id: 'usr-1',
+          userId: 'usr-1',
+          fullName: email.split('@')[0],
           name: email.split('@')[0],
           email,
+          role: 'Student',
+          college: 'Gujarat Technological University',
+          branch: 'Computer Engineering',
+          graduationYear: '2026',
           targetRole: 'Software Engineer',
           dreamCompany: 'Top Tech',
-          gradYear: '2026',
           streak: 5,
           readinessScore: 78
         };
@@ -73,11 +84,17 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (err) {
       const fallbackUser = {
-        name: userData.name || 'Student Developer',
+        id: `usr-${Date.now()}`,
+        userId: `usr-${Date.now()}`,
+        fullName: userData.fullName || userData.name || 'Student Developer',
+        name: userData.fullName || userData.name || 'Student Developer',
         email: userData.email,
+        role: 'Student',
+        college: userData.college || 'Engineering College',
+        branch: userData.branch || 'Computer Engineering',
+        graduationYear: userData.graduationYear || '2026',
         targetRole: userData.targetRole || 'Software Engineer',
         dreamCompany: userData.dreamCompany || 'Top Tech',
-        gradYear: userData.gradYear || '2026',
         streak: 1,
         readinessScore: 65
       };
@@ -88,6 +105,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateProfile = async (updates) => {
+    setUser(prev => ({ ...prev, ...updates }));
+    try {
+      await api.put('/auth/profile', updates);
+    } catch (err) {
+      console.error('Update profile error:', err);
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('nextoffer_token');
     setToken(null);
@@ -95,7 +121,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout, setUser }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, updateProfile, logout, setUser }}>
       {children}
     </AuthContext.Provider>
   );

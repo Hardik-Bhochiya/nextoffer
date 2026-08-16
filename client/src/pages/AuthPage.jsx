@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Rocket, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Rocket, Sparkles, ArrowRight } from 'lucide-react';
 
 export const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [name, setName] = useState('Hardik Bhochiya');
+  const [fullName, setFullName] = useState('Hardik Bhochiya');
   const [email, setEmail] = useState('hardik@nextoffer.dev');
   const [password, setPassword] = useState('password123');
+  const [college, setCollege] = useState('Gujarat Technological University');
+  const [branch, setBranch] = useState('Computer Engineering');
+  const [graduationYear, setGraduationYear] = useState('2026');
   const [targetRole, setTargetRole] = useState('Full Stack SDE');
   const [dreamCompany, setDreamCompany] = useState('Google / Microsoft / Tier-1 Startups');
   const [error, setError] = useState('');
@@ -22,7 +25,17 @@ export const AuthPage = () => {
     if (isLogin) {
       res = await login(email, password);
     } else {
-      res = await register({ name, email, password, targetRole, dreamCompany });
+      res = await register({
+        fullName,
+        name: fullName,
+        email,
+        password,
+        college,
+        branch,
+        graduationYear,
+        targetRole,
+        dreamCompany
+      });
     }
 
     if (res?.success) {
@@ -43,7 +56,7 @@ export const AuthPage = () => {
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="max-w-md w-full glass-panel rounded-3xl p-8 border border-slate-800 shadow-2xl relative z-10 space-y-6">
+      <div className="max-w-lg w-full glass-panel rounded-3xl p-8 border border-slate-800 shadow-2xl relative z-10 space-y-6">
         {/* Brand Header */}
         <div className="text-center space-y-2">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-500 flex items-center justify-center mx-auto shadow-lg shadow-indigo-600/30">
@@ -66,7 +79,7 @@ export const AuthPage = () => {
 
         <div className="flex items-center gap-3">
           <div className="h-px bg-slate-800 flex-1" />
-          <span className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">or email access</span>
+          <span className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">or email authentication</span>
           <div className="h-px bg-slate-800 flex-1" />
         </div>
 
@@ -77,15 +90,15 @@ export const AuthPage = () => {
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3.5">
           {!isLogin && (
             <div>
-              <label className="block text-[11px] font-semibold text-slate-400 mb-1">Full Name</label>
+              <label className="block text-[11px] font-semibold text-slate-400 mb-1">Full Name *</label>
               <input
                 type="text"
                 required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
                 placeholder="Hardik Bhochiya"
                 className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
               />
@@ -93,7 +106,7 @@ export const AuthPage = () => {
           )}
 
           <div>
-            <label className="block text-[11px] font-semibold text-slate-400 mb-1">Email Address</label>
+            <label className="block text-[11px] font-semibold text-slate-400 mb-1">Email Address *</label>
             <input
               type="email"
               required
@@ -105,7 +118,7 @@ export const AuthPage = () => {
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-slate-400 mb-1">Password</label>
+            <label className="block text-[11px] font-semibold text-slate-400 mb-1">Password *</label>
             <input
               type="password"
               required
@@ -118,16 +131,52 @@ export const AuthPage = () => {
 
           {!isLogin && (
             <div className="space-y-3 pt-1">
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">Target Role</label>
-                <input
-                  type="text"
-                  value={targetRole}
-                  onChange={(e) => setTargetRole(e.target.value)}
-                  placeholder="Full Stack SDE"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">College / University</label>
+                  <input
+                    type="text"
+                    value={college}
+                    onChange={(e) => setCollege(e.target.value)}
+                    placeholder="Gujarat Tech Univ"
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">Branch / Degree</label>
+                  <input
+                    type="text"
+                    value={branch}
+                    onChange={(e) => setBranch(e.target.value)}
+                    placeholder="Computer Engineering"
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
               </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">Graduation Year</label>
+                  <input
+                    type="text"
+                    value={graduationYear}
+                    onChange={(e) => setGraduationYear(e.target.value)}
+                    placeholder="2026"
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">Target Role</label>
+                  <input
+                    type="text"
+                    value={targetRole}
+                    onChange={(e) => setTargetRole(e.target.value)}
+                    placeholder="Full Stack SDE"
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="block text-[11px] font-semibold text-slate-400 mb-1">Dream Companies</label>
                 <input
