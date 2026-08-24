@@ -3,11 +3,12 @@ import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
   Code2,
+  Building,
+  Layers,
   GitBranch,
   FolderGit2,
   BookOpen,
   CalendarCheck,
-  Building,
   BrainCircuit,
   FileText,
   Bot,
@@ -25,7 +26,8 @@ export const Sidebar = () => {
   const navItems = [
     { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/dsa', icon: Code2, label: 'DSA Tracker' },
-    { to: '/company-archives', icon: Building, label: 'Company Archives', highlight: true },
+    { to: '/company-archives', icon: Building, label: 'Company Archives' },
+    { to: '/flashcards', icon: Layers, label: 'Core CS Flashcards', highlight: true },
     { to: '/roadmaps', icon: GitBranch, label: 'Roadmaps' },
     { to: '/projects', icon: FolderGit2, label: 'Projects' },
     { to: '/notes', icon: BookOpen, label: 'Smart Notes' },
@@ -54,8 +56,8 @@ export const Sidebar = () => {
         </div>
 
         {/* Navigation links */}
-        <nav className="p-4 space-y-1.5 overflow-y-auto max-h-[calc(100vh-140px)]">
-          <p className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+        <nav className="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-140px)]">
+          <p className="px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
             Core Modules
           </p>
           {navItems.map((item) => {
@@ -65,7 +67,7 @@ export const Sidebar = () => {
                 key={item.to}
                 to={item.to}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all group ${
+                  `flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all group ${
                     isActive
                       ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md shadow-indigo-600/30 font-semibold'
                       : item.highlight
@@ -75,7 +77,7 @@ export const Sidebar = () => {
                 }
               >
                 <Icon className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-110 ${item.highlight ? 'text-indigo-400' : ''}`} />
-                <span className="flex-1">{item.label}</span>
+                <span className="flex-1 truncate">{item.label}</span>
                 {item.highlight && (
                   <span className="w-2 h-2 rounded-full bg-indigo-400 animate-ping"></span>
                 )}
