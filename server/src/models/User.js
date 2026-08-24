@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
   },
   targetRole: {
     type: String,
-    default: 'Software Engineer'
+    default: 'Full Stack Engineer'
   },
   dreamCompany: {
     type: String,
@@ -43,8 +43,11 @@ const userSchema = new mongoose.Schema({
   },
   readinessScore: {
     type: Number,
-    default: 65
+    default: 0
   },
+  completedTopics: [{
+    type: String
+  }],
   socialLinks: {
     github: { type: String, default: '' },
     linkedin: { type: String, default: '' },
