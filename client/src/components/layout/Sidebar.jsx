@@ -3,40 +3,44 @@ import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
   Code2,
+  GitBranch,
+  BookOpen,
+  BarChart3,
+  CalendarCheck,
   Building,
   Layers,
-  GitBranch,
-  FolderGit2,
-  BookOpen,
-  CalendarCheck,
   BrainCircuit,
   FileText,
   Bot,
-  BarChart3,
   User,
   Rocket,
   LogOut,
-  ExternalLink
+  ExternalLink,
+  Search
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export const Sidebar = () => {
   const { user, logout } = useAuth();
 
-  const navItems = [
+  // Core Documentation Modules
+  const mainModules = [
     { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/dsa', icon: Code2, label: 'DSA Tracker' },
-    { to: '/company-archives', icon: Building, label: 'Company Archives' },
-    { to: '/flashcards', icon: Layers, label: 'Core CS Flashcards', highlight: true },
     { to: '/roadmaps', icon: GitBranch, label: 'Roadmaps' },
-    { to: '/projects', icon: FolderGit2, label: 'Projects' },
     { to: '/notes', icon: BookOpen, label: 'Smart Notes' },
-    { to: '/revision', icon: CalendarCheck, label: 'Revision Planner' },
-    { to: '/mock-interview', icon: BrainCircuit, label: 'Mock Interview' },
-    { to: '/resume', icon: FileText, label: 'ATS Resume Scanner' },
-    { to: '/ai-mentor', icon: Bot, label: 'AI Study Mentor' },
     { to: '/analytics', icon: BarChart3, label: 'Analytics' },
-    { to: '/profile', icon: User, label: 'Profile & Goals' },
+    { to: '/revision', icon: CalendarCheck, label: 'Goal & Task Setter' },
+  ];
+
+  // Extended Placement Suite
+  const advancedTools = [
+    { to: '/company-archives', icon: Building, label: 'Company Archives' },
+    { to: '/mock-interview', icon: BrainCircuit, label: 'Mock Interview', highlight: true },
+    { to: '/resume', icon: FileText, label: 'ATS Resume Scanner' },
+    { to: '/flashcards', icon: Layers, label: 'Core CS Flashcards' },
+    { to: '/ai-mentor', icon: Bot, label: 'AI Study Mentor' },
+    { to: '/profile', icon: User, label: 'Profile & Settings' },
   ];
 
   return (
@@ -56,34 +60,63 @@ export const Sidebar = () => {
         </div>
 
         {/* Navigation links */}
-        <nav className="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-140px)]">
-          <p className="px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-            Core Modules
-          </p>
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all group ${
-                    isActive
-                      ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md shadow-indigo-600/30 font-semibold'
-                      : item.highlight
-                      ? 'text-indigo-400 bg-indigo-950/30 hover:bg-indigo-900/40 hover:text-indigo-300 border border-indigo-900/40'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
-                  }`
-                }
-              >
-                <Icon className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-110 ${item.highlight ? 'text-indigo-400' : ''}`} />
-                <span className="flex-1 truncate">{item.label}</span>
-                {item.highlight && (
-                  <span className="w-2 h-2 rounded-full bg-indigo-400 animate-ping"></span>
-                )}
-              </NavLink>
-            );
-          })}
+        <nav className="p-3 space-y-4 overflow-y-auto max-h-[calc(100vh-140px)]">
+          {/* Main Modules */}
+          <div className="space-y-1">
+            <p className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              Primary Modules
+            </p>
+            {mainModules.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all group ${
+                      isActive
+                        ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md shadow-indigo-600/30 font-semibold'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                    }`
+                  }
+                >
+                  <Icon className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110" />
+                  <span className="flex-1 truncate">{item.label}</span>
+                </NavLink>
+              );
+            })}
+          </div>
+
+          {/* Advanced Placement Tools */}
+          <div className="space-y-1 pt-2 border-t border-slate-800/80">
+            <p className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-indigo-400">
+              Placement Suite
+            </p>
+            {advancedTools.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all group ${
+                      isActive
+                        ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md shadow-indigo-600/30 font-semibold'
+                        : item.highlight
+                        ? 'text-indigo-400 bg-indigo-950/30 hover:bg-indigo-900/40 hover:text-indigo-300 border border-indigo-900/40'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                    }`
+                  }
+                >
+                  <Icon className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-110 ${item.highlight ? 'text-indigo-400' : ''}`} />
+                  <span className="flex-1 truncate">{item.label}</span>
+                  {item.highlight && (
+                    <span className="w-2 h-2 rounded-full bg-indigo-400 animate-ping"></span>
+                  )}
+                </NavLink>
+              );
+            })}
+          </div>
         </nav>
       </div>
 
