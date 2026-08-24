@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useData } from '../context/DataContext';
 import api from '../services/api';
 import {
   User as UserIcon,
@@ -15,7 +16,11 @@ import {
   Flame,
   Award,
   RefreshCw,
-  TrendingUp
+  TrendingUp,
+  Target,
+  ArrowRight,
+  PlusCircle,
+  Layers
 } from 'lucide-react';
 
 const sdeRoles = [
@@ -29,6 +34,7 @@ const sdeRoles = [
 
 export const Profile = () => {
   const { user, updateProfile, setUser } = useAuth();
+  const { metrics, refreshData } = useData();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -49,6 +55,8 @@ export const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState('');
+  const [batchEnrolling, setBatchEnrolling] = useState(false);
+  const [batchEnrolledMessage, setBatchEnrolledMessage] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -93,6 +101,7 @@ export const Profile = () => {
     setLoading(false);
     setSavedMessage(true);
     setTimeout(() => setSavedMessage(false), 3000);
+    refreshData();
   };
 
   const handleSyncProfiles = async () => {
@@ -117,19 +126,37 @@ export const Profile = () => {
     }
   };
 
+  const handleEnrollRecommendedRoadmaps = async () => {
+    if (!metrics?.recommendedRoadmapIds?.length) return;
+    setBatchEnrolling(true);
+    try {
+      await api.post('/roadmap/enroll-batch', {
+        roadmapIds: metrics.recommendedRoadmapIds
+      });
+      setBatchEnrolledMessage('Enrolled in all recommended roadmaps for your role!');
+      setTimeout(() => setBatchEnrolledMessage(''), 4000);
+      refreshData();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setBatchEnrolling(false);
+    }
+  };
+
   const lc = user?.codingStats?.leetcode || {};
   const gh = user?.codingStats?.github || {};
+  const readiness = metrics?.readinessScore ?? user?.readinessScore ?? 0;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-fadeIn pb-12">
-      {/* Header Banner */}
+    <div className="max-w-4xl mx-auto space-y-8 animate-fadeIn pb-16">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-2">
-            <UserIcon className="w-6 h-6 text-indigo-400" /> Software Engineer Career Profile
+            <UserIcon className="w-6 h-6 text-indigo-400" /> SDE Career Profile & Predictive Telemetry
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Configure your target software developer role, dream companies, academic details, and sync live coding stats.
+            Target role configuration, recommended learning tracks, and predictive placement probability analysis.
           </p>
         </div>
       </div>
@@ -137,7 +164,7 @@ export const Profile = () => {
       {savedMessage && (
         <div className="p-4 rounded-2xl bg-emerald-950/70 border border-emerald-800/80 text-emerald-300 text-sm flex items-center gap-2 shadow-sm animate-fadeIn">
           <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-          <span>Profile updated successfully! All changes have been saved to your account.</span>
+          <span>Profile updated successfully! Role weights & predictive scores recalculated.</span>
         </div>
       )}
 
@@ -147,6 +174,108 @@ export const Profile = () => {
           <span>{syncMessage}</span>
         </div>
       )}
+
+      {batchEnrolledMessage && (
+        <div className="p-4 rounded-2xl bg-emerald-950/70 border border-emerald-800/80 text-emerald-300 text-sm flex items-center gap-2 shadow-sm animate-fadeIn">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+          <span>{batchEnrolledMessage}</span>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* PREDICTIVE PLACEMENT PROBABILITY & ROLE ECOSYSTEM */}
+      {/* ============================================================ */}
+      <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 md:p-8 space-y-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+          <div className="space-y-1">
+            <span className="text-[10px] uppercase font-bold text-indigo-400 tracking-wider flex items-center gap-1.5">
+              <Target className="w-3.5 h-3.5" /> Placement Readiness Prediction
+            </span>
+            <h2 className="text-xl font-bold text-white">
+              {formData.targetRole}
+            </h2>
+            <p className="text-xs text-slate-400">
+              Placement probability is dynamically derived from your role-specific roadmap milestones and DSA velocity.
+            </p>
+          </div>
+
+          <div className="text-left sm:text-right bg-slate-950 px-4 py-3 rounded-2xl border border-slate-800 shrink-0">
+            <span className="text-[10px] text-slate-500 font-bold uppercase block">Readiness Score</span>
+            <span className="text-3xl font-black text-slate-100">{readiness}%</span>
+            <p className="text-[10px] text-indigo-400 font-semibold">{metrics?.placementTier || 'In Preparation'}</p>
+          </div>
+        </div>
+
+        {/* Recommended Roadmaps for this Role */}
+        <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+              <Layers className="w-4 h-4 text-cyan-400" />
+              Recommended Curriculum Tracks for {formData.targetRole.split(' ')[0]} SDE
+            </h3>
+
+            <button
+              type="button"
+              onClick={handleEnrollRecommendedRoadmaps}
+              disabled={batchEnrolling}
+              className="text-xs px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold flex items-center gap-1.5 self-start sm:self-auto transition-all shadow-sm disabled:opacity-50"
+            >
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>{batchEnrolling ? 'Enrolling...' : 'Enroll All Recommended Tracks'}</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {metrics?.recommendedRoadmapTitles?.map((title, i) => (
+              <div
+                key={i}
+                className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center gap-3 text-xs text-slate-200"
+              >
+                <div className="w-6 h-6 rounded-lg bg-indigo-950/80 border border-indigo-800/40 flex items-center justify-center text-indigo-400 font-bold text-[10px] shrink-0">
+                  {i + 1}
+                </div>
+                <span className="font-semibold truncate">{title}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Actionable Next Steps to Reach 85%+ Readiness */}
+        <div className="space-y-3 pt-2">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-emerald-400" />
+            Recommended Action Items to Boost Placement Score
+          </h3>
+
+          <div className="space-y-2">
+            {metrics?.nextActionItems?.map((item, idx) => (
+              <div
+                key={idx}
+                className={`p-3 rounded-2xl border flex items-center justify-between gap-3 text-xs transition-all ${
+                  item.done
+                    ? 'bg-emerald-950/20 border-emerald-800/40 text-slate-300'
+                    : 'bg-slate-950/60 border-slate-800 text-slate-200'
+                }`}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  {item.done ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  ) : (
+                    <div className="w-4 h-4 rounded-full border border-slate-600 shrink-0" />
+                  )}
+                  <span className={`truncate ${item.done ? 'line-through text-slate-500' : 'font-medium'}`}>
+                    {item.action}
+                  </span>
+                </div>
+
+                <span className="text-[10px] px-2 py-0.5 rounded-md bg-indigo-950/80 text-indigo-300 border border-indigo-800/40 font-mono shrink-0 font-bold">
+                  {item.boost}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
       {/* Live Coding Profiles Telemetry Banner */}
       <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6 space-y-4 shadow-sm">

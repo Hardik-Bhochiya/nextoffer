@@ -64,6 +64,40 @@ export const toggleEnrollRoadmap = async (req, res) => {
   }
 };
 
+export const enrollBatchRoadmaps = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const { roadmapIds } = req.body; // array of roadmap string IDs
+
+    if (!Array.isArray(roadmapIds)) {
+      return res.status(400).json({ success: false, message: 'roadmapIds must be an array' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (!user.enrolledRoadmaps) user.enrolledRoadmaps = [];
+
+    roadmapIds.forEach(id => {
+      if (!user.enrolledRoadmaps.includes(id)) {
+        user.enrolledRoadmaps.push(id);
+      }
+    });
+
+    await user.save();
+
+    return res.json({
+      success: true,
+      message: `Enrolled in ${roadmapIds.length} recommended roadmaps!`,
+      enrolledRoadmaps: user.enrolledRoadmaps
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export const toggleTopic = async (req, res) => {
   try {
     const userId = req.user?.id;
