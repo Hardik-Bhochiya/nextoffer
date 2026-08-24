@@ -22,13 +22,19 @@ import {
   Compass
 } from 'lucide-react';
 
+import { getRoleConfig } from '../data/rolesData';
+
 export const Roadmaps = () => {
   const { user } = useAuth();
   const { roadmaps, toggleRoadmapTopic, toggleEnrollRoadmap } = useData();
   const [catalogFilter, setCatalogFilter] = useState('All');
 
+  const currentRole = user?.targetRole || 'Full Stack Software Engineer';
+  const roleConfig = getRoleConfig(currentRole);
+
   const groups = [
     'All',
+    '🎯 Role Recommended',
     'Frontend',
     'Backend',
     'Full Stack',
@@ -65,6 +71,8 @@ export const Roadmaps = () => {
   const enrolledRoadmaps = roadmaps.filter(r => r.isEnrolled);
   const availableRoadmaps = catalogFilter === 'All'
     ? roadmaps
+    : catalogFilter === '🎯 Role Recommended'
+    ? roadmaps.filter(r => (roleConfig.recommendedRoadmapIds || []).includes(r.id))
     : roadmaps.filter(r => (r.categoryGroup || '').toLowerCase() === catalogFilter.toLowerCase() || r.category?.toLowerCase().includes(catalogFilter.toLowerCase()));
 
   return (
@@ -284,11 +292,18 @@ export const Roadmaps = () => {
                       </div>
                     </div>
 
-                    {isEnrolled && (
-                      <span className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800/50 font-bold">
-                        Enrolled
-                      </span>
-                    )}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {(roleConfig.recommendedRoadmapIds || []).includes(roadmap.id) && (
+                        <span className="text-[9px] px-2 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-800/50 font-bold">
+                          🎯 {roleConfig.shortLabel}
+                        </span>
+                      )}
+                      {isEnrolled && (
+                        <span className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800/50 font-bold">
+                          Enrolled
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">

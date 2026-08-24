@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
+import { allRoles, getRoleConfig } from '../data/rolesData';
 import {
   Target,
   Code2,
@@ -15,7 +16,12 @@ import {
   TrendingUp,
   BrainCircuit,
   Building,
-  Plus
+  Plus,
+  Sparkles,
+  Layers,
+  Briefcase,
+  ArrowRight,
+  Check
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -27,8 +33,12 @@ import {
 } from 'recharts';
 
 export const Dashboard = () => {
-  const { user } = useAuth();
-  const { metrics, dsaProblems, roadmaps, revisions, toggleRevision } = useData();
+  const { user, updateProfile } = useAuth();
+  const { metrics, dsaProblems, roadmaps, revisions, toggleRevision, refreshData } = useData();
+  const [switchingRole, setSwitchingRole] = useState(false);
+
+  const currentRole = user?.targetRole || 'Full Stack Software Engineer';
+  const roleConfig = getRoleConfig(currentRole);
 
   const readiness = metrics?.readinessScore ?? user?.readinessScore ?? 0;
   
@@ -46,7 +56,20 @@ export const Dashboard = () => {
 
   const pendingRevisions = revisions.filter(r => !r.completed).slice(0, 3);
   
-  // Weekly activity telemetry chart data (clean baseline)
+  const handleRoleChange = async (newRoleTitle) => {
+    if (newRoleTitle === currentRole) return;
+    setSwitchingRole(true);
+    try {
+      await updateProfile({ targetRole: newRoleTitle });
+      refreshData();
+    } catch (e) {
+      console.error('Role update error:', e);
+    } finally {
+      setSwitchingRole(false);
+    }
+  };
+
+  // Weekly activity telemetry chart data
   const chartData = [
     { day: 'Mon', solved: dsaStats.solved > 0 ? Math.min(dsaStats.solved, 2) : 0 },
     { day: 'Tue', solved: dsaStats.solved > 2 ? 1 : 0 },
@@ -58,20 +81,23 @@ export const Dashboard = () => {
   ];
 
   return (
-    <div className="space-y-8 animate-fadeIn max-w-6xl mx-auto pb-12">
-      {/* Clean Welcome Banner */}
-      <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 md:p-8 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="space-y-8 animate-fadeIn max-w-6xl mx-auto pb-16">
+      
+      {/* 1. WELCOME COMMAND CENTER BANNER */}
+      <div className="rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/40 border border-slate-800 p-6 md:p-8 shadow-xl relative overflow-hidden">
+        <div className="absolute right-0 top-0 w-80 h-80 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-950 border border-slate-800 text-xs text-indigo-400 font-semibold">
               <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
               <span>Placement Preparation Command Center</span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-100 tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-black text-slate-100 tracking-tight">
               Welcome back, <span className="text-indigo-400">{user?.name || 'Candidate'}</span>
             </h1>
-            <p className="text-xs text-slate-400 max-w-xl leading-relaxed">
-              Targeting <span className="font-semibold text-slate-200">{user?.targetRole || 'Full Stack Engineer'}</span> for <span className="text-indigo-300 font-semibold">{user?.dreamCompany || 'Tier-1 Tech'}</span>. Your readiness index reflects active milestones across DSA, Roadmaps, and Core CS.
+            <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
+              Targeting <span className="font-bold text-white underline decoration-indigo-500 underline-offset-4">{currentRole}</span> for <span className="text-indigo-300 font-bold">{user?.dreamCompany || 'Tier-1 Tech'}</span>. Your readiness index dynamically reflects milestone completion for this specialization.
             </p>
           </div>
 
@@ -79,21 +105,74 @@ export const Dashboard = () => {
           <div className="flex flex-wrap gap-2.5">
             <Link
               to="/dsa"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-sm transition-all"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 transition-all hover:scale-105"
             >
               <Code2 className="w-4 h-4" /> Practice DSA
             </Link>
             <Link
               to="/roadmaps"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold transition-all"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-bold transition-all hover:scale-105"
             >
               <GitBranch className="w-4 h-4 text-indigo-400" /> View Roadmaps
             </Link>
           </div>
         </div>
+
+        {/* 2. INTERACTIVE ROLE SELECTOR BAR */}
+        <div className="pt-6 mt-6 border-t border-slate-800/80 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider flex items-center gap-1.5">
+              <Briefcase className="w-3.5 h-3.5 text-indigo-400" /> Target Role Specialization
+            </span>
+            <span className="text-[10px] text-slate-400">
+              {switchingRole ? 'Recalculating weights...' : 'Click to switch role'}
+            </span>
+          </div>
+
+          {/* Role Chips */}
+          <div className="flex flex-wrap items-center gap-2">
+            {allRoles.map((role) => {
+              const isSelected = role.title === currentRole || role.id === roleConfig?.id;
+              return (
+                <button
+                  key={role.id}
+                  type="button"
+                  onClick={() => handleRoleChange(role.title)}
+                  disabled={switchingRole}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    isSelected
+                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 ring-2 ring-indigo-400/40'
+                      : 'bg-slate-950/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                  <span>{role.shortLabel}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Role Focus Description Strip */}
+          <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+            <div className="space-y-0.5">
+              <span className="text-[11px] font-bold text-slate-200 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                {roleConfig.title}
+              </span>
+              <p className="text-[11px] text-slate-400">{roleConfig.desc}</p>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+              {roleConfig.primarySkills?.slice(0, 3).map((skill, idx) => (
+                <span key={idx} className="text-[10px] px-2 py-0.5 rounded-md bg-slate-900 text-indigo-300 border border-indigo-900/40 font-mono">
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* 4 Key Placement Telemetry Cards */}
+      {/* 3. 4 KEY PLACEMENT TELEMETRY CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Metric 1: Readiness Score */}
         <div className="rounded-2xl bg-slate-900/90 border border-slate-800 p-5 space-y-3 shadow-sm">
@@ -105,7 +184,7 @@ export const Dashboard = () => {
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-black text-slate-100">{readiness}%</span>
-            <span className="text-[10px] text-slate-500 font-medium">Role Weighted</span>
+            <span className="text-[10px] text-slate-500 font-medium">{roleConfig.shortLabel}</span>
           </div>
           <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden border border-slate-800">
             <div
@@ -128,7 +207,7 @@ export const Dashboard = () => {
             <span className="text-[10px] text-slate-500">/ {dsaStats.total} Questions</span>
           </div>
           <p className="text-[10px] text-slate-400">
-            {dsaStats.easySolved} Easy • {dsaStats.mediumSolved} Medium • {dsaStats.hardSolved} Hard
+            {dsaStats.easySolved} Easy • {dsaStats.mediumSolved} Med • {dsaStats.hardSolved} Hard
           </p>
         </div>
 
@@ -170,7 +249,60 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      {/* Main Grid: Weekly Activity Chart + Pending Revisions */}
+      {/* 4. ROLE-RECOMMENDED TRACKS & PRIORITY TOPICS */}
+      <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 md:p-8 space-y-4 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+          <div>
+            <h2 className="text-sm font-bold text-white flex items-center gap-2">
+              <Layers className="w-4 h-4 text-cyan-400" />
+              Curated Roadmap Tracks for {roleConfig.shortLabel}
+            </h2>
+            <p className="text-[11px] text-slate-400">
+              Primary learning tracks and problem patterns calibrated for {roleConfig.title}
+            </p>
+          </div>
+
+          <Link
+            to="/roadmaps"
+            className="text-xs text-indigo-400 hover:text-indigo-300 font-bold flex items-center gap-1 self-start sm:self-auto transition"
+          >
+            <span>Explore All Roadmaps</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+          {roleConfig.recommendedRoadmapTitles.map((title, idx) => (
+            <div
+              key={idx}
+              className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center gap-3 text-xs text-slate-200"
+            >
+              <div className="w-6 h-6 rounded-lg bg-indigo-950/80 border border-indigo-800/40 flex items-center justify-center text-indigo-400 font-bold text-[10px] shrink-0">
+                {idx + 1}
+              </div>
+              <span className="font-semibold truncate">{title}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Priority DSA topics for this role */}
+        <div className="pt-2 flex flex-wrap items-center gap-2">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+            High Priority DSA Topics:
+          </span>
+          {roleConfig.recommendedDsaTopics.map((topic, i) => (
+            <Link
+              key={i}
+              to="/dsa"
+              className="text-[10px] px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-slate-700 font-semibold transition"
+            >
+              ⚡ {topic}
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* 5. MAIN GRID: WEEKLY ACTIVITY + SPICED REVISIONS */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left: Study Velocity Chart (7 cols) */}
         <div className="lg:col-span-7 rounded-3xl bg-slate-900/90 border border-slate-800 p-6 space-y-4">
@@ -264,4 +396,5 @@ export const Dashboard = () => {
     </div>
   );
 };
+
 export default Dashboard;

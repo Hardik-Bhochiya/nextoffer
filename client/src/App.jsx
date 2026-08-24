@@ -17,6 +17,7 @@ import { ResumeScanner } from './pages/ResumeScanner';
 import { AiMentor } from './pages/AiMentor';
 import { Analytics } from './pages/Analytics';
 import { Profile } from './pages/Profile';
+import { Recommendations } from './pages/Recommendations';
 import { AuthPage } from './pages/AuthPage';
 
 // Protected Route - redirects to /auth if not logged in
@@ -100,6 +101,7 @@ export function App() {
               <Route path="/resume" element={<ResumeScanner />} />
               <Route path="/ai-mentor" element={<AiMentor />} />
               <Route path="/analytics" element={<Analytics />} />
+              <Route path="/recommendations" element={<Recommendations />} />
               <Route path="/profile" element={<Profile />} />
             </Route>
 

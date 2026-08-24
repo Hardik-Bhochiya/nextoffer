@@ -51,12 +51,9 @@ export const register = async (req, res) => {
       }
     });
 
-    const token = jwt.sign({ id: newUser._id, email: newUser.email }, JWT_SECRET, { expiresIn: '7d' });
-
     return res.status(201).json({
       success: true,
-      message: 'Account created successfully',
-      token,
+      message: 'Account created successfully! Please sign in with your email and password.',
       user: formatUser(newUser)
     });
   } catch (error) {

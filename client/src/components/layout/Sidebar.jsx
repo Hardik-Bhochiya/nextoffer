@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import {
   LayoutDashboard,
   Code2,
@@ -31,10 +31,11 @@ export const Sidebar = () => {
     { to: '/revision', icon: CalendarCheck, label: 'Goal & Task Setter' },
   ];
 
-  // Extended Placement Suite
+  // Extended Placement Suite (Company & AI Strategy Suite)
   const advancedTools = [
+    { to: '/recommendations', icon: Sparkles, label: 'AI Recommendations', highlight: true },
     { to: '/company-archives', icon: Building, label: 'Company Archives' },
-    { to: '/mock-interview', icon: BrainCircuit, label: 'Mock Interview', highlight: true },
+    { to: '/mock-interview', icon: BrainCircuit, label: 'Mock Interview' },
     { to: '/resume', icon: FileText, label: 'ATS Resume Scanner' },
     { to: '/flashcards', icon: Layers, label: 'Core CS Flashcards' },
     { to: '/ai-mentor', icon: Bot, label: 'AI Study Mentor' },
@@ -117,24 +118,27 @@ export const Sidebar = () => {
         </nav>
       </div>
 
-      {/* Clean Placement Target Card Footer (No redundant buttons) */}
+      {/* Clean Placement Target Card Footer */}
       <div className="p-4 border-t border-slate-800/80">
-        <div className="p-3.5 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950/40 border border-slate-800 space-y-1.5 shadow-sm">
+        <Link
+          to="/profile"
+          className="block p-3.5 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950/40 border border-slate-800 hover:border-slate-700 space-y-1.5 shadow-sm group transition-all"
+        >
           <div className="flex items-center justify-between text-xs">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-              <Target className="w-3 h-3 text-indigo-400" /> Target Goal
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1 group-hover:text-indigo-400 transition-colors">
+              <Target className="w-3 h-3 text-indigo-400" /> Target Profile
             </span>
             <span className="text-[10px] font-semibold text-indigo-300 bg-indigo-950/80 px-2 py-0.5 rounded-md border border-indigo-800/40">
               {user?.gradYear || '2026'} Grad
             </span>
           </div>
-          <p className="text-xs font-bold text-slate-100 truncate">
+          <p className="text-xs font-bold text-slate-100 truncate group-hover:text-indigo-300 transition-colors">
             {user?.dreamCompany || 'Top Tech Companies'}
           </p>
           <p className="text-[10px] text-slate-400 truncate">
             {user?.targetRole || 'Software Engineer'}
           </p>
-        </div>
+        </Link>
       </div>
     </aside>
   );

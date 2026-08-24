@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
+import { getRoleConfig } from '../data/rolesData';
 import api from '../services/api';
 import {
   Code2,
@@ -20,7 +22,11 @@ import {
 } from 'lucide-react';
 
 export const DsaTracker = () => {
+  const { user } = useAuth();
   const { dsaProblems, updateDsaStatus, addDsaProblem, deleteDsaProblem } = useData();
+
+  const currentRole = user?.targetRole || 'Full Stack Software Engineer';
+  const roleConfig = getRoleConfig(currentRole);
 
   const [search, setSearch] = useState('');
   const [selectedTopic, setSelectedTopic] = useState('All');
@@ -215,6 +221,35 @@ export const DsaTracker = () => {
           )}
         </div>
       )}
+
+      {/* Role Specialization Focus Guide */}
+      <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm">
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1">
+            <Sparkles className="w-3.5 h-3.5 text-indigo-400" /> {roleConfig.shortLabel} Priority Topics:
+          </span>
+          <span className="text-[11px] text-slate-400">High-yield algorithmic patterns for your target role</span>
+        </div>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {roleConfig.recommendedDsaTopics.map((top) => {
+            const isMatch = selectedTopic === top;
+            return (
+              <button
+                key={top}
+                type="button"
+                onClick={() => setSelectedTopic(isMatch ? 'All' : top)}
+                className={`text-[10px] px-2.5 py-1 rounded-lg font-semibold transition ${
+                  isMatch
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800'
+                }`}
+              >
+                {top}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Filter & Search Bar */}
       <div className="glass-panel rounded-2xl p-4 space-y-4">
