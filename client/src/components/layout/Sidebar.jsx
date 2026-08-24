@@ -12,11 +12,9 @@ import {
   BrainCircuit,
   FileText,
   Bot,
-  User,
   Rocket,
   LogOut,
-  ExternalLink,
-  Search
+  ExternalLink
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -40,7 +38,6 @@ export const Sidebar = () => {
     { to: '/resume', icon: FileText, label: 'ATS Resume Scanner' },
     { to: '/flashcards', icon: Layers, label: 'Core CS Flashcards' },
     { to: '/ai-mentor', icon: Bot, label: 'AI Study Mentor' },
-    { to: '/profile', icon: User, label: 'Profile & Settings' },
   ];
 
   return (
