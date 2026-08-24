@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
 import { AppLayout } from './components/layout/AppLayout';
 
@@ -14,15 +14,75 @@ import { AiMentor } from './pages/AiMentor';
 import { Analytics } from './pages/Analytics';
 import { AuthPage } from './pages/AuthPage';
 
+// Protected Route - redirects to /auth if not logged in
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-500 flex items-center justify-center mx-auto animate-pulse">
+            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <p className="text-slate-400 text-sm">Loading NextOffer...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  return children;
+};
+
+// Public Route - redirects to / if already logged in
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-500 animate-pulse" />
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
 export function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <DataProvider>
           <Routes>
-            <Route path="/auth" element={<AuthPage />} />
-            
-            <Route element={<AppLayout />}>
+            {/* Public - Auth page */}
+            <Route
+              path="/auth"
+              element={
+                <PublicRoute>
+                  <AuthPage />
+                </PublicRoute>
+              }
+            />
+
+            {/* Protected - App pages */}
+            <Route
+              element={
+                <ProtectedRoute>
+                  <AppLayout />
+                </ProtectedRoute>
+              }
+            >
               <Route path="/" element={<Dashboard />} />
               <Route path="/dsa" element={<DsaTracker />} />
               <Route path="/roadmaps" element={<Roadmaps />} />
@@ -33,6 +93,7 @@ export function App() {
               <Route path="/analytics" element={<Analytics />} />
             </Route>
 
+            {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </DataProvider>

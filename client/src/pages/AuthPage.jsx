@@ -1,19 +1,24 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Rocket, Sparkles, ArrowRight } from 'lucide-react';
+import { Rocket, Eye, EyeOff } from 'lucide-react';
 
 export const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [fullName, setFullName] = useState('Hardik Bhochiya');
-  const [email, setEmail] = useState('hardik@nextoffer.dev');
-  const [password, setPassword] = useState('password123');
-  const [college, setCollege] = useState('Gujarat Technological University');
-  const [branch, setBranch] = useState('Computer Engineering');
-  const [graduationYear, setGraduationYear] = useState('2026');
-  const [targetRole, setTargetRole] = useState('Full Stack SDE');
-  const [dreamCompany, setDreamCompany] = useState('Google / Microsoft / Tier-1 Startups');
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Login fields
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  // Register extra fields
+  const [fullName, setFullName] = useState('');
+  const [targetRole, setTargetRole] = useState('');
+  const [dreamCompany, setDreamCompany] = useState('');
+  const [gradYear, setGradYear] = useState('');
+
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const { login, register } = useAuth();
   const navigate = useNavigate();
@@ -21,6 +26,8 @@ export const AuthPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
+
     let res;
     if (isLogin) {
       res = await login(email, password);
@@ -30,24 +37,29 @@ export const AuthPage = () => {
         name: fullName,
         email,
         password,
-        college,
-        branch,
-        graduationYear,
         targetRole,
-        dreamCompany
+        dreamCompany,
+        gradYear
       });
     }
 
+    setLoading(false);
     if (res?.success) {
       navigate('/');
     } else {
-      setError(res?.message || 'Authentication error');
+      setError(res?.message || 'Authentication error. Please try again.');
     }
   };
 
-  const handleDemoLogin = async () => {
-    await login('hardik@nextoffer.dev', 'demo123');
-    navigate('/');
+  const switchMode = () => {
+    setIsLogin(!isLogin);
+    setError('');
+    setEmail('');
+    setPassword('');
+    setFullName('');
+    setTargetRole('');
+    setDreamCompany('');
+    setGradYear('');
   };
 
   return (
@@ -56,135 +68,127 @@ export const AuthPage = () => {
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="max-w-lg w-full glass-panel rounded-3xl p-8 border border-slate-800 shadow-2xl relative z-10 space-y-6">
+      <div className="max-w-lg w-full bg-slate-900/80 backdrop-blur-xl rounded-3xl p-8 border border-slate-800 shadow-2xl relative z-10 space-y-6">
         {/* Brand Header */}
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-500 flex items-center justify-center mx-auto shadow-lg shadow-indigo-600/30">
-            <Rocket className="w-6 h-6 text-white" />
+        <div className="text-center space-y-3">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-500 flex items-center justify-center mx-auto shadow-lg shadow-indigo-600/30">
+            <Rocket className="w-7 h-7 text-white" />
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-white">NextOffer</h1>
-          <p className="text-xs text-slate-400">AI-Powered Placement Preparation Platform</p>
+          <div>
+            <h1 className="text-3xl font-black tracking-tight text-white">NextOffer</h1>
+            <p className="text-sm text-slate-400 mt-1">AI-Powered Placement Preparation Platform</p>
+          </div>
         </div>
 
-        {/* Demo Fast Track Button */}
-        <button
-          type="button"
-          onClick={handleDemoLogin}
-          className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:opacity-95 text-white text-xs font-bold shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2 transition-all hover:scale-[1.02]"
-        >
-          <Sparkles className="w-4 h-4 text-amber-300" />
-          <span>Instant Demo Login (Hardik Bhochiya)</span>
-          <ArrowRight className="w-4 h-4" />
-        </button>
-
-        <div className="flex items-center gap-3">
-          <div className="h-px bg-slate-800 flex-1" />
-          <span className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">or email authentication</span>
-          <div className="h-px bg-slate-800 flex-1" />
+        {/* Tab Switcher */}
+        <div className="flex bg-slate-800/60 rounded-xl p-1">
+          <button
+            type="button"
+            onClick={() => { setIsLogin(true); setError(''); }}
+            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${isLogin ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'}`}
+          >
+            Sign In
+          </button>
+          <button
+            type="button"
+            onClick={() => { setIsLogin(false); setError(''); }}
+            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${!isLogin ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'}`}
+          >
+            Create Account
+          </button>
         </div>
 
+        {/* Error Message */}
         {error && (
-          <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-800/60 text-xs text-rose-300">
+          <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-800/60 text-sm text-rose-300">
             {error}
           </div>
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-3.5">
+        <form onSubmit={handleSubmit} className="space-y-4">
+
+          {/* Full Name - Register only */}
           {!isLogin && (
             <div>
-              <label className="block text-[11px] font-semibold text-slate-400 mb-1">Full Name *</label>
+              <label className="block text-xs font-semibold text-slate-400 mb-1.5">Full Name *</label>
               <input
                 type="text"
                 required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="Hardik Bhochiya"
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                placeholder="Your full name"
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
               />
             </div>
           )}
 
+          {/* Email */}
           <div>
-            <label className="block text-[11px] font-semibold text-slate-400 mb-1">Email Address *</label>
+            <label className="block text-xs font-semibold text-slate-400 mb-1.5">Email Address *</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="hardik@nextoffer.dev"
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+              placeholder="you@example.com"
+              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
             />
           </div>
 
+          {/* Password */}
           <div>
-            <label className="block text-[11px] font-semibold text-slate-400 mb-1">Password *</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
-            />
+            <label className="block text-xs font-semibold text-slate-400 mb-1.5">Password *</label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={isLogin ? '••••••••' : 'Min 6 characters'}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 pr-10 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
+          {/* Register extra fields */}
           {!isLogin && (
-            <div className="space-y-3 pt-1">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">College / University</label>
-                  <input
-                    type="text"
-                    value={college}
-                    onChange={(e) => setCollege(e.target.value)}
-                    placeholder="Gujarat Tech Univ"
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">Branch / Degree</label>
-                  <input
-                    type="text"
-                    value={branch}
-                    onChange={(e) => setBranch(e.target.value)}
-                    placeholder="Computer Engineering"
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">Graduation Year</label>
-                  <input
-                    type="text"
-                    value={graduationYear}
-                    onChange={(e) => setGraduationYear(e.target.value)}
-                    placeholder="2026"
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">Target Role</label>
-                  <input
-                    type="text"
-                    value={targetRole}
-                    onChange={(e) => setTargetRole(e.target.value)}
-                    placeholder="Full Stack SDE"
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-              </div>
-
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">Dream Companies</label>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5">Target Role</label>
+                <input
+                  type="text"
+                  value={targetRole}
+                  onChange={(e) => setTargetRole(e.target.value)}
+                  placeholder="e.g. Full Stack SDE"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5">Grad Year</label>
+                <input
+                  type="text"
+                  value={gradYear}
+                  onChange={(e) => setGradYear(e.target.value)}
+                  placeholder="e.g. 2026"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"
+                />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5">Dream Companies</label>
                 <input
                   type="text"
                   value={dreamCompany}
                   onChange={(e) => setDreamCompany(e.target.value)}
-                  placeholder="Google, Microsoft, Stripe"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                  placeholder="e.g. Google, Microsoft, Stripe"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"
                 />
               </div>
             </div>
@@ -192,38 +196,24 @@ export const AuthPage = () => {
 
           <button
             type="submit"
-            className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 transition-all hover:scale-[1.01]"
+            disabled={loading}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white text-sm font-bold shadow-lg shadow-indigo-600/30 transition-all hover:scale-[1.01] disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100"
           >
-            {isLogin ? 'Sign In to Dashboard' : 'Create NextOffer Account'}
+            {loading ? 'Please wait...' : isLogin ? 'Sign In to Dashboard' : 'Create Account'}
           </button>
         </form>
 
-        {/* Toggle Login / Register */}
-        <div className="text-center text-xs text-slate-400">
-          {isLogin ? (
-            <p>
-              Don't have an account?{' '}
-              <button
-                type="button"
-                onClick={() => setIsLogin(false)}
-                className="text-indigo-400 font-semibold hover:underline"
-              >
-                Register here
-              </button>
-            </p>
-          ) : (
-            <p>
-              Already registered?{' '}
-              <button
-                type="button"
-                onClick={() => setIsLogin(true)}
-                className="text-indigo-400 font-semibold hover:underline"
-              >
-                Sign in
-              </button>
-            </p>
-          )}
-        </div>
+        {/* Switch mode link */}
+        <p className="text-center text-xs text-slate-500">
+          {isLogin ? "Don't have an account? " : 'Already have an account? '}
+          <button
+            type="button"
+            onClick={switchMode}
+            className="text-indigo-400 font-semibold hover:underline"
+          >
+            {isLogin ? 'Create one' : 'Sign in'}
+          </button>
+        </p>
       </div>
     </div>
   );

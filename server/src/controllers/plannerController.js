@@ -1,44 +1,72 @@
-import { memoryStore } from '../services/store.js';
+import { StudyGoal, DailyTask } from '../models/Planner.js';
 
-export const getPlannerData = (req, res) => {
+const formatDoc = (doc) => {
+  if (!doc) return null;
+  const obj = doc.toObject ? doc.toObject() : { ...doc };
+  obj.id = obj._id ? obj._id.toString() : obj.id;
+  return obj;
+};
+
+export const getPlannerData = async (req, res) => {
   try {
-    const data = memoryStore.getPlannerData();
-    return res.json({ success: true, data });
+    const userId = req.user?.id;
+    const studyGoals = await StudyGoal.find({ userId }).sort({ createdAt: -1 });
+    const dailyTasks = await DailyTask.find({ userId }).sort({ createdAt: -1 });
+    return res.json({
+      success: true,
+      data: {
+        studyGoals: studyGoals.map(formatDoc),
+        dailyTasks: dailyTasks.map(formatDoc)
+      }
+    });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-export const createStudyGoal = (req, res) => {
+export const createStudyGoal = async (req, res) => {
   try {
+    const userId = req.user?.id;
     const { goalTitle, deadline, priority, progress } = req.body;
     if (!goalTitle) {
       return res.status(400).json({ success: false, message: 'Goal title is required' });
     }
-    const newGoal = memoryStore.addStudyGoal({ goalTitle, deadline, priority, progress });
-    return res.status(201).json({ success: true, data: newGoal });
+    const newGoal = await StudyGoal.create({
+      userId,
+      goalTitle,
+      deadline: deadline || '2026-12-31',
+      priority: priority || 'High',
+      progress: progress || 0
+    });
+    return res.status(201).json({ success: true, data: formatDoc(newGoal) });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-export const updateStudyGoal = (req, res) => {
+export const updateStudyGoal = async (req, res) => {
   try {
+    const userId = req.user?.id;
     const { id } = req.params;
-    const updated = memoryStore.updateStudyGoal(id, req.body);
+    const updated = await StudyGoal.findOneAndUpdate(
+      { _id: id, userId },
+      req.body,
+      { new: true, runValidators: true }
+    );
     if (!updated) {
       return res.status(404).json({ success: false, message: 'Goal not found' });
     }
-    return res.json({ success: true, data: updated });
+    return res.json({ success: true, data: formatDoc(updated) });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-export const deleteStudyGoal = (req, res) => {
+export const deleteStudyGoal = async (req, res) => {
   try {
+    const userId = req.user?.id;
     const { id } = req.params;
-    const deleted = memoryStore.deleteStudyGoal(id);
+    const deleted = await StudyGoal.findOneAndDelete({ _id: id, userId });
     if (!deleted) {
       return res.status(404).json({ success: false, message: 'Goal not found' });
     }
@@ -48,36 +76,45 @@ export const deleteStudyGoal = (req, res) => {
   }
 };
 
-export const addDailyTask = (req, res) => {
+export const addDailyTask = async (req, res) => {
   try {
+    const userId = req.user?.id;
     const { taskDetails, taskStatus } = req.body;
     if (!taskDetails) {
       return res.status(400).json({ success: false, message: 'Task details are required' });
     }
-    const newTask = memoryStore.addDailyTask({ taskDetails, taskStatus });
-    return res.status(201).json({ success: true, data: newTask });
+    const newTask = await DailyTask.create({
+      userId,
+      taskDetails,
+      taskStatus: !!taskStatus
+    });
+    return res.status(201).json({ success: true, data: formatDoc(newTask) });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-export const toggleDailyTask = (req, res) => {
+export const toggleDailyTask = async (req, res) => {
   try {
+    const userId = req.user?.id;
     const { id } = req.params;
-    const toggled = memoryStore.toggleDailyTask(id);
-    if (!toggled) {
+    const task = await DailyTask.findOne({ _id: id, userId });
+    if (!task) {
       return res.status(404).json({ success: false, message: 'Task not found' });
     }
-    return res.json({ success: true, data: toggled });
+    task.taskStatus = !task.taskStatus;
+    await task.save();
+    return res.json({ success: true, data: formatDoc(task) });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-export const deleteDailyTask = (req, res) => {
+export const deleteDailyTask = async (req, res) => {
   try {
+    const userId = req.user?.id;
     const { id } = req.params;
-    const deleted = memoryStore.deleteDailyTask(id);
+    const deleted = await DailyTask.findOneAndDelete({ _id: id, userId });
     if (!deleted) {
       return res.status(404).json({ success: false, message: 'Task not found' });
     }

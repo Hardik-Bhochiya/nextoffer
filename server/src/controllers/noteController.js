@@ -1,58 +1,90 @@
-import { memoryStore } from '../services/store.js';
+import Note from '../models/Note.js';
 
-export const getNotes = (req, res) => {
+const formatDoc = (doc) => {
+  if (!doc) return null;
+  const obj = doc.toObject ? doc.toObject() : { ...doc };
+  obj.id = obj._id ? obj._id.toString() : obj.id;
+  return obj;
+};
+
+export const getNotes = async (req, res) => {
   try {
+    const userId = req.user?.id;
     const { tag, search } = req.query;
-    let notes = memoryStore.getNotes();
+    let query = { userId };
+
     if (tag) {
-      notes = notes.filter(n => n.tags && n.tags.includes(tag));
+      query.tags = tag;
     }
     if (search) {
-      const q = search.toLowerCase();
-      notes = notes.filter(n => n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q));
+      query.$and = [
+        { userId },
+        {
+          $or: [
+            { title: { $regex: search, $options: 'i' } },
+            { content: { $regex: search, $options: 'i' } }
+          ]
+        }
+      ];
     }
-    return res.json({ success: true, data: notes });
+    const notes = await Note.find(query).sort({ pinned: -1, updatedAt: -1 });
+    return res.json({ success: true, data: notes.map(formatDoc) });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-export const createNote = (req, res) => {
+export const createNote = async (req, res) => {
   try {
+    const userId = req.user?.id;
     const { title, content, tags, pinned, isFavorite } = req.body;
     if (!title) {
       return res.status(400).json({ success: false, message: 'Note title is required' });
     }
-    const newNote = memoryStore.addNote({
+    const note = await Note.create({
+      userId,
       title,
       content: content || '',
       tags: Array.isArray(tags) ? tags : (tags ? tags.split(',').map(t => t.trim()) : []),
       pinned: !!pinned,
       isFavorite: !!isFavorite
     });
-    return res.status(201).json({ success: true, data: newNote });
+    return res.status(201).json({ success: true, data: formatDoc(note) });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-export const updateNote = (req, res) => {
+export const updateNote = async (req, res) => {
   try {
+    const userId = req.user?.id;
     const { id } = req.params;
-    const updated = memoryStore.updateNote(id, req.body);
+    const updateData = { ...req.body };
+    if (updateData.tags && typeof updateData.tags === 'string') {
+      updateData.tags = updateData.tags.split(',').map(t => t.trim());
+    }
+
+    const updated = await Note.findOneAndUpdate(
+      { _id: id, userId },
+      updateData,
+      { new: true, runValidators: true }
+    );
+
     if (!updated) {
       return res.status(404).json({ success: false, message: 'Note not found' });
     }
-    return res.json({ success: true, data: updated });
+    return res.json({ success: true, data: formatDoc(updated) });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-export const deleteNote = (req, res) => {
+export const deleteNote = async (req, res) => {
   try {
+    const userId = req.user?.id;
     const { id } = req.params;
-    const deleted = memoryStore.deleteNote(id);
+    const deleted = await Note.findOneAndDelete({ _id: id, userId });
+
     if (!deleted) {
       return res.status(404).json({ success: false, message: 'Note not found' });
     }

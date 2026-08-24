@@ -1,9 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api';
+import { useAuth } from './AuthContext';
 
 const DataContext = createContext();
 
 export const DataProvider = ({ children }) => {
+  const { isAuthenticated, logout } = useAuth();
+
   const [dsaProblems, setDsaProblems] = useState([]);
   const [roadmaps, setRoadmaps] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -14,8 +17,14 @@ export const DataProvider = ({ children }) => {
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch all initial data
+  const handleApiError = (err) => {
+    if (err?.status === 401 || err?.message?.includes('401')) {
+      logout();
+    }
+  };
+
   const refreshData = async () => {
+    if (!isAuthenticated) return;
     try {
       setLoading(true);
       const [dsaRes, roadmapsRes, projectsRes, notesRes, revRes, plannerRes, analyticsRes] = await Promise.allSettled([
@@ -34,31 +43,42 @@ export const DataProvider = ({ children }) => {
       if (notesRes.status === 'fulfilled' && notesRes.value?.data) setNotes(notesRes.value.data);
       if (revRes.status === 'fulfilled' && revRes.value?.data) setRevisions(revRes.value.data);
       if (plannerRes.status === 'fulfilled' && plannerRes.value?.data) {
-        setStudyGoals(plannerRes.value.data.goals || []);
-        setDailyTasks(plannerRes.value.data.tasks || []);
+        setStudyGoals(plannerRes.value.data.studyGoals || []);
+        setDailyTasks(plannerRes.value.data.dailyTasks || []);
       }
       if (analyticsRes.status === 'fulfilled' && analyticsRes.value?.data) setMetrics(analyticsRes.value.data);
     } catch (err) {
-      console.warn('Data sync fallback:', err);
+      handleApiError(err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    refreshData();
-  }, []);
+    if (isAuthenticated) {
+      refreshData();
+    } else {
+      // Clear data on logout
+      setDsaProblems([]);
+      setRoadmaps([]);
+      setProjects([]);
+      setNotes([]);
+      setRevisions([]);
+      setStudyGoals([]);
+      setDailyTasks([]);
+      setMetrics(null);
+      setLoading(false);
+    }
+  }, [isAuthenticated]);
 
-  // DSA Actions
+  // ---- DSA Actions ----
   const updateDsaStatus = async (id, status, notes = '') => {
-    setDsaProblems(prev => prev.map(p => (p.id === id || p.trackerId === id) ? { ...p, status, problemStatus: status, notes: notes || p.notes } : p));
+    setDsaProblems(prev => prev.map(p => (p.id === id || p._id === id) ? { ...p, status, notes: notes || p.notes } : p));
     try {
       await api.put(`/dsa/${id}`, { status, notes });
       const anRes = await api.get('/analytics/dashboard').catch(() => null);
       if (anRes?.data) setMetrics(anRes.data);
-    } catch (err) {
-      console.error('Update DSA failed:', err);
-    }
+    } catch (err) { handleApiError(err); }
   };
 
   const addDsaProblem = async (newProb) => {
@@ -69,229 +89,154 @@ export const DataProvider = ({ children }) => {
         const anRes = await api.get('/analytics/dashboard').catch(() => null);
         if (anRes?.data) setMetrics(anRes.data);
       }
-    } catch (err) {
-      const localProb = { id: `dsa-${Date.now()}`, revisionsCount: 0, ...newProb };
-      setDsaProblems(prev => [localProb, ...prev]);
-    }
+    } catch (err) { handleApiError(err); }
   };
 
   const deleteDsaProblem = async (id) => {
-    setDsaProblems(prev => prev.filter(p => p.id !== id && p.trackerId !== id));
+    setDsaProblems(prev => prev.filter(p => p.id !== id && p._id !== id));
     try {
       await api.delete(`/dsa/${id}`);
       const anRes = await api.get('/analytics/dashboard').catch(() => null);
       if (anRes?.data) setMetrics(anRes.data);
-    } catch (err) {
-      console.error('Delete DSA failed:', err);
-    }
+    } catch (err) { handleApiError(err); }
   };
 
-  // Roadmap Actions
+  // ---- Roadmap Actions ----
   const toggleRoadmapTopic = async (roadmapId, topicId) => {
     setRoadmaps(prev => prev.map(r => {
-      if (r.id === roadmapId || r.roadmapId === roadmapId) {
-        return {
-          ...r,
-          topics: r.topics.map(t => (t.id === topicId || t.topicId === topicId) ? { ...t, completed: !t.completed } : t)
-        };
+      if (r.id === roadmapId || r._id?.toString() === roadmapId) {
+        return { ...r, topics: r.topics.map(t => (t.id === topicId || t._id?.toString() === topicId) ? { ...t, completed: !t.completed } : t) };
       }
       return r;
     }));
-
     try {
       await api.patch(`/roadmap/${roadmapId}/topic/${topicId}`);
       const anRes = await api.get('/analytics/dashboard').catch(() => null);
       if (anRes?.data) setMetrics(anRes.data);
-    } catch (err) {
-      console.error('Toggle topic failed:', err);
-    }
+    } catch (err) { handleApiError(err); }
   };
 
-  // Project Actions
+  // ---- Project Actions ----
   const addProject = async (projectData) => {
     try {
       const res = await api.post('/projects', projectData);
-      if (res?.data) {
-        setProjects(prev => [res.data, ...prev]);
-      }
-    } catch (err) {
-      const localProj = { id: `proj-${Date.now()}`, milestones: [], ...projectData };
-      setProjects(prev => [localProj, ...prev]);
-    }
+      if (res?.data) setProjects(prev => [res.data, ...prev]);
+    } catch (err) { handleApiError(err); }
   };
 
   const updateProject = async (id, updates) => {
-    setProjects(prev => prev.map(p => (p.id === id || p.projectId === id) ? { ...p, ...updates } : p));
+    setProjects(prev => prev.map(p => (p.id === id || p._id === id) ? { ...p, ...updates } : p));
     try {
       await api.put(`/projects/${id}`, updates);
-    } catch (err) {
-      console.error('Update project failed:', err);
-    }
+    } catch (err) { handleApiError(err); }
   };
 
   const deleteProject = async (id) => {
-    setProjects(prev => prev.filter(p => p.id !== id && p.projectId !== id));
+    setProjects(prev => prev.filter(p => p.id !== id && p._id !== id));
     try {
       await api.delete(`/projects/${id}`);
-    } catch (err) {
-      console.error('Delete project failed:', err);
-    }
+    } catch (err) { handleApiError(err); }
   };
 
-  // Notes Actions
+  // ---- Notes Actions ----
   const addNote = async (noteData) => {
     try {
       const res = await api.post('/notes', noteData);
-      if (res?.data) {
-        setNotes(prev => [res.data, ...prev]);
-      }
-    } catch (err) {
-      const localNote = { id: `note-${Date.now()}`, updatedAt: new Date().toISOString(), ...noteData };
-      setNotes(prev => [localNote, ...prev]);
-    }
+      if (res?.data) setNotes(prev => [res.data, ...prev]);
+    } catch (err) { handleApiError(err); }
   };
 
   const updateNote = async (id, updates) => {
-    setNotes(prev => prev.map(n => (n.id === id || n.noteId === id) ? { ...n, ...updates } : n));
+    setNotes(prev => prev.map(n => (n.id === id || n._id === id) ? { ...n, ...updates } : n));
     try {
       await api.put(`/notes/${id}`, updates);
-    } catch (err) {
-      console.error('Update note failed:', err);
-    }
+    } catch (err) { handleApiError(err); }
   };
 
   const deleteNote = async (id) => {
-    setNotes(prev => prev.filter(n => n.id !== id && n.noteId !== id));
+    setNotes(prev => prev.filter(n => n.id !== id && n._id !== id));
     try {
       await api.delete(`/notes/${id}`);
-    } catch (err) {
-      console.error('Delete note failed:', err);
-    }
+    } catch (err) { handleApiError(err); }
   };
 
-  // Daily Planner & Study Goals Actions (Module R7)
+  // ---- Planner Actions ----
   const addStudyGoal = async (goalData) => {
     try {
       const res = await api.post('/planner/goals', goalData);
-      if (res?.data) {
-        setStudyGoals(prev => [res.data, ...prev]);
-      }
-    } catch (err) {
-      const localGoal = { goalId: `goal-${Date.now()}`, ...goalData };
-      setStudyGoals(prev => [localGoal, ...prev]);
-    }
+      if (res?.data) setStudyGoals(prev => [res.data, ...prev]);
+    } catch (err) { handleApiError(err); }
   };
 
   const updateStudyGoal = async (id, updates) => {
-    setStudyGoals(prev => prev.map(g => (g.goalId === id || g.plannerId === id) ? { ...g, ...updates } : g));
+    setStudyGoals(prev => prev.map(g => (g.id === id || g._id === id) ? { ...g, ...updates } : g));
     try {
       await api.put(`/planner/goals/${id}`, updates);
-    } catch (err) {
-      console.error('Update goal failed:', err);
-    }
+    } catch (err) { handleApiError(err); }
   };
 
   const deleteStudyGoal = async (id) => {
-    setStudyGoals(prev => prev.filter(g => g.goalId !== id && g.plannerId !== id));
+    setStudyGoals(prev => prev.filter(g => g.id !== id && g._id !== id));
     try {
       await api.delete(`/planner/goals/${id}`);
-    } catch (err) {
-      console.error('Delete goal failed:', err);
-    }
+    } catch (err) { handleApiError(err); }
   };
 
   const addDailyTask = async (taskData) => {
     try {
       const res = await api.post('/planner/tasks', taskData);
-      if (res?.data) {
-        setDailyTasks(prev => [...prev, res.data]);
-      }
-    } catch (err) {
-      const localTask = { taskId: `task-${Date.now()}`, ...taskData };
-      setDailyTasks(prev => [...prev, localTask]);
-    }
+      if (res?.data) setDailyTasks(prev => [...prev, res.data]);
+    } catch (err) { handleApiError(err); }
   };
 
   const toggleDailyTask = async (id) => {
-    setDailyTasks(prev => prev.map(t => t.taskId === id ? { ...t, taskStatus: t.taskStatus === 'Completed' ? 'Pending' : 'Completed' } : t));
+    setDailyTasks(prev => prev.map(t => (t.id === id || t._id === id) ? { ...t, taskStatus: !t.taskStatus } : t));
     try {
       await api.patch(`/planner/tasks/${id}/toggle`);
-    } catch (err) {
-      console.error('Toggle task failed:', err);
-    }
+    } catch (err) { handleApiError(err); }
   };
 
   const deleteDailyTask = async (id) => {
-    setDailyTasks(prev => prev.filter(t => t.taskId !== id));
+    setDailyTasks(prev => prev.filter(t => t.id !== id && t._id !== id));
     try {
       await api.delete(`/planner/tasks/${id}`);
-    } catch (err) {
-      console.error('Delete task failed:', err);
-    }
+    } catch (err) { handleApiError(err); }
   };
 
-  // Revision Actions
+  // ---- Revision Actions ----
   const addRevision = async (revData) => {
     try {
       const res = await api.post('/revision', revData);
-      if (res?.data) {
-        setRevisions(prev => [res.data, ...prev]);
-      }
-    } catch (err) {
-      const localRev = { id: `rev-${Date.now()}`, completed: false, ...revData };
-      setRevisions(prev => [localRev, ...prev]);
-    }
+      if (res?.data) setRevisions(prev => [res.data, ...prev]);
+    } catch (err) { handleApiError(err); }
   };
 
   const toggleRevision = async (id) => {
-    setRevisions(prev => prev.map(r => (r.id === id || r.revisionId === id) ? { ...r, completed: !r.completed } : r));
+    setRevisions(prev => prev.map(r => (r.id === id || r._id === id) ? { ...r, completed: !r.completed } : r));
     try {
       await api.patch(`/revision/${id}/toggle`);
-    } catch (err) {
-      console.error('Toggle revision failed:', err);
-    }
+    } catch (err) { handleApiError(err); }
   };
 
   const deleteRevision = async (id) => {
-    setRevisions(prev => prev.filter(r => r.id !== id && r.revisionId !== id));
+    setRevisions(prev => prev.filter(r => r.id !== id && r._id !== id));
     try {
       await api.delete(`/revision/${id}`);
-    } catch (err) {
-      console.error('Delete revision failed:', err);
-    }
+    } catch (err) { handleApiError(err); }
   };
 
   return (
     <DataContext.Provider value={{
-      dsaProblems,
-      roadmaps,
-      projects,
-      notes,
-      revisions,
-      studyGoals,
-      dailyTasks,
-      metrics,
-      loading,
+      dsaProblems, roadmaps, projects, notes, revisions,
+      studyGoals, dailyTasks, metrics, loading,
       refreshData,
-      updateDsaStatus,
-      addDsaProblem,
-      deleteDsaProblem,
+      updateDsaStatus, addDsaProblem, deleteDsaProblem,
       toggleRoadmapTopic,
-      addProject,
-      updateProject,
-      deleteProject,
-      addNote,
-      updateNote,
-      deleteNote,
-      addStudyGoal,
-      updateStudyGoal,
-      deleteStudyGoal,
-      addDailyTask,
-      toggleDailyTask,
-      deleteDailyTask,
-      addRevision,
-      toggleRevision,
-      deleteRevision
+      addProject, updateProject, deleteProject,
+      addNote, updateNote, deleteNote,
+      addStudyGoal, updateStudyGoal, deleteStudyGoal,
+      addDailyTask, toggleDailyTask, deleteDailyTask,
+      addRevision, toggleRevision, deleteRevision
     }}>
       {children}
     </DataContext.Provider>

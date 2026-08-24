@@ -5,9 +5,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'nextoffer_super_secure_jwt_secret_
 export const authenticate = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    // Graceful fallback for demo exploration without forcing hard 401 block
-    req.user = { id: 'user-demo-1', email: 'hardik@nextoffer.dev' };
-    return next();
+    return res.status(401).json({ success: false, message: 'Authentication required. Please log in.' });
   }
 
   const token = authHeader.split(' ')[1];
@@ -16,8 +14,6 @@ export const authenticate = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    // If token invalid, still provide demo context so frontend doesn't crash
-    req.user = { id: 'user-demo-1', email: 'hardik@nextoffer.dev' };
-    next();
+    return res.status(401).json({ success: false, message: 'Invalid or expired token. Please log in again.' });
   }
 };
