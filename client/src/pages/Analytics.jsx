@@ -9,11 +9,9 @@ import {
   Clock,
   Code2,
   GitBranch,
-  FolderGit2,
   CheckCircle2,
   Flame,
   Plus,
-  Sparkles,
   Info
 } from 'lucide-react';
 import {
@@ -99,44 +97,44 @@ export const Analytics = () => {
   };
 
   return (
-    <div className="space-y-8 animate-fadeIn">
+    <div className="space-y-8 animate-fadeIn max-w-6xl mx-auto pb-12">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-          <BarChart3 className="w-6 h-6 text-indigo-400" /> Placement Readiness & Analytics
+        <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-2">
+          <BarChart3 className="w-6 h-6 text-indigo-400" /> Placement Readiness & Performance Analytics
         </h1>
         <p className="text-xs text-slate-400 mt-1">
-          Dynamic readiness score tailored to your target role ({user?.targetRole || 'Full Stack SDE'}).
+          Dynamic readiness telemetry weighted specifically for your target profile ({user?.targetRole || 'Full Stack SDE'}).
         </p>
       </div>
 
       {/* Top 3 Metric Summary Panels */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Placement Readiness Breakdown */}
-        <div className="glass-panel rounded-2xl p-6 flex flex-col justify-between space-y-4">
+        <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
+              <h2 className="text-sm font-bold text-slate-100 flex items-center gap-1.5">
                 <Target className="w-4 h-4 text-indigo-400" />
-                Role-Based Score
+                Role-Based Readiness
               </h2>
-              <p className="text-[10px] text-indigo-300 font-medium">{weightsInfo.roleCategory}</p>
+              <p className="text-[10px] text-indigo-400 font-semibold">{weightsInfo.roleCategory}</p>
             </div>
-            <span className="text-3xl font-black text-white">{readiness}%</span>
+            <span className="text-3xl font-black text-slate-100">{readiness}%</span>
           </div>
 
           {/* Formula weights */}
-          <div className="space-y-2 text-xs">
+          <div className="space-y-2.5 text-xs pt-1">
             {weightsInfo.breakdown?.map((b, i) => (
               <div key={i} className="space-y-1">
                 <div className="flex justify-between text-slate-300">
                   <span className="text-[11px]">{b.label}</span>
-                  <span className="font-semibold text-indigo-300">{b.score}%</span>
+                  <span className="font-semibold text-slate-200">{b.score}%</span>
                 </div>
                 <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden border border-slate-800">
                   <div
                     className="h-full bg-indigo-500 rounded-full transition-all duration-500"
-                    style={{ width: `${Math.max(3, b.score)}%` }}
+                    style={{ width: `${Math.max(2, b.score)}%` }}
                   />
                 </div>
               </div>
@@ -145,9 +143,9 @@ export const Analytics = () => {
         </div>
 
         {/* Difficulty Distribution Chart */}
-        <div className="glass-panel rounded-2xl p-6 flex flex-col justify-between space-y-2">
+        <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between space-y-2 shadow-sm">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
+            <h2 className="text-sm font-bold text-slate-100 flex items-center gap-1.5">
               <Code2 className="w-4 h-4 text-cyan-400" />
               DSA Difficulty Ratio
             </h2>
@@ -171,34 +169,34 @@ export const Analytics = () => {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '11px' }} />
+                  <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '11px', color: '#fff' }} />
                   <Legend iconSize={8} wrapperStyle={{ fontSize: '11px', bottom: -5 }} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
               <div className="text-center text-slate-500 text-xs py-6">
-                <p>No solved DSA problems yet.</p>
-                <p className="text-[10px] text-slate-600 mt-1">Add problems in the DSA Tracker to see difficulty distribution.</p>
+                <p>0 DSA problems solved yet.</p>
+                <p className="text-[10px] text-slate-600 mt-1">Problems solved in the DSA Tracker appear here.</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Study Log Tracker */}
-        <div className="glass-panel rounded-2xl p-6 flex flex-col justify-between space-y-4">
+        <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
+            <h2 className="text-sm font-bold text-slate-100 flex items-center gap-1.5">
               <Clock className="w-4 h-4 text-amber-400" />
-              Log Study Velocity
+              Study Logger
             </h2>
-            <span className="text-[10px] text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800/40 font-bold">
+            <span className="text-[10px] text-amber-400 bg-amber-950/80 px-2 py-0.5 rounded-md border border-amber-800/40 font-bold">
               {user?.streak || 1} Day Streak
             </span>
           </div>
 
           <form onSubmit={handleLogStudy} className="space-y-3">
             <div>
-              <label className="block text-[11px] font-semibold text-slate-400 mb-1">Study Time (Hours)</label>
+              <label className="block text-[11px] font-semibold text-slate-400 mb-1">Study Session (Hours)</label>
               <input
                 type="number"
                 step="0.5"
@@ -225,10 +223,10 @@ export const Analytics = () => {
             <button
               type="submit"
               disabled={logging}
-              className="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
+              className="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>{logging ? 'Recording...' : 'Record Daily Session'}</span>
+              <span>{logging ? 'Recording...' : 'Log Study Session'}</span>
             </button>
 
             {logSuccess && (
@@ -239,25 +237,25 @@ export const Analytics = () => {
       </div>
 
       {/* Topic-Wise Mastery Bar Chart */}
-      <div className="glass-panel rounded-2xl p-6 space-y-4">
+      <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 space-y-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-base font-bold text-white">DSA Category Distribution</h2>
+            <h2 className="text-base font-bold text-slate-100">DSA Category Distribution</h2>
             <p className="text-xs text-slate-400">Solved vs Remaining questions across data structure topics</p>
           </div>
         </div>
 
-        <div className="h-72 w-full">
+        <div className="h-72 w-full pt-2">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={topicData} margin={{ top: 10, right: 10, left: -10, bottom: 25 }}>
               <XAxis dataKey="topic" stroke="#64748b" fontSize={11} angle={-15} textAnchor="end" />
-              <YAxis stroke="#64748b" fontSize={11} tickLine={false} />
+              <YAxis stroke="#64748b" fontSize={11} tickLine={false} allowDecimals={false} />
               <Tooltip
-                contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '12px' }}
+                contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '12px', color: '#fff' }}
               />
               <Legend wrapperStyle={{ fontSize: '12px', top: -10 }} />
-              <Bar dataKey="Solved" fill="#6366f1" stackId="a" radius={[0, 0, 0, 0]} />
-              <Bar dataKey="Remaining" fill="#334155" stackId="a" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Solved" fill="#6366f1" stackId="a" radius={[0, 0, 0, 0]} barSize={28} />
+              <Bar dataKey="Remaining" fill="#334155" stackId="a" radius={[4, 4, 0, 0]} barSize={28} />
             </BarChart>
           </ResponsiveContainer>
         </div>

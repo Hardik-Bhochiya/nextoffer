@@ -6,16 +6,59 @@ export const getRoadmaps = async (req, res) => {
     const userId = req.user?.id;
     const user = await User.findById(userId);
     const completedSet = new Set(user?.completedTopics || []);
+    const enrolledSet = new Set(user?.enrolledRoadmaps || []);
 
     const userRoadmaps = defaultRoadmaps.map(r => ({
       ...r,
+      isEnrolled: enrolledSet.has(r.id),
       topics: r.topics.map(t => ({
         ...t,
         completed: completedSet.has(t.id) || completedSet.has(t.title)
       }))
     }));
 
-    return res.json({ success: true, data: userRoadmaps });
+    return res.json({
+      success: true,
+      enrolledCount: enrolledSet.size,
+      data: userRoadmaps
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const toggleEnrollRoadmap = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const { roadmapId } = req.params;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (!user.enrolledRoadmaps) {
+      user.enrolledRoadmaps = [];
+    }
+
+    const idx = user.enrolledRoadmaps.indexOf(roadmapId);
+    let enrolled = false;
+    if (idx > -1) {
+      user.enrolledRoadmaps.splice(idx, 1);
+      enrolled = false;
+    } else {
+      user.enrolledRoadmaps.push(roadmapId);
+      enrolled = true;
+    }
+
+    await user.save();
+
+    return res.json({
+      success: true,
+      message: enrolled ? `Enrolled in ${roadmapId} roadmap!` : `Unenrolled from ${roadmapId} roadmap`,
+      isEnrolled: enrolled,
+      enrolledRoadmaps: user.enrolledRoadmaps
+    });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -29,6 +72,12 @@ export const toggleTopic = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Auto-enroll if not already enrolled
+    if (!user.enrolledRoadmaps) user.enrolledRoadmaps = [];
+    if (!user.enrolledRoadmaps.includes(roadmapId)) {
+      user.enrolledRoadmaps.push(roadmapId);
     }
 
     if (!user.completedTopics) {
@@ -45,8 +94,11 @@ export const toggleTopic = async (req, res) => {
     await user.save();
 
     const completedSet = new Set(user.completedTopics);
+    const enrolledSet = new Set(user.enrolledRoadmaps);
+
     const updatedRoadmaps = defaultRoadmaps.map(r => ({
       ...r,
+      isEnrolled: enrolledSet.has(r.id),
       topics: r.topics.map(t => ({
         ...t,
         completed: completedSet.has(t.id) || completedSet.has(t.title)
@@ -55,7 +107,7 @@ export const toggleTopic = async (req, res) => {
 
     return res.json({
       success: true,
-      message: 'Topic status updated',
+      message: 'Topic progress saved',
       data: updatedRoadmaps
     });
   } catch (error) {

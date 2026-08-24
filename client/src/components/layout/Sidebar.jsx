@@ -13,13 +13,13 @@ import {
   FileText,
   Bot,
   Rocket,
-  LogOut,
-  ExternalLink
+  Sparkles,
+  Target
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export const Sidebar = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   // Core Documentation Modules
   const mainModules = [
@@ -117,33 +117,23 @@ export const Sidebar = () => {
         </nav>
       </div>
 
-      {/* Target Goal & Footer */}
-      <div className="p-4 border-t border-slate-800/80 space-y-3">
-        {/* Goal Card */}
-        <div className="p-3 rounded-xl bg-slate-900/70 border border-slate-800">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
-            <span>Target Batch</span>
-            <span className="font-semibold text-slate-200">{user?.gradYear || '2026'}</span>
+      {/* Clean Placement Target Card Footer (No redundant buttons) */}
+      <div className="p-4 border-t border-slate-800/80">
+        <div className="p-3.5 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950/40 border border-slate-800 space-y-1.5 shadow-sm">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+              <Target className="w-3 h-3 text-indigo-400" /> Target Goal
+            </span>
+            <span className="text-[10px] font-semibold text-indigo-300 bg-indigo-950/80 px-2 py-0.5 rounded-md border border-indigo-800/40">
+              {user?.gradYear || '2026'} Grad
+            </span>
           </div>
-          <p className="text-xs font-semibold text-indigo-300 truncate">{user?.dreamCompany || 'Top Tech Companies'}</p>
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center justify-between text-xs text-slate-500 px-1">
-          <a
-            href="https://github.com/Hardik-Bhochiya/nextoffer"
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-1 hover:text-slate-300 transition-colors"
-          >
-            <ExternalLink className="w-3 h-3" /> GitHub
-          </a>
-          <button
-            onClick={logout}
-            className="flex items-center gap-1 hover:text-rose-400 transition-colors"
-          >
-            <LogOut className="w-3 h-3" /> Sign Out
-          </button>
+          <p className="text-xs font-bold text-slate-100 truncate">
+            {user?.dreamCompany || 'Top Tech Companies'}
+          </p>
+          <p className="text-[10px] text-slate-400 truncate">
+            {user?.targetRole || 'Software Engineer'}
+          </p>
         </div>
       </div>
     </aside>

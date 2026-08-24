@@ -48,6 +48,9 @@ const userSchema = new mongoose.Schema({
   completedTopics: [{
     type: String
   }],
+  enrolledRoadmaps: [{
+    type: String
+  }],
   socialLinks: {
     github: { type: String, default: '' },
     linkedin: { type: String, default: '' },

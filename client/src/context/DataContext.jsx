@@ -58,7 +58,6 @@ export const DataProvider = ({ children }) => {
     if (isAuthenticated) {
       refreshData();
     } else {
-      // Clear data on logout
       setDsaProblems([]);
       setRoadmaps([]);
       setProjects([]);
@@ -102,10 +101,28 @@ export const DataProvider = ({ children }) => {
   };
 
   // ---- Roadmap Actions ----
+  const toggleEnrollRoadmap = async (roadmapId) => {
+    setRoadmaps(prev => prev.map(r => {
+      if (r.id === roadmapId || r._id?.toString() === roadmapId) {
+        return { ...r, isEnrolled: !r.isEnrolled };
+      }
+      return r;
+    }));
+    try {
+      await api.post(`/roadmap/${roadmapId}/enroll`);
+      const anRes = await api.get('/analytics/dashboard').catch(() => null);
+      if (anRes?.data) setMetrics(anRes.data);
+    } catch (err) { handleApiError(err); }
+  };
+
   const toggleRoadmapTopic = async (roadmapId, topicId) => {
     setRoadmaps(prev => prev.map(r => {
       if (r.id === roadmapId || r._id?.toString() === roadmapId) {
-        return { ...r, topics: r.topics.map(t => (t.id === topicId || t._id?.toString() === topicId) ? { ...t, completed: !t.completed } : t) };
+        return {
+          ...r,
+          isEnrolled: true,
+          topics: r.topics.map(t => (t.id === topicId || t._id?.toString() === topicId) ? { ...t, completed: !t.completed } : t)
+        };
       }
       return r;
     }));
@@ -231,7 +248,7 @@ export const DataProvider = ({ children }) => {
       studyGoals, dailyTasks, metrics, loading,
       refreshData,
       updateDsaStatus, addDsaProblem, deleteDsaProblem,
-      toggleRoadmapTopic,
+      toggleEnrollRoadmap, toggleRoadmapTopic,
       addProject, updateProject, deleteProject,
       addNote, updateNote, deleteNote,
       addStudyGoal, updateStudyGoal, deleteStudyGoal,
