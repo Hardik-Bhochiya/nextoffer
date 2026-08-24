@@ -6,6 +6,7 @@ import { AppLayout } from './components/layout/AppLayout';
 
 import { Dashboard } from './pages/Dashboard';
 import { DsaTracker } from './pages/DsaTracker';
+import { CompanyArchives } from './pages/CompanyArchives';
 import { Roadmaps } from './pages/Roadmaps';
 import { Projects } from './pages/Projects';
 import { Notes } from './pages/Notes';
@@ -88,6 +89,7 @@ export function App() {
             >
               <Route path="/" element={<Dashboard />} />
               <Route path="/dsa" element={<DsaTracker />} />
+              <Route path="/company-archives" element={<CompanyArchives />} />
               <Route path="/roadmaps" element={<Roadmaps />} />
               <Route path="/projects" element={<Projects />} />
               <Route path="/notes" element={<Notes />} />

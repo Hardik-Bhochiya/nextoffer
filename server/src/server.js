@@ -14,6 +14,7 @@ import plannerRoutes from './routes/plannerRoutes.js';
 import searchRoutes from './routes/searchRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
+import companyRoutes from './routes/companyRoutes.js';
 
 dotenv.config();
 
@@ -25,7 +26,7 @@ app.use(cors({ origin: '*' }));
 app.use(express.json());
 app.use(morgan('dev'));
 
-// API Routes (matching Use Case & Class Diagrams)
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/dsa', dsaRoutes);
 app.use('/api/roadmap', roadmapRoutes);
@@ -36,6 +37,7 @@ app.use('/api/planner', plannerRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/company-archives', companyRoutes);
 
 // Health Check
 app.get('/api/health', (req, res) => {
@@ -55,7 +57,7 @@ app.get('/', (req, res) => {
   });
 });
 
-// Start Server immediately and connect to DB in background
+// Start Server
 app.listen(PORT, () => {
   console.log(`🚀 NextOffer API Server running on port ${PORT}`);
   console.log(`📡 Health Check: http://localhost:${PORT}/api/health`);
