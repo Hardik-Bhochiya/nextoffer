@@ -10,6 +10,7 @@ import { Roadmaps } from './pages/Roadmaps';
 import { Projects } from './pages/Projects';
 import { Notes } from './pages/Notes';
 import { RevisionPlanner } from './pages/RevisionPlanner';
+import { MockInterview } from './pages/MockInterview';
 import { ResumeScanner } from './pages/ResumeScanner';
 import { AiMentor } from './pages/AiMentor';
 import { Analytics } from './pages/Analytics';
@@ -91,6 +92,7 @@ export function App() {
               <Route path="/projects" element={<Projects />} />
               <Route path="/notes" element={<Notes />} />
               <Route path="/revision" element={<RevisionPlanner />} />
+              <Route path="/mock-interview" element={<MockInterview />} />
               <Route path="/resume" element={<ResumeScanner />} />
               <Route path="/ai-mentor" element={<AiMentor />} />
               <Route path="/analytics" element={<Analytics />} />

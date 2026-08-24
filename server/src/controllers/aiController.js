@@ -161,7 +161,6 @@ export const analyzeWeakness = async (req, res) => {
   }
 };
 
-// AI Resume ATS Scanner & Parser
 export const scanResume = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -174,7 +173,6 @@ export const scanResume = async (req, res) => {
     const user = await User.findById(userId);
     const role = (targetRole || user?.targetRole || 'Full Stack Engineer').toLowerCase();
 
-    // Core keyword definitions per role
     const keywordsByRole = {
       frontend: ['React', 'JavaScript', 'TypeScript', 'HTML5', 'CSS3', 'Tailwind CSS', 'Redux', 'REST APIs', 'Git', 'Webpack', 'Performance Optimization', 'Responsive Design', 'Jest'],
       backend: ['Node.js', 'Express', 'MongoDB', 'PostgreSQL', 'SQL', 'RESTful API', 'Docker', 'Redis', 'JWT', 'Microservices', 'System Design', 'Git', 'AWS'],
@@ -193,14 +191,10 @@ export const scanResume = async (req, res) => {
 
     const textLower = resumeText.toLowerCase();
 
-    // Check matched keywords
     const matchedKeywords = targetKeywords.filter(kw => textLower.includes(kw.toLowerCase()));
     const missingKeywords = targetKeywords.filter(kw => !textLower.includes(kw.toLowerCase()));
-
-    // Keyword Match Score (0-100)
     const keywordScore = Math.round((matchedKeywords.length / targetKeywords.length) * 100);
 
-    // Bullet Point Quality Analysis (XYZ Formula check)
     const lines = resumeText.split('\n').filter(l => l.trim().length > 20);
     const actionVerbs = ['engineered', 'developed', 'architected', 'implemented', 'optimized', 'reduced', 'increased', 'designed', 'built', 'created', 'accelerated', 'scaled'];
     const metricsPattern = /\b(\d+%|\d+ms|\d+k|\d+x|\$\d+|\d+\+)\b/i;
@@ -223,7 +217,6 @@ export const scanResume = async (req, res) => {
       }
     });
 
-    // Formatting Checks
     const formatChecks = [
       { check: 'Standard Contact Info (Email, Phone, LinkedIn/GitHub)', passed: textLower.includes('@') && (textLower.includes('github') || textLower.includes('linkedin')) },
       { check: 'Technical Skills Section Present', passed: textLower.includes('skills') || textLower.includes('technologies') || textLower.includes('tech stack') },
@@ -234,8 +227,6 @@ export const scanResume = async (req, res) => {
 
     const formatPassedCount = formatChecks.filter(c => c.passed).length;
     const formatScore = Math.round((formatPassedCount / formatChecks.length) * 100);
-
-    // Overall ATS Score (50% keywords, 30% formatting & structure, 20% impact bullets)
     const overallScore = Math.min(100, Math.max(10, Math.round((keywordScore * 0.50) + (formatScore * 0.30) + (Math.min(100, (strongBullets.length / Math.max(1, strongBullets.length + weakBullets.length)) * 100) * 0.20))));
 
     return res.json({
@@ -254,6 +245,106 @@ export const scanResume = async (req, res) => {
           : overallScore >= 60
           ? 'Good base, but adding missing key tech keywords and metrics will boost interview callbacks.'
           : 'Needs ATS Optimization. Include missing core skills and quantify your project impacts.'
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Mock Interview Question Bank & Generator
+const mockQuestionBank = [
+  {
+    id: 'mock-1',
+    round: 'Round 1: Coding & DSA',
+    topic: 'Sliding Window & Hash Maps',
+    title: 'Longest Substring with At Most K Distinct Characters',
+    difficulty: 'Medium',
+    company: 'Google / Amazon',
+    prompt: 'Given a string `s` and an integer `k`, return the length of the longest substring of `s` that contains at most `k` distinct characters.\n\n**Example 1:**\nInput: `s = "eceba", k = 2`\nOutput: `3` (Explanation: "ece")\n\n**Constraints:**\n- `1 <= s.length <= 5 * 10^4`\n- `0 <= k <= 50`',
+    starterCode: `function lengthOfLongestSubstringKDistinct(s, k) {\n  // Write your O(n) solution here\n  \n}`,
+    expectedComplexity: 'Time: O(n), Space: O(k)'
+  },
+  {
+    id: 'mock-2',
+    round: 'Round 2: System Design & Architecture',
+    topic: 'High Scale Distributed Caching',
+    title: 'Design a Distributed Rate Limiter & URL Shortener',
+    difficulty: 'Hard',
+    company: 'Uber / Atlassian',
+    prompt: 'Design a URL Shortener system (like bit.ly) that receives 100 million new URLs per month with a 10:1 Read-to-Write ratio.\n\n**Requirements:**\n1. Generate a unique 7-character Base62 hash for each long URL.\n2. Handle rate limiting per user IP address (100 req/min).\n3. Propose caching layer (Redis) & DB schema.\n4. Address cache stampede and high availability.',
+    starterCode: `// Document your System Architecture, API endpoints, Redis Schema, and DB structure:\n\n1. API Design:\n2. Storage Schema:\n3. Hashing Strategy (Base62 vs MD5):\n4. Caching & Rate Limiting:`,
+    expectedComplexity: 'Latency < 20ms, Availability 99.99%'
+  },
+  {
+    id: 'mock-3',
+    round: 'Round 3: Behavioral & Core CS',
+    topic: 'STAR Method & Engineering Trade-offs',
+    title: 'Handling Technical Debt & Production Incidents',
+    difficulty: 'Medium',
+    company: 'Microsoft / Stripe',
+    prompt: 'Describe a situation where you encountered an unexpected bug or system bottleneck in production or during project deployment.\n\n**Structure your answer using STAR:**\n- **Situation**: Context and impact of the issue.\n- **Task**: What was your responsibility?\n- **Action**: Step-by-step diagnostic and remediation.\n- **Result**: Measurable outcome and preventive measures implemented.',
+    starterCode: `// Write your STAR response:\n\nSituation:\n\nTask:\n\nAction:\n\nResult:`,
+    expectedComplexity: 'Clear metrics, ownership, structured communication'
+  }
+];
+
+export const getMockQuestion = async (req, res) => {
+  try {
+    const { roundId } = req.query;
+    let q = mockQuestionBank[0];
+    if (roundId) {
+      q = mockQuestionBank.find(m => m.id === roundId) || mockQuestionBank[0];
+    }
+    return res.json({ success: true, data: q, allRounds: mockQuestionBank });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const submitMockAnswer = async (req, res) => {
+  try {
+    const { questionId, answerCode, timeSpentSeconds } = req.body;
+    if (!answerCode || answerCode.trim().length < 15) {
+      return res.status(400).json({ success: false, message: 'Please provide code/answer content' });
+    }
+
+    const question = mockQuestionBank.find(q => q.id === questionId) || mockQuestionBank[0];
+    const code = answerCode.trim();
+
+    // Scoring heuristics
+    let correctnessScore = 75;
+    let feedback = [];
+    let edgeCases = [];
+
+    if (code.includes('Map') || code.includes('Set') || code.includes('while') || code.includes('for')) {
+      correctnessScore += 15;
+      feedback.push('Good use of optimal data structure loops and sliding pointers.');
+    } else {
+      correctnessScore -= 10;
+      feedback.push('Consider using HashMaps/Two Pointers to achieve O(n) linear complexity.');
+    }
+
+    if (code.includes('if') && (code.includes('== 0') || code.includes('null') || code.includes('length'))) {
+      edgeCases.push('Handled empty input edge cases.');
+    } else {
+      edgeCases.push('Remember to check edge case when k = 0 or string is empty.');
+    }
+
+    const finalScore = Math.min(100, Math.max(30, correctnessScore));
+
+    return res.json({
+      success: true,
+      data: {
+        score: finalScore,
+        round: question.round,
+        feedback,
+        edgeCases,
+        expectedComplexity: question.expectedComplexity,
+        verdict: finalScore >= 80 ? 'Strong Hire' : finalScore >= 60 ? 'Lean Hire' : 'Needs Practice',
+        summary: finalScore >= 80 
+          ? 'Great job! Your solution demonstrates solid algorithmic structure and time complexity awareness.'
+          : 'Good attempt. Focus on covering edge cases and optimizing helper data structures.'
       }
     });
   } catch (error) {
