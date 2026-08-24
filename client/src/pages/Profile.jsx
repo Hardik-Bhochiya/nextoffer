@@ -5,8 +5,8 @@ import {
   Briefcase,
   Building,
   GraduationCap,
-  Github,
-  Linkedin,
+  GitBranch,
+  Globe,
   Code2,
   Sparkles,
   Save,
@@ -242,7 +242,7 @@ export const Profile = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-400 mb-1.5 flex items-center gap-1">
-                <Github className="w-3.5 h-3.5 text-slate-400" /> GitHub URL
+                <GitBranch className="w-3.5 h-3.5 text-slate-400" /> GitHub URL
               </label>
               <input
                 type="url"
@@ -255,7 +255,7 @@ export const Profile = () => {
 
             <div>
               <label className="block text-xs font-semibold text-slate-400 mb-1.5 flex items-center gap-1">
-                <Linkedin className="w-3.5 h-3.5 text-sky-400" /> LinkedIn URL
+                <Globe className="w-3.5 h-3.5 text-sky-400" /> LinkedIn URL
               </label>
               <input
                 type="url"
