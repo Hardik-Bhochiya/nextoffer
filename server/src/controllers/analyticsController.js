@@ -25,13 +25,18 @@ export const calculateRoleBasedReadiness = (targetRole = '', dsaProblems = [], u
   // Count by category
   const frontendTopics = defaultRoadmaps.find(r => r.id === 'frontend')?.topics || [];
   const backendTopics = defaultRoadmaps.find(r => r.id === 'backend')?.topics || [];
-  const dbTopics = defaultRoadmaps.find(r => r.id === 'database')?.topics || [];
+  const dsaMapTopics = defaultRoadmaps.find(r => r.id === 'dsa-mastery')?.topics || [];
+  const sysDesignTopics = defaultRoadmaps.find(r => r.id === 'system-design')?.topics || [];
+  const coreCsTopics = defaultRoadmaps.find(r => r.id === 'core-cs')?.topics || [];
   const devopsTopics = defaultRoadmaps.find(r => r.id === 'devops')?.topics || [];
+  const aiTopics = defaultRoadmaps.find(r => r.id === 'ai-ml')?.topics || [];
 
   const feCompleted = frontendTopics.filter(t => completedSet.has(t.id)).length;
   const beCompleted = backendTopics.filter(t => completedSet.has(t.id)).length;
-  const dbCompleted = dbTopics.filter(t => completedSet.has(t.id)).length;
+  const sysCompleted = sysDesignTopics.filter(t => completedSet.has(t.id)).length;
+  const csCompleted = coreCsTopics.filter(t => completedSet.has(t.id)).length;
   const doCompleted = devopsTopics.filter(t => completedSet.has(t.id)).length;
+  const aiCompleted = aiTopics.filter(t => completedSet.has(t.id)).length;
 
   const totalAllTopics = defaultRoadmaps.reduce((acc, r) => acc + r.topics.length, 0);
   const totalCompletedTopics = completedSet.size;
@@ -61,28 +66,42 @@ export const calculateRoleBasedReadiness = (targetRole = '', dsaProblems = [], u
     };
   } else if (role.includes('backend') || role.includes('node') || role.includes('java') || role.includes('api') || role.includes('python')) {
     // Backend-heavy weighting
-    const beDbTotal = backendTopics.length + dbTopics.length;
-    const beDbCompleted = beCompleted + dbCompleted;
-    const beDbProgress = beDbTotal > 0 ? Math.round((beDbCompleted / beDbTotal) * 100) : 0;
-    finalScore = (beDbProgress * 0.40) + (dsaProgress * 0.35) + (projectScore * 0.25);
+    const beSysTotal = backendTopics.length + sysDesignTopics.length;
+    const beSysCompleted = beCompleted + sysCompleted;
+    const beSysProgress = beSysTotal > 0 ? Math.round((beSysCompleted / beSysTotal) * 100) : 0;
+    finalScore = (beSysProgress * 0.40) + (dsaProgress * 0.35) + (projectScore * 0.25);
     weightsExplanation = {
       roleCategory: 'Backend Engineer',
       breakdown: [
-        { label: 'Backend & DB Roadmap (40%)', score: beDbProgress, weight: '40%' },
+        { label: 'Backend & System Design (40%)', score: beSysProgress, weight: '40%' },
         { label: 'DSA & Algorithms (35%)', score: dsaProgress, weight: '35%' },
         { label: 'Backend Projects (25%)', score: projectScore, weight: '25%' }
       ]
     };
-  } else if (role.includes('data') || role.includes('devops') || role.includes('cloud') || role.includes('sys')) {
-    // DevOps / Data / System
-    const infraTotal = dbTopics.length + devopsTopics.length;
-    const infraCompleted = dbCompleted + doCompleted;
+  } else if (role.includes('ai') || role.includes('machine') || role.includes('ml') || role.includes('data')) {
+    // AI / ML / Data
+    const aiTotal = aiTopics.length + coreCsTopics.length;
+    const aiDone = aiCompleted + csCompleted;
+    const aiProgress = aiTotal > 0 ? Math.round((aiDone / aiTotal) * 100) : 0;
+    finalScore = (aiProgress * 0.40) + (projectScore * 0.30) + (dsaProgress * 0.30);
+    weightsExplanation = {
+      roleCategory: 'AI & Machine Learning Engineer',
+      breakdown: [
+        { label: 'AI/ML & Math Track (40%)', score: aiProgress, weight: '40%' },
+        { label: 'ML Projects & Papers (30%)', score: projectScore, weight: '30%' },
+        { label: 'DSA & Coding (30%)', score: dsaProgress, weight: '30%' }
+      ]
+    };
+  } else if (role.includes('devops') || role.includes('cloud') || role.includes('sys') || role.includes('infra')) {
+    // DevOps / Cloud / System
+    const infraTotal = devopsTopics.length + sysDesignTopics.length;
+    const infraCompleted = doCompleted + sysCompleted;
     const infraProgress = infraTotal > 0 ? Math.round((infraCompleted / infraTotal) * 100) : 0;
     finalScore = (infraProgress * 0.45) + (projectScore * 0.30) + (dsaProgress * 0.25);
     weightsExplanation = {
       roleCategory: 'DevOps & Cloud Engineer',
       breakdown: [
-        { label: 'Infrastructure & DB Roadmap (45%)', score: infraProgress, weight: '45%' },
+        { label: 'Infrastructure & Cloud Roadmap (45%)', score: infraProgress, weight: '45%' },
         { label: 'Projects & Implementations (30%)', score: projectScore, weight: '30%' },
         { label: 'DSA & Scripting (25%)', score: dsaProgress, weight: '25%' }
       ]
@@ -94,7 +113,7 @@ export const calculateRoleBasedReadiness = (targetRole = '', dsaProblems = [], u
       roleCategory: 'Full Stack SDE-1',
       breakdown: [
         { label: 'DSA Mastery (35%)', score: dsaProgress, weight: '35%' },
-        { label: 'Full-Stack Roadmaps (35%)', score: allRoadmapsProgress, weight: '35%' },
+        { label: 'Expert Roadmaps (35%)', score: allRoadmapsProgress, weight: '35%' },
         { label: 'Projects & Milestones (20%)', score: projectScore, weight: '20%' },
         { label: 'Core CS & Notes (10%)', score: noteScore, weight: '10%' }
       ]
