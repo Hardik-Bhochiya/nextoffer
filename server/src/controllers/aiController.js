@@ -12,7 +12,6 @@ export const askMentor = async (req, res) => {
     const user = await User.findById(userId);
     const geminiKey = process.env.GEMINI_API_KEY;
 
-    // If GEMINI_API_KEY is configured, call Gemini API
     if (geminiKey) {
       try {
         const response = await fetch(
@@ -48,11 +47,10 @@ User question: ${prompt}`
           }
         }
       } catch (geminiError) {
-        console.warn('Gemini API call failed, falling back to built-in mentor heuristics:', geminiError.message);
+        console.warn('Gemini API call failed, using built-in mentor heuristics:', geminiError.message);
       }
     }
 
-    // High quality built-in contextual fallback response
     const lowerPrompt = prompt.toLowerCase();
     let responseText = '';
 
@@ -104,16 +102,6 @@ Target Company: **${user?.dreamCompany || 'Top Tech Companies'}**
 3. How do you handle distributed race conditions across multiple server instances?
 
 *(Tip: In high-scale interviews, Sliding Window Counter stored in Redis with atomic Lua scripts is the industry standard!)*`;
-    } else if (lowerPrompt.includes('complexity') || lowerPrompt.includes('big o')) {
-      responseText = `### ⏱️ Time & Space Complexity Master Reference
-
-- **Two Pointers / Sliding Window**: Typically **O(n)** time and **O(1)** or **O(k)** space.
-- **Binary Search**: **O(log n)** time, **O(1)** space.
-- **Tree Traversals (DFS/BFS)**: **O(V)** time, **O(h)** recursion stack space (where h = tree height).
-- **Graph BFS / DFS**: **O(V + E)** time, **O(V)** queue/visited set space.
-- **Sorting (MergeSort/HeapSort)**: **O(n log n)** time.
-
-*Pro-tip for interviews:* Always state your brute-force complexity first before optimizing to the optimal O(n) or O(n log n) solution.`;
     } else {
       responseText = `### 🤖 NextOffer AI Placement Mentor
 
@@ -145,7 +133,6 @@ export const analyzeWeakness = async (req, res) => {
     const problems = await DsaProblem.find({ userId });
     const unsolvedOrRevision = problems.filter(p => p.status === 'Needs Revision' || p.status === 'Attempted');
     
-    // Group weak topics
     const weakTopicsMap = {};
     unsolvedOrRevision.forEach(p => {
       weakTopicsMap[p.topic] = (weakTopicsMap[p.topic] || 0) + 1;
@@ -167,6 +154,106 @@ export const analyzeWeakness = async (req, res) => {
         summary: recommendations.length > 0 
           ? `You have ${unsolvedOrRevision.length} problems requiring revision, primarily in ${recommendations[0]?.topic || 'DSA'}.`
           : (problems.length === 0 ? 'Start by adding your solved & attempted DSA questions to unlock tailored AI weakness analysis!' : 'Great job! All your logged DSA topics are solved and up to date.')
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// AI Resume ATS Scanner & Parser
+export const scanResume = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const { resumeText, jobDescription, targetRole } = req.body;
+
+    if (!resumeText || resumeText.trim().length < 50) {
+      return res.status(400).json({ success: false, message: 'Please provide valid resume text (at least 50 characters)' });
+    }
+
+    const user = await User.findById(userId);
+    const role = (targetRole || user?.targetRole || 'Full Stack Engineer').toLowerCase();
+
+    // Core keyword definitions per role
+    const keywordsByRole = {
+      frontend: ['React', 'JavaScript', 'TypeScript', 'HTML5', 'CSS3', 'Tailwind CSS', 'Redux', 'REST APIs', 'Git', 'Webpack', 'Performance Optimization', 'Responsive Design', 'Jest'],
+      backend: ['Node.js', 'Express', 'MongoDB', 'PostgreSQL', 'SQL', 'RESTful API', 'Docker', 'Redis', 'JWT', 'Microservices', 'System Design', 'Git', 'AWS'],
+      fullstack: ['React', 'Node.js', 'Express', 'MongoDB', 'TypeScript', 'REST APIs', 'Docker', 'Git', 'SQL', 'System Design', 'CI/CD', 'Tailwind', 'Redux'],
+      devops: ['Docker', 'Kubernetes', 'CI/CD', 'GitHub Actions', 'AWS', 'Linux', 'Terraform', 'Monitoring', 'Bash', 'Git', 'Python', 'Nginx']
+    };
+
+    let targetKeywords = keywordsByRole.fullstack;
+    if (role.includes('frontend') || role.includes('ui') || role.includes('react')) {
+      targetKeywords = keywordsByRole.frontend;
+    } else if (role.includes('backend') || role.includes('node') || role.includes('java')) {
+      targetKeywords = keywordsByRole.backend;
+    } else if (role.includes('devops') || role.includes('cloud')) {
+      targetKeywords = keywordsByRole.devops;
+    }
+
+    const textLower = resumeText.toLowerCase();
+
+    // Check matched keywords
+    const matchedKeywords = targetKeywords.filter(kw => textLower.includes(kw.toLowerCase()));
+    const missingKeywords = targetKeywords.filter(kw => !textLower.includes(kw.toLowerCase()));
+
+    // Keyword Match Score (0-100)
+    const keywordScore = Math.round((matchedKeywords.length / targetKeywords.length) * 100);
+
+    // Bullet Point Quality Analysis (XYZ Formula check)
+    const lines = resumeText.split('\n').filter(l => l.trim().length > 20);
+    const actionVerbs = ['engineered', 'developed', 'architected', 'implemented', 'optimized', 'reduced', 'increased', 'designed', 'built', 'created', 'accelerated', 'scaled'];
+    const metricsPattern = /\b(\d+%|\d+ms|\d+k|\d+x|\$\d+|\d+\+)\b/i;
+
+    let strongBullets = [];
+    let weakBullets = [];
+
+    lines.forEach(line => {
+      const trimmed = line.trim();
+      const hasActionVerb = actionVerbs.some(v => trimmed.toLowerCase().startsWith(v) || trimmed.toLowerCase().includes(` ${v} `));
+      const hasMetric = metricsPattern.test(trimmed);
+
+      if (hasActionVerb && hasMetric) {
+        strongBullets.push(trimmed);
+      } else if (trimmed.length > 30 && (trimmed.startsWith('-') || trimmed.startsWith('•') || trimmed.startsWith('*'))) {
+        weakBullets.push({
+          original: trimmed,
+          suggestion: `Strengthen with Google XYZ formula: "Accomplished [X] as measured by [Y], by doing [Z]". Add measurable metrics.`
+        });
+      }
+    });
+
+    // Formatting Checks
+    const formatChecks = [
+      { check: 'Standard Contact Info (Email, Phone, LinkedIn/GitHub)', passed: textLower.includes('@') && (textLower.includes('github') || textLower.includes('linkedin')) },
+      { check: 'Technical Skills Section Present', passed: textLower.includes('skills') || textLower.includes('technologies') || textLower.includes('tech stack') },
+      { check: 'Projects Section with Details', passed: textLower.includes('project') || textLower.includes('experience') },
+      { check: 'Quantified Metrics & Achievements', passed: metricsPattern.test(resumeText) },
+      { check: 'ATS Friendly Word Count (350 - 900 words)', passed: resumeText.split(/\s+/).length >= 200 && resumeText.split(/\s+/).length <= 1200 }
+    ];
+
+    const formatPassedCount = formatChecks.filter(c => c.passed).length;
+    const formatScore = Math.round((formatPassedCount / formatChecks.length) * 100);
+
+    // Overall ATS Score (50% keywords, 30% formatting & structure, 20% impact bullets)
+    const overallScore = Math.min(100, Math.max(10, Math.round((keywordScore * 0.50) + (formatScore * 0.30) + (Math.min(100, (strongBullets.length / Math.max(1, strongBullets.length + weakBullets.length)) * 100) * 0.20))));
+
+    return res.json({
+      success: true,
+      data: {
+        overallScore,
+        targetRole: user?.targetRole || 'Full Stack Engineer',
+        keywordScore,
+        matchedKeywords,
+        missingKeywords,
+        formatChecks,
+        strongBulletsCount: strongBullets.length,
+        weakBullets: weakBullets.slice(0, 3),
+        summary: overallScore >= 80 
+          ? 'Excellent ATS Compatibility! Your resume strongly matches industry keywords.'
+          : overallScore >= 60
+          ? 'Good base, but adding missing key tech keywords and metrics will boost interview callbacks.'
+          : 'Needs ATS Optimization. Include missing core skills and quantify your project impacts.'
       }
     });
   } catch (error) {

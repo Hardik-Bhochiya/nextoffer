@@ -9,6 +9,7 @@ import {
   CalendarCheck,
   Bot,
   BarChart3,
+  FileText,
   User,
   Rocket,
   LogOut,
@@ -26,7 +27,8 @@ export const Sidebar = () => {
     { to: '/projects', icon: FolderGit2, label: 'Projects' },
     { to: '/notes', icon: BookOpen, label: 'Smart Notes' },
     { to: '/revision', icon: CalendarCheck, label: 'Revision Planner' },
-    { to: '/ai-mentor', icon: Bot, label: 'AI Study Mentor', highlight: true },
+    { to: '/resume', icon: FileText, label: 'ATS Resume Scanner', highlight: true },
+    { to: '/ai-mentor', icon: Bot, label: 'AI Study Mentor' },
     { to: '/analytics', icon: BarChart3, label: 'Analytics' },
     { to: '/profile', icon: User, label: 'Profile & Goals' },
   ];
@@ -48,7 +50,7 @@ export const Sidebar = () => {
         </div>
 
         {/* Navigation links */}
-        <nav className="p-4 space-y-1.5">
+        <nav className="p-4 space-y-1.5 overflow-y-auto max-h-[calc(100vh-140px)]">
           <p className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
             Core Modules
           </p>
