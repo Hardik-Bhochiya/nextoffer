@@ -7,18 +7,14 @@ import {
   Briefcase,
   Building,
   GraduationCap,
-  GitBranch,
   Globe,
   Code2,
   Sparkles,
   Save,
   CheckCircle2,
-  Flame,
-  Award,
   RefreshCw,
   TrendingUp,
   Target,
-  ArrowRight,
   PlusCircle,
   Layers
 } from 'lucide-react';
@@ -183,7 +179,7 @@ export const Profile = () => {
       )}
 
       {/* ============================================================ */}
-      {/* PREDICTIVE PLACEMENT PROBABILITY & ROLE ECOSYSTEM */}
+      {/* 1. PREDICTIVE PLACEMENT PROBABILITY & ROLE RECOMMENDATIONS */}
       {/* ============================================================ */}
       <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 md:p-8 space-y-6 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
@@ -277,7 +273,9 @@ export const Profile = () => {
         </div>
       </div>
 
-      {/* Live Coding Profiles Telemetry Banner */}
+      {/* ============================================================ */}
+      {/* 2. LIVE CODING TELEMETRY (LEETCODE + GITHUB) */}
+      {/* ============================================================ */}
       <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6 space-y-4 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
@@ -332,9 +330,11 @@ export const Profile = () => {
         </div>
       </div>
 
-      {/* Profile Form */}
+      {/* ============================================================ */}
+      {/* 3. PROFILE & ACADEMIC SETTINGS FORM */}
+      {/* ============================================================ */}
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Placement Targets */}
+        {/* Placement Career Targets */}
         <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6 space-y-4 shadow-sm">
           <h2 className="text-base font-bold text-white flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-indigo-400" />

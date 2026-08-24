@@ -1,24 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import {
   Flame,
-  Sparkles,
   Target,
   Search,
   User,
   X,
   Code2,
-  GitBranch,
-  FolderGit2,
   BookOpen,
   LogOut,
   ChevronDown,
-  Settings,
-  FileText,
-  Building
+  Settings
 } from 'lucide-react';
 
 export const Navbar = () => {
@@ -183,7 +178,7 @@ export const Navbar = () => {
             type="button"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             className="flex items-center gap-2.5 p-1 rounded-2xl hover:bg-slate-900 border border-transparent hover:border-slate-800 transition-all cursor-pointer focus:outline-none"
-            title="Account & Placement Profile"
+            title="Profile & Settings"
           >
             {/* User Avatar Circle */}
             <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center font-bold text-sm text-white shadow-lg shadow-indigo-600/20 border border-white/10">
@@ -203,14 +198,14 @@ export const Navbar = () => {
 
           {/* Profile Dropdown Menu */}
           {isDropdownOpen && (
-            <div className="absolute right-0 top-full mt-2 w-64 bg-slate-900/95 backdrop-blur-2xl border border-slate-800 rounded-3xl shadow-2xl p-2 z-50 animate-fadeIn space-y-1">
+            <div className="absolute right-0 top-full mt-2 w-60 bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-2 z-50 animate-fadeIn space-y-1">
               {/* Header Info */}
               <div className="p-3 border-b border-slate-800/80">
                 <p className="text-xs font-bold text-white truncate">{user?.name || 'Developer'}</p>
                 <p className="text-[11px] text-slate-400 truncate">{user?.email}</p>
                 <div className="flex items-center gap-1.5 mt-2">
                   <span className="text-[10px] px-2 py-0.5 rounded-md bg-indigo-950 text-indigo-300 border border-indigo-800/40 font-medium truncate">
-                    {user?.targetRole || 'Full Stack SDE'}
+                    {user?.targetRole || 'Software Engineer'}
                   </span>
                 </div>
               </div>
@@ -226,31 +221,7 @@ export const Navbar = () => {
                   className="w-full px-3 py-2 rounded-xl text-left text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/80 flex items-center gap-2.5 transition-colors"
                 >
                   <Settings className="w-4 h-4 text-indigo-400" />
-                  <span>Profile & Career Goals</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsDropdownOpen(false);
-                    navigate('/resume');
-                  }}
-                  className="w-full px-3 py-2 rounded-xl text-left text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/80 flex items-center gap-2.5 transition-colors"
-                >
-                  <FileText className="w-4 h-4 text-cyan-400" />
-                  <span>ATS Resume Scanner</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsDropdownOpen(false);
-                    navigate('/company-archives');
-                  }}
-                  className="w-full px-3 py-2 rounded-xl text-left text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/80 flex items-center gap-2.5 transition-colors"
-                >
-                  <Building className="w-4 h-4 text-amber-400" />
-                  <span>Company Archives</span>
+                  <span>My Profile & Settings</span>
                 </button>
               </div>
 
