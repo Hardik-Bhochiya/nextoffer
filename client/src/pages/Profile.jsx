@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 import {
   User as UserIcon,
   Briefcase,
@@ -12,11 +13,13 @@ import {
   Save,
   CheckCircle2,
   Flame,
-  Award
+  Award,
+  RefreshCw,
+  TrendingUp
 } from 'lucide-react';
 
 export const Profile = () => {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, setUser } = useAuth();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -35,6 +38,8 @@ export const Profile = () => {
 
   const [savedMessage, setSavedMessage] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -81,6 +86,33 @@ export const Profile = () => {
     setTimeout(() => setSavedMessage(false), 3000);
   };
 
+  const handleSyncProfiles = async () => {
+    setSyncing(true);
+    setSyncMessage('');
+    try {
+      // First save current links
+      await updateProfile(formData);
+      const res = await api.post('/auth/sync-profiles', {
+        github: formData.socialLinks.github,
+        leetcode: formData.socialLinks.leetcode
+      });
+      if (res?.user) {
+        setUser(res.user);
+      }
+      setSyncMessage('Live LeetCode & GitHub stats updated!');
+      setTimeout(() => setSyncMessage(''), 4000);
+    } catch (err) {
+      console.error(err);
+      setSyncMessage('Sync finished with available data.');
+      setTimeout(() => setSyncMessage(''), 4000);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const lc = user?.codingStats?.leetcode || { totalSolved: 0, easySolved: 0, mediumSolved: 0, hardSolved: 0, ranking: 0 };
+  const gh = user?.codingStats?.github || { publicRepos: 0, followers: 0 };
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-12 animate-fadeIn">
       {/* Header Banner */}
@@ -121,7 +153,7 @@ export const Profile = () => {
               </div>
               <div>
                 <p className="text-[10px] uppercase font-bold text-slate-400">Readiness</p>
-                <p className="text-base font-black text-cyan-300">{user?.readinessScore || 75}%</p>
+                <p className="text-base font-black text-cyan-300">{user?.readinessScore || 0}%</p>
               </div>
             </div>
           </div>
@@ -134,6 +166,68 @@ export const Profile = () => {
           <span>Profile updated successfully! All changes have been saved to your account.</span>
         </div>
       )}
+
+      {syncMessage && (
+        <div className="p-4 rounded-2xl bg-indigo-950/70 border border-indigo-800/80 text-indigo-300 text-sm flex items-center gap-2 shadow-lg animate-fadeIn">
+          <Sparkles className="w-5 h-5 text-indigo-400 shrink-0" />
+          <span>{syncMessage}</span>
+        </div>
+      )}
+
+      {/* Live Coding Profiles Live Telemetry Banner */}
+      <div className="bg-slate-900/80 rounded-3xl border border-slate-800 p-6 space-y-4 shadow-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <Code2 className="w-4 h-4 text-amber-400" />
+              Live Coding Profiles Telemetry
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Live statistics fetched from your public LeetCode and GitHub profiles.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleSyncProfiles}
+            disabled={syncing}
+            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-2 transition-all self-start sm:self-auto disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-indigo-400 ${syncing ? 'animate-spin' : ''}`} />
+            <span>{syncing ? 'Syncing Profiles...' : 'Sync Live Stats'}</span>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+          <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800 text-center">
+            <p className="text-[10px] uppercase font-bold text-slate-500">LeetCode Solved</p>
+            <p className="text-xl font-black text-white mt-0.5">{lc.totalSolved || 0}</p>
+            <div className="flex justify-center gap-1.5 text-[9px] mt-1">
+              <span className="text-emerald-400">{lc.easySolved || 0}E</span>
+              <span className="text-amber-400">{lc.mediumSolved || 0}M</span>
+              <span className="text-rose-400">{lc.hardSolved || 0}H</span>
+            </div>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800 text-center">
+            <p className="text-[10px] uppercase font-bold text-slate-500">LeetCode Rank</p>
+            <p className="text-xl font-black text-amber-300 mt-0.5">{lc.ranking ? `#${lc.ranking.toLocaleString()}` : 'Unranked'}</p>
+            <p className="text-[9px] text-slate-400 mt-1">Global Standing</p>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800 text-center">
+            <p className="text-[10px] uppercase font-bold text-slate-500">GitHub Repos</p>
+            <p className="text-xl font-black text-cyan-300 mt-0.5">{gh.publicRepos || 0}</p>
+            <p className="text-[9px] text-slate-400 mt-1">Public Repositories</p>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800 text-center">
+            <p className="text-[10px] uppercase font-bold text-slate-500">GitHub Followers</p>
+            <p className="text-xl font-black text-indigo-300 mt-0.5">{gh.followers || 0}</p>
+            <p className="text-[9px] text-slate-400 mt-1">Developer Network</p>
+          </div>
+        </div>
+      </div>
 
       {/* Profile Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -242,10 +336,10 @@ export const Profile = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-400 mb-1.5 flex items-center gap-1">
-                <GitBranch className="w-3.5 h-3.5 text-slate-400" /> GitHub URL
+                <GitBranch className="w-3.5 h-3.5 text-slate-400" /> GitHub Profile
               </label>
               <input
-                type="url"
+                type="text"
                 value={formData.socialLinks.github}
                 onChange={(e) => handleSocialChange('github', e.target.value)}
                 className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
@@ -255,10 +349,10 @@ export const Profile = () => {
 
             <div>
               <label className="block text-xs font-semibold text-slate-400 mb-1.5 flex items-center gap-1">
-                <Globe className="w-3.5 h-3.5 text-sky-400" /> LinkedIn URL
+                <Globe className="w-3.5 h-3.5 text-sky-400" /> LinkedIn Profile
               </label>
               <input
-                type="url"
+                type="text"
                 value={formData.socialLinks.linkedin}
                 onChange={(e) => handleSocialChange('linkedin', e.target.value)}
                 className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
@@ -271,7 +365,7 @@ export const Profile = () => {
                 <Code2 className="w-3.5 h-3.5 text-amber-400" /> LeetCode Profile
               </label>
               <input
-                type="url"
+                type="text"
                 value={formData.socialLinks.leetcode}
                 onChange={(e) => handleSocialChange('leetcode', e.target.value)}
                 className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"

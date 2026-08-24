@@ -52,6 +52,22 @@ const userSchema = new mongoose.Schema({
     github: { type: String, default: '' },
     linkedin: { type: String, default: '' },
     leetcode: { type: String, default: '' }
+  },
+  codingStats: {
+    leetcode: {
+      totalSolved: { type: Number, default: 0 },
+      easySolved: { type: Number, default: 0 },
+      mediumSolved: { type: Number, default: 0 },
+      hardSolved: { type: Number, default: 0 },
+      ranking: { type: Number, default: 0 },
+      acceptanceRate: { type: Number, default: 0 }
+    },
+    github: {
+      publicRepos: { type: Number, default: 0 },
+      followers: { type: Number, default: 0 },
+      avatarUrl: { type: String, default: '' }
+    },
+    lastSynced: { type: Date, default: null }
   }
 }, {
   timestamps: true

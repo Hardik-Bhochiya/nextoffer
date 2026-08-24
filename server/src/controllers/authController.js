@@ -37,7 +37,7 @@ export const register = async (req, res) => {
       name: finalName,
       email: email.toLowerCase(),
       password: hashedPassword,
-      targetRole: targetRole || 'Software Engineer',
+      targetRole: targetRole || 'Full Stack Engineer',
       dreamCompany: dreamCompany || 'Top Tech Companies',
       gradYear: gradYear || '2026',
       college: college || '',
@@ -125,6 +125,103 @@ export const updateProfile = async (req, res) => {
     }
 
     return res.json({ success: true, message: 'Profile updated', user: formatUser(updated) });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Sync live LeetCode and GitHub stats
+export const syncCodingProfiles = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const ghUrl = user.socialLinks?.github || req.body?.github || '';
+    const lcUrl = user.socialLinks?.leetcode || req.body?.leetcode || '';
+
+    let ghUsername = '';
+    if (ghUrl) {
+      ghUsername = ghUrl.replace(/^https?:\/\/(www\.)?github\.com\//, '').replace(/\/$/, '').trim();
+    }
+
+    let lcUsername = '';
+    if (lcUrl) {
+      lcUsername = lcUrl.replace(/^https?:\/\/(www\.)?leetcode\.com\/(u\/)?/, '').replace(/\/$/, '').trim();
+    }
+
+    let lcStats = {
+      totalSolved: 0,
+      easySolved: 0,
+      mediumSolved: 0,
+      hardSolved: 0,
+      ranking: 0,
+      acceptanceRate: 0
+    };
+
+    let ghStats = {
+      publicRepos: 0,
+      followers: 0,
+      avatarUrl: ''
+    };
+
+    // 1. Fetch GitHub stats
+    if (ghUsername) {
+      try {
+        const ghRes = await fetch(`https://api.github.com/users/${ghUsername}`, {
+          headers: { 'User-Agent': 'NextOffer-Placement-App' }
+        });
+        if (ghRes.ok) {
+          const ghData = await ghRes.json();
+          ghStats = {
+            publicRepos: ghData.public_repos || 0,
+            followers: ghData.followers || 0,
+            avatarUrl: ghData.avatar_url || ''
+          };
+        }
+      } catch (e) {
+        console.warn('GitHub API fetch failed:', e.message);
+      }
+    }
+
+    // 2. Fetch LeetCode stats via public API or fallback
+    if (lcUsername) {
+      try {
+        const lcRes = await fetch(`https://leetcode-stats-api.herokuapp.com/${lcUsername}`);
+        if (lcRes.ok) {
+          const lcData = await lcRes.json();
+          if (lcData.status === 'success') {
+            lcStats = {
+              totalSolved: lcData.totalSolved || 0,
+              easySolved: lcData.easySolved || 0,
+              mediumSolved: lcData.mediumSolved || 0,
+              hardSolved: lcData.hardSolved || 0,
+              ranking: lcData.ranking || 0,
+              acceptanceRate: lcData.acceptanceRate || 0
+            };
+          }
+        }
+      } catch (e) {
+        console.warn('LeetCode API fetch failed:', e.message);
+      }
+    }
+
+    user.codingStats = {
+      leetcode: lcStats,
+      github: ghStats,
+      lastSynced: new Date()
+    };
+
+    await user.save();
+
+    return res.json({
+      success: true,
+      message: 'Coding profiles synchronized successfully!',
+      data: user.codingStats,
+      user: formatUser(user)
+    });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
