@@ -9,6 +9,7 @@ import {
   CalendarCheck,
   Bot,
   BarChart3,
+  User,
   Rocket,
   LogOut,
   ExternalLink
@@ -16,7 +17,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 
 export const Sidebar = () => {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
 
   const navItems = [
     { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -27,6 +28,7 @@ export const Sidebar = () => {
     { to: '/revision', icon: CalendarCheck, label: 'Revision Planner' },
     { to: '/ai-mentor', icon: Bot, label: 'AI Study Mentor', highlight: true },
     { to: '/analytics', icon: BarChart3, label: 'Analytics' },
+    { to: '/profile', icon: User, label: 'Profile & Goals' },
   ];
 
   return (
@@ -83,9 +85,9 @@ export const Sidebar = () => {
         <div className="p-3 rounded-xl bg-slate-900/70 border border-slate-800">
           <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
             <span>Target Batch</span>
-            <span className="font-semibold text-slate-200">2026 Grad</span>
+            <span className="font-semibold text-slate-200">{user?.gradYear || '2026'}</span>
           </div>
-          <p className="text-xs font-semibold text-indigo-300 truncate">Google & Tier-1 Tech</p>
+          <p className="text-xs font-semibold text-indigo-300 truncate">{user?.dreamCompany || 'Top Tech Companies'}</p>
         </div>
 
         {/* Actions */}
@@ -96,13 +98,13 @@ export const Sidebar = () => {
             rel="noreferrer"
             className="flex items-center gap-1 hover:text-slate-300 transition-colors"
           >
-            <ExternalLink className="w-3 h-3" /> GitHub Repo
+            <ExternalLink className="w-3 h-3" /> GitHub
           </a>
           <button
             onClick={logout}
             className="flex items-center gap-1 hover:text-rose-400 transition-colors"
           >
-            <LogOut className="w-3 h-3" /> Reset
+            <LogOut className="w-3 h-3" /> Sign Out
           </button>
         </div>
       </div>

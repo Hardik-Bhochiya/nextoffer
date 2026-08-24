@@ -10,7 +10,8 @@ import {
   Edit3,
   X,
   FileCode,
-  Sparkles
+  Sparkles,
+  Download
 } from 'lucide-react';
 
 export const Notes = () => {
@@ -58,23 +59,40 @@ export const Notes = () => {
 
     const tagsArray = editTags.split(',').map(t => t.trim()).filter(Boolean);
 
-    if (selectedNote && selectedNote.id) {
+    if (selectedNote?.id) {
       updateNote(selectedNote.id, {
         title: editTitle,
         content: editContent,
         tags: tagsArray
       });
-      setSelectedNote({ ...selectedNote, title: editTitle, content: editContent, tags: tagsArray });
-    } else {
-      const newCreated = {
+      setSelectedNote({
+        ...selectedNote,
         title: editTitle,
         content: editContent,
         tags: tagsArray
-      };
-      addNote(newCreated);
-      setSelectedNote(newCreated);
+      });
+    } else {
+      addNote({
+        title: editTitle,
+        content: editContent,
+        tags: tagsArray,
+        pinned: false,
+        isFavorite: false
+      });
     }
+
     setIsEditing(false);
+  };
+
+  const handleDownloadMarkdown = (note) => {
+    if (!note) return;
+    const blob = new Blob([`# ${note.title}\n\nTags: ${note.tags?.join(', ') || 'None'}\n\n---\n\n${note.content}`], { type: 'text/markdown;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${note.title.toLowerCase().replace(/[^a-z0-9]/g, '_')}_notes.md`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -82,58 +100,63 @@ export const Notes = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-            <BookOpen className="w-6 h-6 text-indigo-400" /> Smart Placement Notes & Cheatsheets
+          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+            <BookOpen className="w-6 h-6 text-indigo-400" />
+            Interview Smart Notes
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Markdown-powered revision repository for OOPs, OS, DBMS, Networks, and System Design.
+            Markdown-powered revision notes for Core CS, OOPs, DBMS, and System Design.
           </p>
         </div>
+
         <button
           onClick={handleStartCreate}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/30 transition-all hover:scale-105 self-start sm:self-auto"
+          className="btn-primary self-start sm:self-auto flex items-center gap-2"
         >
-          <Plus className="w-4 h-4" /> New Note
+          <Plus className="w-4 h-4" />
+          <span>New Note</span>
         </button>
       </div>
 
-      {/* Main Layout: Note List (left) + Note Viewer/Editor (right) */}
+      {/* Main Grid: Left Notes List + Right Content Viewer */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Notes List & Filter */}
-        <div className="glass-panel rounded-2xl p-4 space-y-4 flex flex-col h-[650px]">
-          {/* Search */}
+        {/* Left: Notes List & Filters */}
+        <div className="lg:col-span-1 space-y-4">
+          {/* Search bar */}
           <div className="relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
+              placeholder="Search notes..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search notes..."
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-900/60 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
             />
           </div>
 
-          {/* Tag Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-            {allTags.map((tag) => (
+          {/* Tags Pills */}
+          <div className="flex flex-wrap gap-1.5 overflow-x-auto pb-1">
+            {allTags.map((t) => (
               <button
-                key={tag}
-                onClick={() => setSelectedTag(tag)}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-medium whitespace-nowrap transition-all ${
-                  selectedTag === tag
+                key={t}
+                onClick={() => setSelectedTag(t)}
+                className={`text-[10px] px-2.5 py-1 rounded-lg font-medium transition-all ${
+                  selectedTag === t
                     ? 'bg-indigo-600 text-white'
                     : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
                 }`}
               >
-                {tag}
+                {t}
               </button>
             ))}
           </div>
 
-          {/* Notes Scrollable List */}
-          <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+          {/* Notes Cards List */}
+          <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
             {filteredNotes.length === 0 ? (
-              <p className="text-xs text-slate-500 text-center py-8">No notes found.</p>
+              <div className="text-center py-8 text-xs text-slate-500 bg-slate-900/20 rounded-xl border border-slate-800/40">
+                No notes found. Create your first interview note!
+              </div>
             ) : (
               filteredNotes.map((n) => (
                 <div
@@ -154,7 +177,7 @@ export const Notes = () => {
                   </div>
 
                   <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">
-                    {n.content.replace(/[#*`_]/g, '')}
+                    {n.content?.replace(/[#*`_]/g, '') || ''}
                   </p>
 
                   <div className="flex flex-wrap gap-1 pt-1">
@@ -204,7 +227,7 @@ export const Notes = () => {
                 <div>
                   <input
                     type="text"
-                    placeholder="Tags (comma-separated, e.g. OOPs, Java, SystemDesign)"
+                    placeholder="Tags separated by comma (e.g. DBMS, SQL, Normalization)"
                     value={editTags}
                     onChange={(e) => setEditTags(e.target.value)}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-indigo-500"
@@ -213,10 +236,9 @@ export const Notes = () => {
 
                 <div className="flex-1">
                   <textarea
-                    required
+                    placeholder="Write note in Markdown formatting (# Heading, **bold**, `code`)..."
                     value={editContent}
                     onChange={(e) => setEditContent(e.target.value)}
-                    placeholder="Write in Markdown (# Headings, - Bullets, ```code blocks)..."
                     className="w-full h-full min-h-[300px] bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 font-mono focus:outline-none focus:border-indigo-500"
                   />
                 </div>
@@ -255,6 +277,13 @@ export const Notes = () => {
 
                 <div className="flex items-center gap-2">
                   <button
+                    onClick={() => handleDownloadMarkdown(selectedNote)}
+                    title="Download as Markdown"
+                    className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs flex items-center gap-1 font-semibold"
+                  >
+                    <Download className="w-3.5 h-3.5 text-cyan-400" /> Export .md
+                  </button>
+                  <button
                     onClick={() => handleStartEdit(selectedNote)}
                     className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs flex items-center gap-1 font-semibold"
                   >
@@ -288,3 +317,4 @@ export const Notes = () => {
     </div>
   );
 };
+export default Notes;

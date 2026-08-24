@@ -12,6 +12,7 @@ import { Notes } from './pages/Notes';
 import { RevisionPlanner } from './pages/RevisionPlanner';
 import { AiMentor } from './pages/AiMentor';
 import { Analytics } from './pages/Analytics';
+import { Profile } from './pages/Profile';
 import { AuthPage } from './pages/AuthPage';
 
 // Protected Route - redirects to /auth if not logged in
@@ -91,6 +92,7 @@ export function App() {
               <Route path="/revision" element={<RevisionPlanner />} />
               <Route path="/ai-mentor" element={<AiMentor />} />
               <Route path="/analytics" element={<Analytics />} />
+              <Route path="/profile" element={<Profile />} />
             </Route>
 
             {/* Fallback */}

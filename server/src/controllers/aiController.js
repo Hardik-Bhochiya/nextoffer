@@ -1,20 +1,65 @@
-import { memoryStore } from '../services/store.js';
+import DsaProblem from '../models/DsaProblem.js';
+import User from '../models/User.js';
 
 export const askMentor = async (req, res) => {
   try {
-    const { prompt, conversationHistory } = req.body;
+    const userId = req.user?.id;
+    const { prompt, context } = req.body;
     if (!prompt) {
       return res.status(400).json({ success: false, message: 'Prompt is required' });
     }
 
+    const user = await User.findById(userId);
+    const geminiKey = process.env.GEMINI_API_KEY;
+
+    // If GEMINI_API_KEY is configured, call Gemini API
+    if (geminiKey) {
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [{
+                  text: `You are NextOffer AI, an expert software engineering placement mentor and technical interviewer.
+Student info: Target Role: ${user?.targetRole || 'Software Engineer'}, Dream Companies: ${user?.dreamCompany || 'Tier-1 Tech'}, Grad Year: ${user?.gradYear || '2026'}.
+Respond with actionable, concise, markdown-formatted advice, code snippets, or system design insights.
+
+User question: ${prompt}`
+                }]
+              }]
+            })
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (replyText) {
+            return res.json({
+              success: true,
+              data: {
+                reply: replyText,
+                timestamp: new Date().toISOString()
+              }
+            });
+          }
+        }
+      } catch (geminiError) {
+        console.warn('Gemini API call failed, falling back to built-in mentor heuristics:', geminiError.message);
+      }
+    }
+
+    // High quality built-in contextual fallback response
     const lowerPrompt = prompt.toLowerCase();
     let responseText = '';
 
-    // Smart heuristic domain logic for Placement Assistant
     if (lowerPrompt.includes('roadmap') || lowerPrompt.includes('study plan') || lowerPrompt.includes('prepare')) {
-      responseText = `### 🎯 Targeted 4-Week Placement Acceleration Plan
+      responseText = `### 🎯 Targeted Placement Acceleration Plan (${user?.targetRole || 'Software Engineer'})
 
-Here is an optimized roadmap tailored to crack Tier-1 & Tier-2 Software Engineering interviews:
+Here is an optimized roadmap tailored to crack top tier technical interviews:
 
 1. **Week 1: Core DSA Mastery (Arrays, Sliding Window, Two Pointers)**
    - Solve 15 LeetCode Mediums on Two Pointers & Prefix Sum.
@@ -33,9 +78,9 @@ Here is an optimized roadmap tailored to crack Tier-1 & Tier-2 Software Engineer
    - DBMS: Indexing (B-Trees), ACID properties, SQL vs NoSQL, Sharding.
    - System Design: Caching, Rate Limiting, Load Balancing, Microservices.`;
     } else if (lowerPrompt.includes('resume') || lowerPrompt.includes('ats')) {
-      responseText = `### 📄 ATS Resume Optimization Tips for SDE Roles
+      responseText = `### 📄 ATS Resume Optimization for ${user?.targetRole || 'Software Engineering'}
 
-1. **Quantify Your Impact (XYZ Formula)**:
+1. **Quantify Your Impact (Google XYZ Formula)**:
    - *Weak*: "Built a chat app using React and Socket.io."
    - *Strong*: "Engineered a real-time collaborative code editor with Socket.io and React, reducing message latency by 45% for 500+ concurrent users."
 
@@ -47,9 +92,9 @@ Here is an optimized roadmap tailored to crack Tier-1 & Tier-2 Software Engineer
    - Single-column standard formatting (avoid multi-column graphical tables that break ATS parsers).
    - Use standard headers: Education, Technical Skills, Projects, Experience / Achievements.`;
     } else if (lowerPrompt.includes('mock') || lowerPrompt.includes('interview')) {
-      responseText = `### 🎤 Mock Interview Challenge: Design a Rate Limiter
+      responseText = `### 🎤 Mock Interview Challenge: Design a Scalable Rate Limiter
 
-Let's test your System Design & DSA problem-solving!
+Target Company: **${user?.dreamCompany || 'Top Tech Companies'}**
 
 **Problem**: Design an API Rate Limiter that allows a maximum of 100 requests per minute per IP address.
 
@@ -70,16 +115,16 @@ Let's test your System Design & DSA problem-solving!
 
 *Pro-tip for interviews:* Always state your brute-force complexity first before optimizing to the optimal O(n) or O(n log n) solution.`;
     } else {
-      responseText = `### 🤖 NextOffer AI Mentor Response
+      responseText = `### 🤖 NextOffer AI Placement Mentor
 
-Great question! Based on your target goals and placement roadmap:
+Great question! Based on your target role (${user?.targetRole || 'Software Engineer'}) and preparation plan:
 
-- **Key Takeaway**: When solving coding problems like this, break the solution into 3 steps:
+- **Key Takeaway**: When solving technical interview problems, follow these 3 steps:
   1. Clarify constraints and edge cases (empty arrays, negative numbers, overflow).
   2. Explain the intuition (e.g. hash map trade-off vs two-pointer sorted array).
   3. Analyze Time and Space complexity before writing code.
 
-Keep up the daily consistency streak! Check your **Revision Planner** to reinforce concepts scheduled for today.`;
+Keep up the consistency! Check your **Revision Planner** and **DSA Tracker** to log your daily progress.`;
     }
 
     return res.json({
@@ -96,7 +141,8 @@ Keep up the daily consistency streak! Check your **Revision Planner** to reinfor
 
 export const analyzeWeakness = async (req, res) => {
   try {
-    const problems = memoryStore.dsaProblems;
+    const userId = req.user?.id;
+    const problems = await DsaProblem.find({ userId });
     const unsolvedOrRevision = problems.filter(p => p.status === 'Needs Revision' || p.status === 'Attempted');
     
     // Group weak topics
@@ -120,7 +166,7 @@ export const analyzeWeakness = async (req, res) => {
         totalNeedsWork: unsolvedOrRevision.length,
         summary: recommendations.length > 0 
           ? `You have ${unsolvedOrRevision.length} problems requiring revision, primarily in ${recommendations[0]?.topic || 'DSA'}.`
-          : 'Great job! Your solved topics are up to date.'
+          : (problems.length === 0 ? 'Start by adding your solved & attempted DSA questions to unlock tailored AI weakness analysis!' : 'Great job! All your logged DSA topics are solved and up to date.')
       }
     });
   } catch (error) {
