@@ -50,11 +50,12 @@ export const Projects = () => {
   };
 
   const toggleMilestone = (project, mIdx) => {
+    const projId = project.id || project._id;
     const updatedMilestones = project.milestones.map((m, idx) =>
       idx === mIdx ? { ...m, completed: !m.completed } : m
     );
     const allCompleted = updatedMilestones.every(m => m.completed);
-    updateProject(project.id, {
+    updateProject(projId, {
       milestones: updatedMilestones,
       status: allCompleted ? 'Completed' : 'In Progress'
     });
@@ -83,12 +84,13 @@ export const Projects = () => {
       {/* Projects Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {projects.map((proj) => {
+          const projId = proj.id || proj._id;
           const completedMilestones = proj.milestones?.filter(m => m.completed).length || 0;
           const totalMilestones = proj.milestones?.length || 1;
           const pct = Math.round((completedMilestones / totalMilestones) * 100);
 
           return (
-            <div key={proj.id} className="glass-panel rounded-2xl p-6 flex flex-col justify-between space-y-4 hover:border-slate-700 transition-all">
+            <div key={projId} className="glass-panel rounded-2xl p-6 flex flex-col justify-between space-y-4 hover:border-slate-700 transition-all">
               <div>
                 {/* Status & Delete */}
                 <div className="flex items-center justify-between mb-3">
@@ -100,7 +102,7 @@ export const Projects = () => {
                     {proj.status}
                   </span>
                   <button
-                    onClick={() => deleteProject(proj.id)}
+                    onClick={() => deleteProject(projId)}
                     className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-slate-800 transition-colors"
                     title="Delete Project"
                   >

@@ -7,22 +7,27 @@ const formatDoc = (doc) => {
   return obj;
 };
 
+const escapeRegex = (str) => {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
 export const getNotes = async (req, res) => {
   try {
     const userId = req.user?.id;
     const { tag, search } = req.query;
     let query = { userId };
 
-    if (tag) {
+    if (tag && tag !== 'All') {
       query.tags = tag;
     }
-    if (search) {
+    if (search && search.trim()) {
+      const safePattern = escapeRegex(search.trim());
       query.$and = [
         { userId },
         {
           $or: [
-            { title: { $regex: search, $options: 'i' } },
-            { content: { $regex: search, $options: 'i' } }
+            { title: { $regex: safePattern, $options: 'i' } },
+            { content: { $regex: safePattern, $options: 'i' } }
           ]
         }
       ];
@@ -43,7 +48,7 @@ export const createNote = async (req, res) => {
     }
     const note = await Note.create({
       userId,
-      title,
+      title: title.trim(),
       content: content || '',
       tags: Array.isArray(tags) ? tags : (tags ? tags.split(',').map(t => t.trim()) : []),
       pinned: !!pinned,
@@ -64,11 +69,16 @@ export const updateNote = async (req, res) => {
       updateData.tags = updateData.tags.split(',').map(t => t.trim());
     }
 
-    const updated = await Note.findOneAndUpdate(
-      { _id: id, userId },
-      updateData,
-      { new: true, runValidators: true }
-    );
+    let updated = null;
+    try {
+      updated = await Note.findOneAndUpdate(
+        { _id: id, userId },
+        updateData,
+        { new: true, runValidators: true }
+      );
+    } catch (castErr) {
+      return res.status(404).json({ success: false, message: 'Note not found' });
+    }
 
     if (!updated) {
       return res.status(404).json({ success: false, message: 'Note not found' });
@@ -83,7 +93,13 @@ export const deleteNote = async (req, res) => {
   try {
     const userId = req.user?.id;
     const { id } = req.params;
-    const deleted = await Note.findOneAndDelete({ _id: id, userId });
+
+    let deleted = null;
+    try {
+      deleted = await Note.findOneAndDelete({ _id: id, userId });
+    } catch (castErr) {
+      return res.status(404).json({ success: false, message: 'Note not found' });
+    }
 
     if (!deleted) {
       return res.status(404).json({ success: false, message: 'Note not found' });

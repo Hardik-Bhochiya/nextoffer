@@ -159,8 +159,8 @@ export const AuthPage = () => {
                   <BrainCircuit className="w-3.5 h-3.5" />
                 </div>
                 <div className="text-xs">
-                  <p className="font-bold text-slate-200">ATS Resume Scanner & AI Mentor</p>
-                  <p className="text-[11px] text-slate-400">Real-time keyword diagnostics, mock challenges, and live coding profile sync.</p>
+                  <p className="font-bold text-slate-200">Goal Setter & Spaced Repetition</p>
+                  <p className="text-[11px] text-slate-400">1-day, 3-day, 7-day, 14-day revision intervals and daily task checklists.</p>
                 </div>
               </div>
             </div>
@@ -170,9 +170,9 @@ export const AuthPage = () => {
           <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
             <div className="flex items-center gap-1.5 text-emerald-400 font-semibold">
               <ShieldCheck className="w-4 h-4" />
-              <span>Full Stack Placement Suite</span>
+              <span>Full Stack Preparation Platform</span>
             </div>
-            <span className="text-[10px] text-slate-500 font-mono">2026 Batch Ready</span>
+            <span className="text-[10px] text-slate-500 font-mono">2026 Ready</span>
           </div>
         </div>
 

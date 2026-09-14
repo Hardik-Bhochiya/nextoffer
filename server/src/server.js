@@ -12,9 +12,7 @@ import noteRoutes from './routes/noteRoutes.js';
 import revisionRoutes from './routes/revisionRoutes.js';
 import plannerRoutes from './routes/plannerRoutes.js';
 import searchRoutes from './routes/searchRoutes.js';
-import aiRoutes from './routes/aiRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
-import companyRoutes from './routes/companyRoutes.js';
 
 dotenv.config();
 
@@ -35,16 +33,14 @@ app.use('/api/notes', noteRoutes);
 app.use('/api/revision', revisionRoutes);
 app.use('/api/planner', plannerRoutes);
 app.use('/api/search', searchRoutes);
-app.use('/api/ai', aiRoutes);
 app.use('/api/analytics', analyticsRoutes);
-app.use('/api/company-archives', companyRoutes);
 
 // Health Check
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'online',
     timestamp: new Date().toISOString(),
-    service: 'NextOffer Placement API',
+    service: 'NextOffer API',
     version: '1.0.0'
   });
 });
@@ -54,6 +50,24 @@ app.get('/', (req, res) => {
   res.json({
     message: 'Welcome to NextOffer API Server 🚀',
     docs: '/api/health'
+  });
+});
+
+// 404 Fallback Handler
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Cannot ${req.method} ${req.originalUrl || req.url}`
+  });
+});
+
+// Global Error Handler Middleware
+app.use((err, req, res, next) => {
+  console.error('⚠️ Unhandled Exception:', err);
+  const statusCode = err.status || err.statusCode || (err.name === 'ValidationError' || err.name === 'CastError' ? 400 : 500);
+  res.status(statusCode).json({
+    success: false,
+    message: err.message || 'Internal Server Error'
   });
 });
 

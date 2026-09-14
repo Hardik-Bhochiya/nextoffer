@@ -93,7 +93,7 @@ export const calculateRoleBasedReadiness = (targetRole = '', dsaProblems = [], u
         { label: 'Full-Stack Roadmaps (35%)', score: fsRoadmapScore, weight: '35%' },
         { label: 'DSA Mastery & Patterns (35%)', score: dsaProgress, weight: '35%' },
         { label: 'Portfolio Projects (20%)', score: projectScore, weight: '20%' },
-        { label: 'Core CS Notes & Flashcards (10%)', score: noteScore, weight: '10%' }
+        { label: 'Core CS Notes & Cheatsheets (10%)', score: noteScore, weight: '10%' }
       ]
     };
   } else if (role.includes('sde') || role.includes('core dsa') || role.includes('algorithm')) {
@@ -277,7 +277,7 @@ export const calculateRoleBasedReadiness = (targetRole = '', dsaProblems = [], u
         { label: 'Full-Stack Roadmaps (35%)', score: fsRoadmapScore, weight: '35%' },
         { label: 'DSA Mastery & Patterns (35%)', score: dsaProgress, weight: '35%' },
         { label: 'Portfolio Projects (20%)', score: projectScore, weight: '20%' },
-        { label: 'Core CS Notes & Flashcards (10%)', score: noteScore, weight: '10%' }
+        { label: 'Core CS Notes & Cheatsheets (10%)', score: noteScore, weight: '10%' }
       ]
     };
   }

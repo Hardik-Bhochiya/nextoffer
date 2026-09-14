@@ -41,6 +41,10 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 1
   },
+  avatar: {
+    type: String,
+    default: ''
+  },
   readinessScore: {
     type: Number,
     default: 0

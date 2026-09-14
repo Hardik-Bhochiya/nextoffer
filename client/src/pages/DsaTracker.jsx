@@ -127,16 +127,23 @@ export const DsaTracker = () => {
 
   const handleSolvePotd = async () => {
     if (!potd) return;
-    await addDsaProblem({
-      title: potd.title,
-      topic: potd.topic,
-      difficulty: potd.difficulty,
-      status: 'Solved',
-      timeComplexity: potd.timeComplexity,
-      spaceComplexity: potd.spaceComplexity,
-      notes: `Problem of the Day solved on ${potd.date}`,
-      leetcodeUrl: potd.leetcodeUrl
-    });
+    const existing = dsaProblems.find(p => (p.title || p.problemTitle)?.toLowerCase() === potd.title?.toLowerCase());
+    if (existing) {
+      await updateDsaStatus(existing.id || existing._id, 'Solved', `Problem of the Day solved on ${potd.date}`);
+    } else {
+      await addDsaProblem({
+        title: potd.title,
+        problemTitle: potd.title,
+        topic: potd.topic,
+        difficulty: potd.difficulty,
+        status: 'Solved',
+        timeComplexity: potd.timeComplexity,
+        spaceComplexity: potd.spaceComplexity,
+        notes: `Problem of the Day solved on ${potd.date}`,
+        url: potd.leetcodeUrl,
+        leetcodeUrl: potd.leetcodeUrl
+      });
+    }
     setPotdAdded(true);
     setTimeout(() => setPotdAdded(false), 3000);
   };

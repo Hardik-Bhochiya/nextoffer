@@ -3,21 +3,16 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
 import { AppLayout } from './components/layout/AppLayout';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 
 import { Dashboard } from './pages/Dashboard';
 import { DsaTracker } from './pages/DsaTracker';
-import { CompanyArchives } from './pages/CompanyArchives';
-import { Flashcards } from './pages/Flashcards';
 import { Roadmaps } from './pages/Roadmaps';
 import { Projects } from './pages/Projects';
 import { Notes } from './pages/Notes';
 import { RevisionPlanner } from './pages/RevisionPlanner';
-import { MockInterview } from './pages/MockInterview';
-import { ResumeScanner } from './pages/ResumeScanner';
-import { AiMentor } from './pages/AiMentor';
 import { Analytics } from './pages/Analytics';
 import { Profile } from './pages/Profile';
-import { Recommendations } from './pages/Recommendations';
 import { AuthPage } from './pages/AuthPage';
 
 // Protected Route - redirects to /auth if not logged in
@@ -67,50 +62,46 @@ const PublicRoute = ({ children }) => {
 
 export function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <DataProvider>
-          <Routes>
-            {/* Public - Auth page */}
-            <Route
-              path="/auth"
-              element={
-                <PublicRoute>
-                  <AuthPage />
-                </PublicRoute>
-              }
-            />
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AuthProvider>
+          <DataProvider>
+            <Routes>
+              {/* Public - Auth page */}
+              <Route
+                path="/auth"
+                element={
+                  <PublicRoute>
+                    <AuthPage />
+                  </PublicRoute>
+                }
+              />
 
-            {/* Protected - App pages */}
-            <Route
-              element={
-                <ProtectedRoute>
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/dsa" element={<DsaTracker />} />
-              <Route path="/company-archives" element={<CompanyArchives />} />
-              <Route path="/flashcards" element={<Flashcards />} />
-              <Route path="/roadmaps" element={<Roadmaps />} />
-              <Route path="/projects" element={<Projects />} />
-              <Route path="/notes" element={<Notes />} />
-              <Route path="/revision" element={<RevisionPlanner />} />
-              <Route path="/mock-interview" element={<MockInterview />} />
-              <Route path="/resume" element={<ResumeScanner />} />
-              <Route path="/ai-mentor" element={<AiMentor />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/recommendations" element={<Recommendations />} />
-              <Route path="/profile" element={<Profile />} />
-            </Route>
+              {/* Protected - App pages */}
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <AppLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/dsa" element={<DsaTracker />} />
+                <Route path="/roadmaps" element={<Roadmaps />} />
+                <Route path="/projects" element={<Projects />} />
+                <Route path="/notes" element={<Notes />} />
+                <Route path="/revision" element={<RevisionPlanner />} />
+                <Route path="/analytics" element={<Analytics />} />
+                <Route path="/profile" element={<Profile />} />
+              </Route>
 
-            {/* Fallback */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </DataProvider>
-      </AuthProvider>
-    </BrowserRouter>
+              {/* Fallback */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </DataProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 

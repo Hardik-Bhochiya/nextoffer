@@ -65,8 +65,10 @@ export const RevisionPlanner = () => {
   };
 
   const handleToggleTask = (id, currentStatus) => {
+    if (!id) return;
     toggleDailyTask(id);
-    if (currentStatus !== 'Completed') {
+    const isCompleted = currentStatus === true || currentStatus === 'Completed';
+    if (!isCompleted) {
       confetti({
         particleCount: 30,
         spread: 50,
@@ -116,7 +118,7 @@ export const RevisionPlanner = () => {
 
     addDailyTask({
       taskDetails: newTaskDetails.trim(),
-      taskStatus: 'Pending'
+      taskStatus: false
     });
 
     setNewTaskDetails('');
@@ -190,47 +192,51 @@ export const RevisionPlanner = () => {
               {studyGoals.length === 0 ? (
                 <p className="text-xs text-slate-500 text-center py-8">No goals created yet. Set your first goal!</p>
               ) : (
-                studyGoals.map((g) => (
-                  <div
-                    key={g.goalId || g.plannerId}
-                    className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 space-y-2.5 transition-all"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="space-y-1 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
-                            g.priority === 'High' ? 'bg-rose-950 text-rose-400 border border-rose-800/40' : 'bg-slate-800 text-slate-300'
-                          }`}>
-                            {g.priority} Priority
-                          </span>
-                          <span className="text-[10px] text-slate-400 flex items-center gap-1">
-                            <Clock className="w-3 h-3 text-indigo-400" /> Deadline: {g.deadline}
-                          </span>
+                studyGoals.map((g) => {
+                  const goalId = g.id || g._id || g.goalId || g.plannerId;
+                  return (
+                    <div
+                      key={goalId}
+                      className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 space-y-2.5 transition-all"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="space-y-1 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                              g.priority === 'High' ? 'bg-rose-950 text-rose-400 border border-rose-800/40' : 'bg-slate-800 text-slate-300'
+                            }`}>
+                              {g.priority} Priority
+                            </span>
+                            <span className="text-[10px] text-slate-400 flex items-center gap-1">
+                              <Clock className="w-3 h-3 text-indigo-400" /> Deadline: {g.deadline}
+                            </span>
+                          </div>
+                          <h3 className="text-xs font-bold text-slate-100">{g.goalTitle}</h3>
                         </div>
-                        <h3 className="text-xs font-bold text-slate-100">{g.goalTitle}</h3>
+                        <button
+                          type="button"
+                          onClick={() => deleteStudyGoal(goalId)}
+                          className="p-1 text-slate-500 hover:text-rose-400 cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
-                      <button
-                        onClick={() => deleteStudyGoal(g.goalId || g.plannerId)}
-                        className="p-1 text-slate-500 hover:text-rose-400"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
 
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
-                        <span>Status: <span className={g.taskStatus === 'Completed' ? 'text-emerald-400' : 'text-amber-400'}>{g.taskStatus}</span></span>
-                        <span>{g.progress || 0}%</span>
-                      </div>
-                      <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden border border-slate-800">
-                        <div
-                          className="h-full bg-gradient-to-r from-indigo-500 to-emerald-400 rounded-full"
-                          style={{ width: `${g.progress || 0}%` }}
-                        />
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
+                          <span>Status: <span className={g.taskStatus === 'Completed' || g.progress === 100 ? 'text-emerald-400' : 'text-amber-400'}>{g.taskStatus || (g.progress === 100 ? 'Completed' : 'In Progress')}</span></span>
+                          <span>{g.progress || 0}%</span>
+                        </div>
+                        <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden border border-slate-800">
+                          <div
+                            className="h-full bg-gradient-to-r from-indigo-500 to-emerald-400 rounded-full"
+                            style={{ width: `${g.progress || 0}%` }}
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
@@ -242,12 +248,13 @@ export const RevisionPlanner = () => {
                 <ListTodo className="w-5 h-5 text-emerald-400" />
                 <div>
                   <h2 className="text-base font-bold text-white">Daily Execution Checklist</h2>
-                  <p className="text-[11px] text-slate-400">{dailyTasks.filter(t => t.taskStatus === 'Completed').length} of {dailyTasks.length} Done Today</p>
+                  <p className="text-[11px] text-slate-400">{dailyTasks.filter(t => t.taskStatus === true || t.taskStatus === 'Completed').length} of {dailyTasks.length} Done Today</p>
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => setIsTaskModalOpen(true)}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" /> Add Task
               </button>
@@ -257,37 +264,42 @@ export const RevisionPlanner = () => {
               {dailyTasks.length === 0 ? (
                 <p className="text-xs text-slate-500 text-center py-8">No tasks for today. Add a new task!</p>
               ) : (
-                dailyTasks.map((t) => (
-                  <div
-                    key={t.taskId}
-                    className={`p-3.5 rounded-xl border transition-all flex items-center justify-between gap-3 ${
-                      t.taskStatus === 'Completed'
-                        ? 'bg-emerald-950/20 border-emerald-900/30 text-slate-400'
-                        : 'bg-slate-900/60 border-slate-800 hover:border-slate-700 text-slate-200'
-                    }`}
-                  >
+                dailyTasks.map((t) => {
+                  const taskId = t.id || t._id || t.taskId;
+                  const isCompleted = t.taskStatus === true || t.taskStatus === 'Completed';
+                  return (
                     <div
-                      onClick={() => handleToggleTask(t.taskId, t.taskStatus)}
-                      className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
+                      key={taskId}
+                      className={`p-3.5 rounded-xl border transition-all flex items-center justify-between gap-3 ${
+                        isCompleted
+                          ? 'bg-emerald-950/20 border-emerald-900/30 text-slate-400'
+                          : 'bg-slate-900/60 border-slate-800 hover:border-slate-700 text-slate-200'
+                      }`}
                     >
-                      {t.taskStatus === 'Completed' ? (
-                        <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-                      ) : (
-                        <Circle className="w-5 h-5 text-slate-500 hover:text-emerald-400 shrink-0 transition-colors" />
-                      )}
-                      <span className={`text-xs font-medium truncate ${t.taskStatus === 'Completed' ? 'line-through text-slate-500' : ''}`}>
-                        {t.taskDetails}
-                      </span>
-                    </div>
+                      <div
+                        onClick={() => handleToggleTask(taskId, t.taskStatus)}
+                        className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
+                      >
+                        {isCompleted ? (
+                          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                        ) : (
+                          <Circle className="w-5 h-5 text-slate-500 hover:text-emerald-400 shrink-0 transition-colors" />
+                        )}
+                        <span className={`text-xs font-medium truncate ${isCompleted ? 'line-through text-slate-500' : ''}`}>
+                          {t.taskDetails}
+                        </span>
+                      </div>
 
-                    <button
-                      onClick={() => deleteDailyTask(t.taskId)}
-                      className="p-1 text-slate-500 hover:text-rose-400"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))
+                      <button
+                        type="button"
+                        onClick={() => deleteDailyTask(taskId)}
+                        className="p-1 text-slate-500 hover:text-rose-400 cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  );
+                })
               )}
             </div>
           </div>

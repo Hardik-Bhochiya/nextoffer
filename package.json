@@ -4,11 +4,11 @@
   "description": "NextOffer - AI-Powered Placement Preparation Platform (MERN Stack)",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
-    "client": "npm run dev --prefix client",
-    "server": "npm run dev --prefix server",
-    "install:all": "npm install && npm install --prefix server && npm install --prefix client",
-    "seed": "npm run seed --prefix server"
+    "dev": "concurrently \"npm.cmd run dev --prefix server\" \"npm.cmd run dev --prefix client\"",
+    "client": "npm.cmd run dev --prefix client",
+    "server": "npm.cmd run dev --prefix server",
+    "install:all": "npm.cmd install && npm.cmd install --prefix server && npm.cmd install --prefix client",
+    "seed": "npm.cmd run seed --prefix server"
   },
   "devDependencies": {
     "concurrently": "^9.2.4"

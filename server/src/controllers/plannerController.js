@@ -33,10 +33,10 @@ export const createStudyGoal = async (req, res) => {
     }
     const newGoal = await StudyGoal.create({
       userId,
-      goalTitle,
+      goalTitle: goalTitle.trim(),
       deadline: deadline || '2026-12-31',
       priority: priority || 'High',
-      progress: progress || 0
+      progress: typeof progress === 'number' ? progress : 0
     });
     return res.status(201).json({ success: true, data: formatDoc(newGoal) });
   } catch (error) {
@@ -48,11 +48,18 @@ export const updateStudyGoal = async (req, res) => {
   try {
     const userId = req.user?.id;
     const { id } = req.params;
-    const updated = await StudyGoal.findOneAndUpdate(
-      { _id: id, userId },
-      req.body,
-      { new: true, runValidators: true }
-    );
+
+    let updated = null;
+    try {
+      updated = await StudyGoal.findOneAndUpdate(
+        { _id: id, userId },
+        req.body,
+        { new: true, runValidators: true }
+      );
+    } catch (castErr) {
+      return res.status(404).json({ success: false, message: 'Goal not found' });
+    }
+
     if (!updated) {
       return res.status(404).json({ success: false, message: 'Goal not found' });
     }
@@ -66,7 +73,14 @@ export const deleteStudyGoal = async (req, res) => {
   try {
     const userId = req.user?.id;
     const { id } = req.params;
-    const deleted = await StudyGoal.findOneAndDelete({ _id: id, userId });
+
+    let deleted = null;
+    try {
+      deleted = await StudyGoal.findOneAndDelete({ _id: id, userId });
+    } catch (castErr) {
+      return res.status(404).json({ success: false, message: 'Goal not found' });
+    }
+
     if (!deleted) {
       return res.status(404).json({ success: false, message: 'Goal not found' });
     }
@@ -83,10 +97,13 @@ export const addDailyTask = async (req, res) => {
     if (!taskDetails) {
       return res.status(400).json({ success: false, message: 'Task details are required' });
     }
+
+    const isCompleted = taskStatus === true || taskStatus === 'Completed' || taskStatus === 'true';
+
     const newTask = await DailyTask.create({
       userId,
-      taskDetails,
-      taskStatus: !!taskStatus
+      taskDetails: taskDetails.trim(),
+      taskStatus: isCompleted
     });
     return res.status(201).json({ success: true, data: formatDoc(newTask) });
   } catch (error) {
@@ -98,7 +115,14 @@ export const toggleDailyTask = async (req, res) => {
   try {
     const userId = req.user?.id;
     const { id } = req.params;
-    const task = await DailyTask.findOne({ _id: id, userId });
+
+    let task = null;
+    try {
+      task = await DailyTask.findOne({ _id: id, userId });
+    } catch (castErr) {
+      return res.status(404).json({ success: false, message: 'Task not found' });
+    }
+
     if (!task) {
       return res.status(404).json({ success: false, message: 'Task not found' });
     }
@@ -114,7 +138,14 @@ export const deleteDailyTask = async (req, res) => {
   try {
     const userId = req.user?.id;
     const { id } = req.params;
-    const deleted = await DailyTask.findOneAndDelete({ _id: id, userId });
+
+    let deleted = null;
+    try {
+      deleted = await DailyTask.findOneAndDelete({ _id: id, userId });
+    } catch (castErr) {
+      return res.status(404).json({ success: false, message: 'Task not found' });
+    }
+
     if (!deleted) {
       return res.status(404).json({ success: false, message: 'Task not found' });
     }

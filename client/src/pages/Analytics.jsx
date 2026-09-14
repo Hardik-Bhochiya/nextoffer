@@ -12,7 +12,13 @@ import {
   CheckCircle2,
   Flame,
   Plus,
-  Info
+  Info,
+  Layers,
+  Sparkles,
+  Check,
+  Cpu,
+  BookOpen,
+  Rocket
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -27,16 +33,23 @@ import {
   Legend
 } from 'recharts';
 
+import { allRoles, getRoleConfig, getReadinessTier } from '../data/rolesData';
+import { Link } from 'react-router-dom';
+
 export const Analytics = () => {
   const { user } = useAuth();
-  const { metrics, dsaProblems, refreshData } = useData();
+  const { metrics, dsaProblems, roadmaps, notes, projects, refreshData } = useData();
 
   const [hoursInput, setHoursInput] = useState(2);
   const [dsaInput, setDsaInput] = useState(3);
   const [logging, setLogging] = useState(false);
   const [logSuccess, setLogSuccess] = useState(false);
 
+  const currentRole = user?.targetRole || 'Full Stack Engineer (MERN / Next.js / APIs)';
+  const roleConfig = getRoleConfig(currentRole);
+
   const readiness = metrics?.readinessScore ?? user?.readinessScore ?? 0;
+  const tierInfo = getReadinessTier(readiness);
   
   const dsaStats = metrics?.dsaStats || {
     total: dsaProblems.length,
@@ -46,15 +59,9 @@ export const Analytics = () => {
     hardSolved: dsaProblems.filter(p => p.status === 'Solved' && p.difficulty === 'Hard').length
   };
 
-  const weightsInfo = metrics?.weightsExplanation || {
-    roleCategory: user?.targetRole || 'Full Stack SDE-1',
-    breakdown: [
-      { label: 'DSA Mastery', score: Math.min(100, (dsaStats.solved / (dsaStats.total || 1)) * 100), weight: '35%' },
-      { label: 'Roadmap Progress', score: metrics?.roadmapStats?.percentage || 0, weight: '35%' },
-      { label: 'Portfolio Projects', score: Math.min(100, (metrics?.totalProjects || 0) * 35), weight: '20%' },
-      { label: 'Core CS Notes', score: Math.min(100, (metrics?.totalNotes || 0) * 25), weight: '10%' }
-    ]
-  };
+  const totalRoadmapTopics = roadmaps.reduce((acc, r) => acc + (r.topics?.length || 0), 0);
+  const completedRoadmapTopics = roadmaps.reduce((acc, r) => acc + (r.topics?.filter(t => t.completed).length || 0), 0);
+  const roadmapPercentage = totalRoadmapTopics > 0 ? Math.round((completedRoadmapTopics / totalRoadmapTopics) * 100) : 0;
 
   const difficultyData = [
     { name: 'Easy', value: dsaStats.easySolved, color: '#10b981' },
@@ -97,52 +104,208 @@ export const Analytics = () => {
   };
 
   return (
-    <div className="space-y-8 animate-fadeIn max-w-6xl mx-auto pb-12">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-2">
-          <BarChart3 className="w-6 h-6 text-indigo-400" /> Placement Readiness & Performance Analytics
-        </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Dynamic readiness telemetry weighted specifically for your target profile ({user?.targetRole || 'Full Stack SDE'}).
-        </p>
+    <div className="space-y-8 animate-fadeIn max-w-6xl mx-auto pb-16">
+      
+      {/* 1. ANALYTICS HEADER */}
+      <div className="rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/40 border border-slate-800 p-6 md:p-8 shadow-xl relative overflow-hidden">
+        <div className="absolute right-0 top-0 w-80 h-80 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-950 border border-slate-800 text-xs text-indigo-400 font-semibold">
+              <BarChart3 className="w-3.5 h-3.5" />
+              <span>Readiness Telemetry & Benchmarks</span>
+            </div>
+            <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
+              Placement Readiness & Performance Analytics
+            </h1>
+            <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+              Real-time predictive scoring calibrated for <span className="font-bold text-white">{roleConfig.title}</span>. Mathematical weights dynamically measure your DSA pattern mastery, completed learning tracks, and portfolio systems.
+            </p>
+          </div>
+
+          {/* Quick Readiness Badge Callout */}
+          <div className="px-5 py-4 rounded-2xl bg-slate-950/90 border border-slate-800 flex items-center gap-4 shrink-0 shadow-inner">
+            <div className="text-right">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">Current Index</span>
+              <span className="text-2xl font-black text-indigo-400">{readiness}%</span>
+            </div>
+            <div className="h-8 w-px bg-slate-800" />
+            <div>
+              <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border block text-center ${tierInfo.badgeClass}`}>
+                {tierInfo.tier}
+              </span>
+              <span className="text-[10px] text-slate-500 font-medium block text-center mt-1">
+                {tierInfo.label}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Configured Role Strip */}
+        <div className="pt-5 mt-5 border-t border-slate-800/80">
+          <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/90 flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-cyan-950 text-cyan-300 border border-cyan-800/50 flex items-center gap-1">
+                  <Cpu className="w-3 h-3 text-cyan-400" /> Active Evaluation Model
+                </span>
+                <span className="text-xs font-bold text-white">
+                  {roleConfig.title}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400">Formula and weights are tailored for this specialization.</p>
+            </div>
+
+            <Link
+              to="/profile"
+              className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-indigo-950 border border-slate-700 hover:border-indigo-700 text-slate-300 hover:text-indigo-300 text-xs font-semibold flex items-center gap-1.5 transition self-start md:self-auto shrink-0"
+              title="Change specialization from profile"
+            >
+              <span>Change in Profile</span>
+            </Link>
+          </div>
+        </div>
       </div>
 
-      {/* Top 3 Metric Summary Panels */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Placement Readiness Breakdown */}
+      {/* 2. MATHEMATICAL FORMULA & ROLE BREAKDOWN */}
+      <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 md:p-8 space-y-6 shadow-sm">
+        <div className="border-b border-slate-800/80 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${roleConfig.bgBadge}`}>
+                {roleConfig.category}
+              </span>
+              <h2 className="text-base font-bold text-white">
+                {roleConfig.title} Scoring Formula
+              </h2>
+            </div>
+            <p className="text-xs text-slate-400 mt-1">{roleConfig.desc}</p>
+          </div>
+
+          <div className="shrink-0 bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 text-center">
+            <span className="text-[9px] uppercase font-bold text-slate-500 block">Target Benchmark</span>
+            <span className="text-xs font-bold text-emerald-400">
+              {roleConfig.targetBenchmarks.minSolvedDsa}+ DSA • {roleConfig.targetBenchmarks.minProjects} Projects
+            </span>
+          </div>
+        </div>
+
+        {/* Formula strip */}
+        <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+          <div className="flex items-center justify-between text-[10px] text-slate-400 font-bold uppercase">
+            <span className="flex items-center gap-1.5">
+              <Target className="w-3.5 h-3.5 text-indigo-400" /> Active Weighted Evaluation Model
+            </span>
+            <span className="text-indigo-400 font-mono">100% Scale</span>
+          </div>
+          <p className="text-xs font-mono text-cyan-300 font-bold bg-slate-900/90 p-3 rounded-xl border border-slate-800 overflow-x-auto">
+            {roleConfig.formulaDesc}
+          </p>
+        </div>
+
+        {/* Dynamic Weight Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {roleConfig.weightsList.map((item, idx) => (
+            <div key={idx} className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-300 font-medium truncate pr-1">{item.label}</span>
+                <span className={`font-black ${item.color}`}>{item.weight}%</span>
+              </div>
+              <div className="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
+                <div className={`${item.barColor} h-full rounded-full`} style={{ width: `${item.weight * 2}%` }} />
+              </div>
+              <span className="text-[10px] text-slate-500 block">Calibrated for {roleConfig.shortLabel}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 3. 3-COLUMN METRICS: READINESS BREAKDOWN, DIFFICULTY PIE, STUDY LOGGER */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Metric 1: Readiness Progress Bars */}
         <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-sm font-bold text-slate-100 flex items-center gap-1.5">
                 <Target className="w-4 h-4 text-indigo-400" />
-                Role-Based Readiness
+                Component Progress
               </h2>
-              <p className="text-[10px] text-indigo-400 font-semibold">{weightsInfo.roleCategory}</p>
+              <p className="text-[10px] text-indigo-400 font-semibold">{roleConfig.shortLabel}</p>
             </div>
-            <span className="text-3xl font-black text-slate-100">{readiness}%</span>
+            <span className="text-2xl font-black text-slate-100">{readiness}%</span>
           </div>
 
-          {/* Formula weights */}
-          <div className="space-y-2.5 text-xs pt-1">
-            {weightsInfo.breakdown?.map((b, i) => (
-              <div key={i} className="space-y-1">
-                <div className="flex justify-between text-slate-300">
-                  <span className="text-[11px]">{b.label}</span>
-                  <span className="font-semibold text-slate-200">{b.score}%</span>
-                </div>
-                <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden border border-slate-800">
-                  <div
-                    className="h-full bg-indigo-500 rounded-full transition-all duration-500"
-                    style={{ width: `${Math.max(2, b.score)}%` }}
-                  />
-                </div>
+          <div className="space-y-3 text-xs pt-1">
+            {/* DSA Mastery */}
+            <div className="space-y-1">
+              <div className="flex justify-between text-slate-300">
+                <span className="text-[11px] flex items-center gap-1">
+                  <Code2 className="w-3 h-3 text-indigo-400" /> DSA Problems
+                </span>
+                <span className="font-semibold text-slate-200">
+                  {dsaStats.solved}/{dsaStats.total || 0} ({Math.min(100, Math.round(((dsaStats.solved || 0) / 30) * 100))}%)
+                </span>
               </div>
-            ))}
+              <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden border border-slate-800">
+                <div
+                  className="h-full bg-indigo-500 rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min(100, Math.max(2, Math.round(((dsaStats.solved || 0) / 30) * 100)))}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Roadmaps */}
+            <div className="space-y-1">
+              <div className="flex justify-between text-slate-300">
+                <span className="text-[11px] flex items-center gap-1">
+                  <GitBranch className="w-3 h-3 text-cyan-400" /> Roadmap Tracks
+                </span>
+                <span className="font-semibold text-slate-200">{roadmapPercentage}%</span>
+              </div>
+              <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden border border-slate-800">
+                <div
+                  className="h-full bg-cyan-500 rounded-full transition-all duration-500"
+                  style={{ width: `${Math.max(2, roadmapPercentage)}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Projects */}
+            <div className="space-y-1">
+              <div className="flex justify-between text-slate-300">
+                <span className="text-[11px] flex items-center gap-1">
+                  <Rocket className="w-3 h-3 text-emerald-400" /> Portfolio Projects
+                </span>
+                <span className="font-semibold text-slate-200">{projects?.length || 0} Deployed</span>
+              </div>
+              <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden border border-slate-800">
+                <div
+                  className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min(100, Math.max(2, (projects?.length || 0) * 50))}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Notes */}
+            <div className="space-y-1">
+              <div className="flex justify-between text-slate-300">
+                <span className="text-[11px] flex items-center gap-1">
+                  <BookOpen className="w-3 h-3 text-amber-400" /> Core CS Notes
+                </span>
+                <span className="font-semibold text-slate-200">{notes?.length || 0} Topics</span>
+              </div>
+              <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden border border-slate-800">
+                <div
+                  className="h-full bg-amber-500 rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min(100, Math.max(2, (notes?.length || 0) * 25))}%` }}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Difficulty Distribution Chart */}
+        {/* Metric 2: Difficulty Distribution Chart */}
         <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between space-y-2 shadow-sm">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-slate-100 flex items-center gap-1.5">
@@ -176,21 +339,21 @@ export const Analytics = () => {
             ) : (
               <div className="text-center text-slate-500 text-xs py-6">
                 <p>0 DSA problems solved yet.</p>
-                <p className="text-[10px] text-slate-600 mt-1">Problems solved in the DSA Tracker appear here.</p>
+                <p className="text-[10px] text-slate-600 mt-1">Problems solved in DSA Tracker appear here.</p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Study Log Tracker */}
+        {/* Metric 3: Study Log Tracker */}
         <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-slate-100 flex items-center gap-1.5">
               <Clock className="w-4 h-4 text-amber-400" />
-              Study Logger
+              Daily Study Logger
             </h2>
-            <span className="text-[10px] text-amber-400 bg-amber-950/80 px-2 py-0.5 rounded-md border border-amber-800/40 font-bold">
-              {user?.streak || 1} Day Streak
+            <span className="text-[10px] text-amber-400 bg-amber-950/80 px-2 py-0.5 rounded-md border border-amber-800/40 font-bold flex items-center gap-1">
+              <Flame className="w-3 h-3" /> {user?.streak || 1}d Streak
             </span>
           </div>
 
@@ -209,7 +372,7 @@ export const Analytics = () => {
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-slate-400 mb-1">DSA Questions Solved Today</label>
+              <label className="block text-[11px] font-semibold text-slate-400 mb-1">DSA Solved Today</label>
               <input
                 type="number"
                 min="0"
@@ -223,7 +386,7 @@ export const Analytics = () => {
             <button
               type="submit"
               disabled={logging}
-              className="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
+              className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>{logging ? 'Recording...' : 'Log Study Session'}</span>
@@ -236,12 +399,12 @@ export const Analytics = () => {
         </div>
       </div>
 
-      {/* Topic-Wise Mastery Bar Chart */}
+      {/* 4. TOPIC-WISE MASTERY BAR CHART */}
       <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 space-y-4 shadow-sm">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <h2 className="text-base font-bold text-slate-100">DSA Category Distribution</h2>
-            <p className="text-xs text-slate-400">Solved vs Remaining questions across data structure topics</p>
+            <h2 className="text-base font-bold text-slate-100">DSA Category Distribution & Topic Coverage</h2>
+            <p className="text-xs text-slate-400">Solved vs Remaining questions across standard interview data structures</p>
           </div>
         </div>
 
@@ -263,4 +426,5 @@ export const Analytics = () => {
     </div>
   );
 };
+
 export default Analytics;

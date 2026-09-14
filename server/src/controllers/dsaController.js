@@ -74,6 +74,10 @@ export const getProblemOfTheDay = async (req, res) => {
   }
 };
 
+const escapeRegex = (str) => {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
 export const getProblems = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -90,7 +94,8 @@ export const getProblems = async (req, res) => {
       query.status = status;
     }
     if (search && search.trim()) {
-      query.title = { $regex: search.trim(), $options: 'i' };
+      const safePattern = escapeRegex(search.trim());
+      query.title = { $regex: safePattern, $options: 'i' };
     }
 
     const problems = await DsaProblem.find(query).sort({ createdAt: -1 });
@@ -103,7 +108,7 @@ export const getProblems = async (req, res) => {
 export const addProblem = async (req, res) => {
   try {
     const userId = req.user?.id;
-    const { title, topic, difficulty, status, timeComplexity, spaceComplexity, notes, leetcodeUrl } = req.body;
+    const { title, topic, difficulty, status, timeComplexity, spaceComplexity, notes, leetcodeUrl, url } = req.body;
 
     if (!title || !topic) {
       return res.status(400).json({ success: false, message: 'Title and topic are required' });
@@ -115,10 +120,10 @@ export const addProblem = async (req, res) => {
       topic,
       difficulty: difficulty || 'Medium',
       status: status || 'Needs Revision',
+      url: url || leetcodeUrl || 'https://leetcode.com',
       timeComplexity: timeComplexity || 'O(n)',
       spaceComplexity: spaceComplexity || 'O(1)',
-      notes: notes || '',
-      leetcodeUrl: leetcodeUrl || ''
+      notes: notes || ''
     });
 
     return res.status(201).json({ success: true, data: formatDoc(newProblem) });
@@ -132,11 +137,16 @@ export const updateProblem = async (req, res) => {
     const userId = req.user?.id;
     const { id } = req.params;
 
-    const updated = await DsaProblem.findOneAndUpdate(
-      { _id: id, userId },
-      req.body,
-      { new: true, runValidators: true }
-    );
+    let updated = null;
+    try {
+      updated = await DsaProblem.findOneAndUpdate(
+        { _id: id, userId },
+        req.body,
+        { new: true, runValidators: true }
+      );
+    } catch (castErr) {
+      return res.status(404).json({ success: false, message: 'DSA Problem not found' });
+    }
 
     if (!updated) {
       return res.status(404).json({ success: false, message: 'DSA Problem not found' });
@@ -153,7 +163,13 @@ export const deleteProblem = async (req, res) => {
     const userId = req.user?.id;
     const { id } = req.params;
 
-    const deleted = await DsaProblem.findOneAndDelete({ _id: id, userId });
+    let deleted = null;
+    try {
+      deleted = await DsaProblem.findOneAndDelete({ _id: id, userId });
+    } catch (castErr) {
+      return res.status(404).json({ success: false, message: 'DSA Problem not found' });
+    }
+
     if (!deleted) {
       return res.status(404).json({ success: false, message: 'DSA Problem not found' });
     }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useData } from '../context/DataContext';
 import {
   BookOpen,
@@ -13,6 +13,7 @@ import {
   Sparkles,
   Download
 } from 'lucide-react';
+import { MarkdownViewer } from '../components/notes/MarkdownViewer';
 
 export const Notes = () => {
   const { notes, addNote, updateNote, deleteNote } = useData();
@@ -25,6 +26,13 @@ export const Notes = () => {
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
   const [editTags, setEditTags] = useState('');
+
+  // Auto-select first note when notes load asynchronously
+  useEffect(() => {
+    if (!selectedNote && notes.length > 0) {
+      setSelectedNote(notes[0]);
+    }
+  }, [notes, selectedNote]);
 
   // Extract all unique tags
   const allTags = ['All', ...new Set(notes.flatMap(n => n.tags || []))];
@@ -58,22 +66,23 @@ export const Notes = () => {
     if (!editTitle.trim()) return;
 
     const tagsArray = editTags.split(',').map(t => t.trim()).filter(Boolean);
+    const noteId = selectedNote?.id || selectedNote?._id;
 
-    if (selectedNote?.id) {
-      updateNote(selectedNote.id, {
-        title: editTitle,
+    if (noteId) {
+      updateNote(noteId, {
+        title: editTitle.trim(),
         content: editContent,
         tags: tagsArray
       });
       setSelectedNote({
         ...selectedNote,
-        title: editTitle,
+        title: editTitle.trim(),
         content: editContent,
         tags: tagsArray
       });
     } else {
       addNote({
-        title: editTitle,
+        title: editTitle.trim(),
         content: editContent,
         tags: tagsArray,
         pinned: false,
@@ -158,19 +167,22 @@ export const Notes = () => {
                 No notes found. Create your first interview note!
               </div>
             ) : (
-              filteredNotes.map((n) => (
-                <div
-                  key={n.id}
-                  onClick={() => {
-                    setSelectedNote(n);
-                    setIsEditing(false);
-                  }}
-                  className={`p-3.5 rounded-xl border transition-all cursor-pointer space-y-1.5 ${
-                    selectedNote?.id === n.id
-                      ? 'bg-indigo-950/40 border-indigo-700/50 shadow-md'
-                      : 'bg-slate-900/40 border-slate-800/80 hover:border-slate-700'
-                  }`}
-                >
+              filteredNotes.map((n) => {
+                const noteId = n.id || n._id;
+                const isSelected = selectedNote && (selectedNote.id === noteId || selectedNote._id === noteId);
+                return (
+                  <div
+                    key={noteId}
+                    onClick={() => {
+                      setSelectedNote(n);
+                      setIsEditing(false);
+                    }}
+                    className={`p-3.5 rounded-xl border transition-all cursor-pointer space-y-1.5 ${
+                      isSelected
+                        ? 'bg-indigo-950/40 border-indigo-700/50 shadow-md'
+                        : 'bg-slate-900/40 border-slate-800/80 hover:border-slate-700'
+                    }`}
+                  >
                   <div className="flex items-center justify-between">
                     <h3 className="text-xs font-bold text-slate-100 truncate flex-1">{n.title}</h3>
                     {n.pinned && <Pin className="w-3.5 h-3.5 text-amber-400 shrink-0 ml-1" />}
@@ -188,8 +200,9 @@ export const Notes = () => {
                     ))}
                   </div>
                 </div>
-              ))
-            )}
+              );
+            })
+          )}
           </div>
         </div>
 
@@ -291,7 +304,8 @@ export const Notes = () => {
                   </button>
                   <button
                     onClick={() => {
-                      deleteNote(selectedNote.id);
+                      const noteId = selectedNote.id || selectedNote._id;
+                      if (noteId) deleteNote(noteId);
                       setSelectedNote(null);
                     }}
                     className="p-2 rounded-xl bg-slate-800 hover:bg-rose-950 hover:text-rose-400 text-slate-400 border border-slate-700"
@@ -302,14 +316,14 @@ export const Notes = () => {
               </div>
 
               {/* Note Content */}
-              <div className="flex-1 overflow-y-auto pr-2 prose prose-invert max-w-none text-xs text-slate-300 whitespace-pre-wrap leading-relaxed font-sans">
-                {selectedNote.content}
+              <div className="flex-1 overflow-y-auto pr-2">
+                <MarkdownViewer content={selectedNote.content} />
               </div>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-slate-500">
               <FileCode className="w-10 h-10 mb-2 opacity-50 text-indigo-400" />
-              <p className="text-xs">Select a note or create a new one</p>
+              <p className="text-xs font-semibold">Select a note or create a new one</p>
             </div>
           )}
         </div>

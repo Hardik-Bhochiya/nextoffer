@@ -23,11 +23,13 @@ import {
 } from 'lucide-react';
 
 import { getRoleConfig } from '../data/rolesData';
+import { TopicInspectorModal } from '../components/roadmaps/TopicInspectorModal';
 
 export const Roadmaps = () => {
   const { user } = useAuth();
   const { roadmaps, toggleRoadmapTopic, toggleEnrollRoadmap } = useData();
   const [catalogFilter, setCatalogFilter] = useState('All');
+  const [activeInspectorTopic, setActiveInspectorTopic] = useState(null);
 
   const currentRole = user?.targetRole || 'Full Stack Software Engineer';
   const roleConfig = getRoleConfig(currentRole);
@@ -191,29 +193,39 @@ export const Roadmaps = () => {
                     {roadmap.topics?.map((topic) => (
                       <div
                         key={topic.id}
-                        onClick={() => toggleRoadmapTopic(roadmap.id, topic.id)}
-                        className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                        className={`p-3 rounded-2xl border transition-all flex items-center justify-between gap-3 group ${
                           topic.completed
                             ? 'bg-emerald-950/30 border-emerald-800/50 text-slate-200 shadow-sm'
-                            : 'bg-slate-950/60 border-slate-800 hover:border-slate-700 text-slate-300'
+                            : 'bg-slate-950/60 border-slate-800 hover:border-indigo-600/50 text-slate-300'
                         }`}
                       >
-                        <div className="flex items-center gap-2.5 min-w-0">
+                        <div
+                          onClick={() => toggleRoadmapTopic(roadmap.id, topic.id)}
+                          className="flex items-center gap-2.5 min-w-0 cursor-pointer flex-1"
+                        >
                           {topic.completed ? (
                             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                           ) : (
-                            <Circle className="w-4 h-4 text-slate-600 shrink-0" />
+                            <Circle className="w-4 h-4 text-slate-600 hover:text-indigo-400 shrink-0 transition-colors" />
                           )}
                           <span className={`text-xs font-medium truncate ${topic.completed ? 'text-slate-100 font-semibold' : ''}`}>
                             {topic.title}
                           </span>
                         </div>
 
-                        {topic.resources && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-400 shrink-0 font-mono">
-                            {topic.resources}
-                          </span>
-                        )}
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {topic.resources && (
+                            <button
+                              type="button"
+                              onClick={() => setActiveInspectorTopic({ topic, roadmapCategory: roadmap.category, roadmapId: roadmap.id })}
+                              className="text-[10px] px-2 py-0.5 rounded-md bg-slate-900 hover:bg-indigo-950 border border-slate-800 hover:border-indigo-700/60 text-indigo-300 font-mono transition flex items-center gap-1"
+                              title="Inspect conceptual overview, interview questions, and official docs"
+                            >
+                              <span>{topic.resources}</span>
+                              <Sparkles className="w-2.5 h-2.5 text-indigo-400" />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -341,6 +353,26 @@ export const Roadmaps = () => {
           })}
         </div>
       </div>
+
+      {/* Topic Inspector Modal */}
+      <TopicInspectorModal
+        isOpen={Boolean(activeInspectorTopic)}
+        onClose={() => setActiveInspectorTopic(null)}
+        topic={activeInspectorTopic?.topic}
+        roadmapCategory={activeInspectorTopic?.roadmapCategory}
+        onToggleComplete={() => {
+          if (activeInspectorTopic?.roadmapId && activeInspectorTopic?.topic?.id) {
+            toggleRoadmapTopic(activeInspectorTopic.roadmapId, activeInspectorTopic.topic.id);
+            setActiveInspectorTopic(prev => prev ? ({
+              ...prev,
+              topic: {
+                ...prev.topic,
+                completed: !prev.topic.completed
+              }
+            }) : null);
+          }
+        }}
+      />
     </div>
   );
 };
