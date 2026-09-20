@@ -98,16 +98,18 @@ export const AuthPage = () => {
     <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-2 font-sans bg-white">
       {/* LEFT COLUMN: Brand Identity & Mission (GitHub Dark Canvas) */}
       <div className="relative bg-[#0d1117] text-white flex flex-col justify-between p-8 sm:p-12 lg:p-16 border-r border-[#30363d]/50">
-        {/* Top bar: Back button */}
-        <div>
-          <button
-            type="button"
-            onClick={() => navigate('/')}
-            className="inline-flex items-center gap-2 text-sm text-[#8b949e] hover:text-[#f0f6fc] transition-colors py-1.5 px-2.5 -ml-2.5 rounded-md hover:bg-[#161b22]"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="font-medium">Back</span>
-          </button>
+        {/* Top bar: Back button (only shown when registering to navigate back to login) */}
+        <div className="min-h-[36px]">
+          {!isLogin && (
+            <button
+              type="button"
+              onClick={() => switchMode(true)}
+              className="inline-flex items-center gap-2 text-sm text-[#8b949e] hover:text-[#f0f6fc] transition-colors py-1.5 px-2.5 -ml-2.5 rounded-md hover:bg-[#161b22] cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="font-medium">Back to Login</span>
+            </button>
+          )}
         </div>
 
         {/* Center: Branding & Mission matching reference image */}
@@ -161,6 +163,18 @@ export const AuthPage = () => {
       <div className="bg-white text-slate-900 flex flex-col justify-center items-center p-8 sm:p-12 lg:p-16">
         <div className="w-full max-w-md space-y-6">
           
+          {/* Back to login shortcut for small screens when registering */}
+          {!isLogin && (
+            <button
+              type="button"
+              onClick={() => switchMode(true)}
+              className="inline-flex items-center gap-1.5 text-xs text-[#0969da] hover:underline font-medium lg:hidden -mb-2 cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Login</span>
+            </button>
+          )}
+
           {/* Heading */}
           <div className="space-y-1 text-center sm:text-left">
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
