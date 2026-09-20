@@ -1,12 +1,6 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
-import Note from '../models/Note.js';
-import Project from '../models/Project.js';
-import DsaProblem from '../models/DsaProblem.js';
-import Revision from '../models/Revision.js';
-import { StudyGoal, DailyTask } from '../models/Planner.js';
-import { defaultDsaProblems, defaultProjects, defaultNotes, defaultRevisions } from '../data/seedData.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'nextoffer_super_secure_jwt_secret_2026';
 
@@ -57,32 +51,6 @@ export const register = async (req, res) => {
         leetcode: ''
       }
     });
-
-    // Seed initial starter resources for the new user so they have a complete, populated dashboard
-    try {
-      const dsaDocs = defaultDsaProblems.map(({ id, ...rest }) => ({ ...rest, userId: newUser._id }));
-      const projectDocs = defaultProjects.map(({ id, ...rest }) => ({ ...rest, userId: newUser._id }));
-      const noteDocs = defaultNotes.map(({ id, ...rest }) => ({ ...rest, userId: newUser._id }));
-      const revDocs = defaultRevisions.map(({ id, ...rest }) => ({ ...rest, userId: newUser._id }));
-
-      await Promise.all([
-        DsaProblem.insertMany(dsaDocs),
-        Project.insertMany(projectDocs),
-        Note.insertMany(noteDocs),
-        Revision.insertMany(revDocs),
-        StudyGoal.create([
-          { userId: newUser._id, goalTitle: 'Solve 100 LeetCode Blind 75 questions', deadline: '2026-06-30', priority: 'High', progress: 45 },
-          { userId: newUser._id, goalTitle: 'Complete System Design high-level architectures', deadline: '2026-07-15', priority: 'Medium', progress: 30 }
-        ]),
-        DailyTask.create([
-          { userId: newUser._id, taskDetails: 'Solve 2 Tree Traversal problems (LeetCode 102 & 104)', taskStatus: true },
-          { userId: newUser._id, taskDetails: 'Revise ACID properties and SQL joins for interview', taskStatus: false },
-          { userId: newUser._id, taskDetails: 'Build Mongoose CRUD models and test with Postman', taskStatus: true }
-        ])
-      ]);
-    } catch (seedErr) {
-      console.warn('Initial starter resource seed warning:', seedErr.message);
-    }
 
     return res.status(201).json({
       success: true,

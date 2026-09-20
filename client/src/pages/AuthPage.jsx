@@ -8,16 +8,13 @@ import {
   CheckCircle2,
   AlertCircle,
   Code2,
-  Terminal,
-  HelpCircle,
-  Lock
+  Terminal
 } from 'lucide-react';
 import { allRoles } from '../data/rolesData';
 
 export const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-  const [showHelpModal, setShowHelpModal] = useState(false);
 
   // Form Fields
   const [email, setEmail] = useState('');
@@ -33,13 +30,6 @@ export const AuthPage = () => {
 
   const { login, register } = useAuth();
   const navigate = useNavigate();
-
-  const handleFillDemo = (demoEmail = 'hardik@nextoffer.dev') => {
-    setEmail(demoEmail);
-    setPassword('password123');
-    setError('');
-    setSuccessMessage('');
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -353,91 +343,8 @@ export const AuthPage = () => {
               </span>
             )}
           </div>
-
-          {/* Need help logging in? / Demo Autofill Helper */}
-          <div className="pt-4 border-t border-slate-100 flex flex-col items-center gap-2.5 text-center">
-            <button
-              type="button"
-              onClick={() => setShowHelpModal(true)}
-              className="text-xs text-slate-500 hover:text-slate-800 transition-colors inline-flex items-center gap-1 font-medium"
-            >
-              <HelpCircle className="w-3.5 h-3.5" />
-              Need help logging in?
-            </button>
-
-            {/* Quick Demo Fill Pills */}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => handleFillDemo('hardik@nextoffer.dev')}
-                className="px-2.5 py-1 text-[11px] font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors"
-                title="Fill demo user: Hardik Bhochiya"
-              >
-                Autofill Demo (Hardik)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleFillDemo('alex@example.com')}
-                className="px-2.5 py-1 text-[11px] font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors"
-                title="Fill demo user: Alex Developer"
-              >
-                Autofill Demo (Alex)
-              </button>
-            </div>
-          </div>
-
         </div>
       </div>
-
-      {/* Help Modal */}
-      {showHelpModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 space-y-4 border border-slate-200 text-slate-900">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-2 text-slate-900 font-bold">
-                <Lock className="w-5 h-5 text-[#0969da]" />
-                <h3>Login Assistance</h3>
-              </div>
-              <button
-                onClick={() => setShowHelpModal(false)}
-                className="text-slate-400 hover:text-slate-600 text-sm font-semibold"
-              >
-                &times;
-              </button>
-            </div>
-            
-            <p className="text-xs text-slate-600 leading-relaxed">
-              For your evaluation or demo, you can either sign in with the pre-seeded demo accounts or register your own permanent personal account.
-            </p>
-
-            <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs space-y-1.5 font-mono">
-              <div><span className="text-slate-400">Demo User 1:</span> hardik@nextoffer.dev</div>
-              <div><span className="text-slate-400">Demo User 2:</span> alex@example.com</div>
-              <div><span className="text-slate-400">Password:</span> password123</div>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  handleFillDemo('hardik@nextoffer.dev');
-                  setShowHelpModal(false);
-                }}
-                className="px-3 py-1.5 bg-[#0d1117] hover:bg-[#161b22] text-white text-xs font-semibold rounded-md"
-              >
-                Apply Demo Credentials
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowHelpModal(false)}
-                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-md"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

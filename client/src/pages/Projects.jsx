@@ -82,15 +82,34 @@ export const Projects = () => {
       </div>
 
       {/* Projects Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {projects.map((proj) => {
-          const projId = proj.id || proj._id;
-          const completedMilestones = proj.milestones?.filter(m => m.completed).length || 0;
-          const totalMilestones = proj.milestones?.length || 1;
-          const pct = Math.round((completedMilestones / totalMilestones) * 100);
+      {projects.length === 0 ? (
+        <div className="rounded-lg bg-[#161b22] border border-[#30363d] p-10 text-center space-y-3">
+          <div className="w-10 h-10 rounded-md bg-[#0d1117] border border-[#30363d] flex items-center justify-center text-[#58a6ff] mx-auto">
+            <FolderGit2 className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-[#e6edf3]">No Portfolio Projects Added Yet</h3>
+            <p className="text-xs text-[#8b949e] max-w-md mx-auto mt-1">
+              Add your fullstack or system design projects with tech stacks, repositories, and milestone trackers to showcase your engineering capabilities.
+            </p>
+          </div>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-medium shadow-sm transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" /> Add First Project
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {projects.map((proj) => {
+            const projId = proj.id || proj._id;
+            const completedMilestones = proj.milestones?.filter(m => m.completed).length || 0;
+            const totalMilestones = proj.milestones?.length || 1;
+            const pct = Math.round((completedMilestones / totalMilestones) * 100);
 
-          return (
-            <div key={projId} className="rounded-lg bg-[#161b22] border border-[#30363d] p-5 flex flex-col justify-between space-y-4 hover:border-[#58a6ff]/40 transition-colors shadow-sm">
+            return (
+              <div key={projId} className="rounded-lg bg-[#161b22] border border-[#30363d] p-5 flex flex-col justify-between space-y-4 hover:border-[#58a6ff]/40 transition-colors shadow-sm">
               <div>
                 {/* Status & Delete */}
                 <div className="flex items-center justify-between mb-3">
@@ -176,6 +195,7 @@ export const Projects = () => {
           );
         })}
       </div>
+    )}
 
       {/* Add Project Modal */}
       {isAddModalOpen && (

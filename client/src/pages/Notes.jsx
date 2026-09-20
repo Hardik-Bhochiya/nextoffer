@@ -321,9 +321,23 @@ export const Notes = () => {
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center h-full text-[#8b949e]">
-              <FileCode className="w-8 h-8 mb-2 opacity-50 text-[#58a6ff]" />
-              <p className="text-xs font-medium">Select a note from the left or create a new one</p>
+            <div className="flex flex-col items-center justify-center h-full text-[#8b949e] space-y-3 p-6 text-center">
+              <div className="w-10 h-10 rounded-md bg-[#0d1117] border border-[#30363d] flex items-center justify-center text-[#58a6ff]">
+                <FileCode className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-[#e6edf3]">No Note Selected</p>
+                <p className="text-[11px] text-[#8b949e] mt-1 max-w-xs">
+                  Select a note from the list on the left, or create a new markdown note for Core CS, System Design, or algorithms.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleStartCreate}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-medium shadow-sm transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" /> Create Note
+              </button>
             </div>
           )}
         </div>
