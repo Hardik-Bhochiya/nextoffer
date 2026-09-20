@@ -18,8 +18,6 @@ import {
   Briefcase,
   Building,
   BarChart3,
-  Sparkles,
-  Layers,
   GitBranch,
   Rocket,
   CalendarCheck,
@@ -117,12 +115,12 @@ export const Navbar = ({ onToggleMobileMenu }) => {
   );
 
   return (
-    <header className="h-16 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30">
+    <header className="h-14 border-b border-[#30363d] bg-[#161b22] px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 font-sans">
       {/* Mobile Hamburger Drawer Trigger */}
       <button
         type="button"
         onClick={onToggleMobileMenu}
-        className="p-2 -ml-2 mr-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 md:hidden flex items-center justify-center shrink-0"
+        className="p-1.5 -ml-1 mr-2 rounded-md text-[#8b949e] hover:text-[#f0f6fc] hover:bg-[#21262d] md:hidden flex items-center justify-center shrink-0"
         title="Toggle Menu"
       >
         <Menu className="w-5 h-5" />
@@ -131,17 +129,17 @@ export const Navbar = ({ onToggleMobileMenu }) => {
       {/* Global Search Bar with Ctrl+K Shortcut */}
       <div ref={searchRef} className="relative flex-1 max-w-md">
         <div className="relative w-full">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-[#8b949e] absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             ref={searchInputRef}
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => searchQuery.trim() && setIsSearchOpen(true)}
-            placeholder="Search questions, roadmaps, notes, topics..."
-            className="w-full bg-slate-900/90 border border-slate-800 rounded-2xl pl-10 pr-16 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors shadow-inner"
+            placeholder="Type / to search questions, roadmaps, notes..."
+            className="w-full bg-[#0d1117] border border-[#30363d] rounded-md pl-9 pr-14 py-1.5 text-xs text-[#f0f6fc] placeholder-[#6e7681] focus:outline-none focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff] transition-colors"
           />
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+          <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
             {searchQuery ? (
               <button
                 type="button"
@@ -149,12 +147,12 @@ export const Navbar = ({ onToggleMobileMenu }) => {
                   setSearchQuery('');
                   setIsSearchOpen(false);
                 }}
-                className="text-slate-500 hover:text-white"
+                className="text-[#8b949e] hover:text-[#f0f6fc]"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
             ) : (
-              <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-mono font-semibold text-slate-500 bg-slate-950 border border-slate-800 rounded shadow-sm">
+              <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[9px] font-mono font-semibold text-[#8b949e] bg-[#21262d] border border-[#30363d] rounded">
                 Ctrl K
               </kbd>
             )}
@@ -163,65 +161,67 @@ export const Navbar = ({ onToggleMobileMenu }) => {
 
         {/* Global Search Dropdown Results */}
         {isSearchOpen && searchResults && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden z-50 max-h-96 overflow-y-auto p-3 space-y-3 animate-fadeIn">
+          <div className="absolute top-full left-0 right-0 mt-1.5 bg-[#161b22] border border-[#30363d] rounded-md shadow-2xl overflow-hidden z-50 max-h-96 overflow-y-auto p-2 space-y-2 animate-fadeIn">
             
             {/* 1. DSA Problems */}
             {searchResults.problems?.length > 0 && (
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1">
+              <div className="space-y-0.5">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#58a6ff] flex items-center gap-1 px-2 py-1">
                   <Code2 className="w-3 h-3" /> DSA Questions ({searchResults.problems.length})
                 </p>
                 {searchResults.problems.slice(0, 3).map((item) => (
                   <div
                     key={item._id || item.id}
                     onClick={() => handleResultClick('/dsa')}
-                    className="p-2 rounded-xl hover:bg-slate-800/80 cursor-pointer flex items-center justify-between text-xs text-slate-200 transition-colors"
+                    className="px-2 py-1.5 rounded-md hover:bg-[#21262d] cursor-pointer flex items-center justify-between text-xs text-[#f0f6fc] transition-colors"
                   >
                     <span className="font-medium truncate">{item.title}</span>
-                    <span className="text-[10px] text-slate-400 bg-slate-950 px-2 py-0.5 rounded-lg border border-slate-800 shrink-0">
-                      {item.topic}
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded font-medium border ${
+                      item.difficulty === 'Easy' ? 'bg-[#238636]/10 text-[#3fb950] border-[#238636]/30' :
+                      item.difficulty === 'Medium' ? 'bg-[#d29922]/10 text-[#d29922] border-[#d29922]/30' :
+                      'bg-[#da3633]/10 text-[#f85149] border-[#da3633]/30'
+                    }`}>
+                      {item.difficulty}
                     </span>
                   </div>
                 ))}
               </div>
             )}
 
-            {/* 2. Roadmaps Tracks */}
+            {/* 2. Roadmaps */}
             {searchResults.roadmaps?.length > 0 && (
-              <div className="space-y-1 pt-1 border-t border-slate-800">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1">
-                  <GitBranch className="w-3 h-3" /> Learning Roadmaps ({searchResults.roadmaps.length})
+              <div className="space-y-0.5 pt-1 border-t border-[#30363d]">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#58a6ff] flex items-center gap-1 px-2 py-1">
+                  <GitBranch className="w-3 h-3" /> Roadmaps ({searchResults.roadmaps.length})
                 </p>
                 {searchResults.roadmaps.slice(0, 3).map((item) => (
                   <div
                     key={item._id || item.id}
                     onClick={() => handleResultClick('/roadmaps')}
-                    className="p-2 rounded-xl hover:bg-slate-800/80 cursor-pointer flex items-center justify-between text-xs text-slate-200 transition-colors"
+                    className="px-2 py-1.5 rounded-md hover:bg-[#21262d] cursor-pointer flex items-center justify-between text-xs text-[#f0f6fc] transition-colors"
                   >
-                    <span className="font-medium truncate">{item.category}</span>
-                    <span className="text-[10px] text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded-lg border border-cyan-800/40 shrink-0">
-                      Track
-                    </span>
+                    <span className="truncate">{item.title}</span>
+                    <span className="text-[10px] text-[#8b949e]">{item.stageCount || item.stages?.length} Stages</span>
                   </div>
                 ))}
               </div>
             )}
 
-            {/* 3. Smart Notes */}
+            {/* 3. Notes */}
             {searchResults.notes?.length > 0 && (
-              <div className="space-y-1 pt-1 border-t border-slate-800">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1">
-                  <BookOpen className="w-3 h-3" /> Interview Notes ({searchResults.notes.length})
+              <div className="space-y-0.5 pt-1 border-t border-[#30363d]">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#3fb950] flex items-center gap-1 px-2 py-1">
+                  <BookOpen className="w-3 h-3" /> Notes ({searchResults.notes.length})
                 </p>
                 {searchResults.notes.slice(0, 3).map((item) => (
                   <div
                     key={item._id || item.id}
                     onClick={() => handleResultClick('/notes')}
-                    className="p-2 rounded-xl hover:bg-slate-800/80 cursor-pointer flex items-center justify-between text-xs text-slate-200 transition-colors"
+                    className="px-2 py-1.5 rounded-md hover:bg-[#21262d] cursor-pointer flex items-center justify-between text-xs text-[#f0f6fc] transition-colors"
                   >
                     <span className="truncate">{item.title}</span>
                     {item.tags?.[0] && (
-                      <span className="text-[10px] text-amber-400 bg-amber-950/80 px-2 py-0.5 rounded-lg border border-amber-800/40 shrink-0">
+                      <span className="text-[10px] text-[#8b949e] bg-[#21262d] px-1.5 py-0.2 rounded border border-[#30363d]">
                         #{item.tags[0]}
                       </span>
                     )}
@@ -232,15 +232,15 @@ export const Navbar = ({ onToggleMobileMenu }) => {
 
             {/* 4. Projects */}
             {searchResults.projects?.length > 0 && (
-              <div className="space-y-1 pt-1 border-t border-slate-800">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1">
-                  <Rocket className="w-3 h-3" /> Capstone Projects ({searchResults.projects.length})
+              <div className="space-y-0.5 pt-1 border-t border-[#30363d]">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#bc8cff] flex items-center gap-1 px-2 py-1">
+                  <Rocket className="w-3 h-3" /> Projects ({searchResults.projects.length})
                 </p>
                 {searchResults.projects.slice(0, 3).map((item) => (
                   <div
                     key={item._id || item.id}
                     onClick={() => handleResultClick('/projects')}
-                    className="p-2 rounded-xl hover:bg-slate-800/80 cursor-pointer flex items-center justify-between text-xs text-slate-200 transition-colors"
+                    className="px-2 py-1.5 rounded-md hover:bg-[#21262d] cursor-pointer flex items-center justify-between text-xs text-[#f0f6fc] transition-colors"
                   >
                     <span className="truncate font-medium">{item.title}</span>
                   </div>
@@ -248,20 +248,20 @@ export const Navbar = ({ onToggleMobileMenu }) => {
               </div>
             )}
 
-            {/* 5. Revisions & Tasks */}
+            {/* 5. Revisions */}
             {searchResults.revisions?.length > 0 && (
-              <div className="space-y-1 pt-1 border-t border-slate-800">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1">
-                  <CalendarCheck className="w-3 h-3" /> Goals & Revisions ({searchResults.revisions.length})
+              <div className="space-y-0.5 pt-1 border-t border-[#30363d]">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#d29922] flex items-center gap-1 px-2 py-1">
+                  <CalendarCheck className="w-3 h-3" /> Revisions ({searchResults.revisions.length})
                 </p>
                 {searchResults.revisions.slice(0, 3).map((item) => (
                   <div
                     key={item._id || item.id}
                     onClick={() => handleResultClick('/revision')}
-                    className="p-2 rounded-xl hover:bg-slate-800/80 cursor-pointer flex items-center justify-between text-xs text-slate-200 transition-colors"
+                    className="px-2 py-1.5 rounded-md hover:bg-[#21262d] cursor-pointer flex items-center justify-between text-xs text-[#f0f6fc] transition-colors"
                   >
                     <span className="truncate">{item.topic}</span>
-                    <span className="text-[10px] text-purple-400 bg-purple-950/80 px-2 py-0.5 rounded-lg border border-purple-800/40 shrink-0">
+                    <span className="text-[10px] text-[#8b949e] bg-[#21262d] px-1.5 py-0.2 rounded border border-[#30363d]">
                       {item.category}
                     </span>
                   </div>
@@ -271,31 +271,31 @@ export const Navbar = ({ onToggleMobileMenu }) => {
 
             {/* Empty state */}
             {!hasAnyResults && (
-              <p className="text-xs text-slate-500 text-center py-4">No matching results found for "{searchQuery}"</p>
+              <p className="text-xs text-[#8b949e] text-center py-3">No matching results found for "{searchQuery}"</p>
             )}
           </div>
         )}
       </div>
 
       {/* Center & Right Badges + User Dropdown */}
-      <div className="flex items-center gap-3 sm:gap-4">
+      <div className="flex items-center gap-2.5 sm:gap-3">
         {/* Placement Readiness Badge */}
-        <div className="hidden sm:flex items-center gap-2 bg-indigo-950/40 border border-indigo-800/40 px-3.5 py-1.5 rounded-2xl shadow-sm">
-          <Target className="w-4 h-4 text-indigo-400" />
-          <span className="text-xs text-slate-300 font-medium">Readiness:</span>
-          <span className="text-xs font-black text-indigo-400">{readiness}%</span>
-          <div className="w-10 bg-slate-800 h-1.5 rounded-full overflow-hidden ml-1">
+        <div className="hidden sm:flex items-center gap-2 bg-[#21262d] border border-[#30363d] px-2.5 py-1 rounded-md">
+          <Target className="w-3.5 h-3.5 text-[#58a6ff]" />
+          <span className="text-xs text-[#8b949e]">Readiness:</span>
+          <span className="text-xs font-semibold text-[#58a6ff]">{readiness}%</span>
+          <div className="w-10 bg-[#0d1117] h-1.5 rounded-full overflow-hidden ml-0.5">
             <div
-              className="bg-gradient-to-r from-indigo-500 to-cyan-400 h-full rounded-full transition-all duration-500"
+              className="bg-[#58a6ff] h-full rounded-full transition-all duration-500"
               style={{ width: `${Math.max(4, readiness)}%` }}
             />
           </div>
         </div>
 
         {/* Streak Counter */}
-        <div className="flex items-center gap-1.5 bg-amber-950/40 border border-amber-800/40 px-3 py-1.5 rounded-2xl shadow-sm">
-          <Flame className="w-4 h-4 text-amber-400 animate-pulse" />
-          <span className="text-xs font-bold text-amber-400">{streak} Days</span>
+        <div className="flex items-center gap-1.5 bg-[#21262d] border border-[#30363d] px-2.5 py-1 rounded-md">
+          <Flame className="w-3.5 h-3.5 text-[#d29922]" />
+          <span className="text-xs font-semibold text-[#d29922]">{streak}d</span>
         </div>
 
         {/* Top-Right Profile Avatar & Dropdown */}
@@ -303,14 +303,13 @@ export const Navbar = ({ onToggleMobileMenu }) => {
           <button
             type="button"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className={`flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-2xl border transition-all cursor-pointer focus:outline-none ${
+            className={`flex items-center gap-2 pl-1 pr-2 py-1 rounded-md border transition-all cursor-pointer focus:outline-none ${
               isDropdownOpen
-                ? 'bg-slate-900 border-indigo-500/50 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500/30'
-                : 'hover:bg-slate-900/80 border-transparent hover:border-slate-800'
+                ? 'bg-[#21262d] border-[#58a6ff]'
+                : 'hover:bg-[#21262d] border-transparent hover:border-[#30363d]'
             }`}
-            title="Candidate Dossier & Account"
+            title="Candidate Account"
           >
-            {/* User Avatar Circle with Status Ping */}
             <UserAvatar
               user={user}
               size="sm"
@@ -318,22 +317,22 @@ export const Navbar = ({ onToggleMobileMenu }) => {
             />
 
             <div className="hidden md:block text-left">
-              <p className="text-xs font-bold text-slate-100 leading-tight flex items-center gap-1">
+              <p className="text-xs font-semibold text-[#f0f6fc] leading-tight flex items-center gap-1">
                 <span className="truncate max-w-[90px]">{user?.name || 'Developer'}</span>
-                <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180 text-indigo-400' : ''}`} />
+                <ChevronDown className={`w-3 h-3 text-[#8b949e] transition-transform duration-200 ${isDropdownOpen ? 'rotate-180 text-[#58a6ff]' : ''}`} />
               </p>
-              <span className="text-[10px] font-semibold text-indigo-400/90 leading-tight block truncate max-w-[120px]">
+              <span className="text-[10px] text-[#8b949e] leading-tight block truncate max-w-[120px]">
                 {roleConfig.shortLabel}
               </span>
             </div>
           </button>
 
-          {/* LUXURIOUS EXECUTIVE CANDIDATE DROPDOWN */}
+          {/* GITHUB CANDIDATE PROFILE DROPDOWN */}
           {isDropdownOpen && (
-            <div className="absolute right-0 top-full mt-2 w-80 bg-slate-900/95 backdrop-blur-2xl border border-slate-700/80 rounded-3xl shadow-2xl p-4 z-50 animate-fadeIn space-y-3.5 ring-1 ring-white/10">
+            <div className="absolute right-0 top-full mt-1.5 w-72 bg-[#161b22] border border-[#30363d] rounded-md shadow-2xl p-3 z-50 animate-fadeIn space-y-3 font-sans">
               
               {/* Candidate Identity Header */}
-              <div className="flex items-start gap-3 pb-3 border-b border-slate-800/80">
+              <div className="flex items-start gap-2.5 pb-2.5 border-b border-[#30363d]">
                 <UserAvatar
                   user={user}
                   size="md"
@@ -342,57 +341,55 @@ export const Navbar = ({ onToggleMobileMenu }) => {
 
                 <div className="min-w-0 flex-1 space-y-0.5">
                   <div className="flex items-center justify-between gap-1">
-                    <p className="text-xs font-black text-white truncate flex items-center gap-1">
+                    <p className="text-xs font-bold text-[#f0f6fc] truncate flex items-center gap-1">
                       {user?.name || 'Developer'}
-                      <ShieldCheck className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#58a6ff] shrink-0" />
                     </p>
-                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${tierInfo.badgeClass}`}>
+                    <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-[#388bfd]/15 text-[#58a6ff] border border-[#388bfd]/30">
                       {readiness}%
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-400 truncate font-mono">{user?.email}</p>
+                  <p className="text-[11px] text-[#8b949e] truncate font-mono">{user?.email}</p>
                 </div>
               </div>
 
-              {/* Specialization & Readiness Micro-Dashboard */}
-              <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800/90 space-y-2">
+              {/* Specialization & Targets */}
+              <div className="p-2.5 rounded-md bg-[#0d1117] border border-[#30363d] space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1">
-                    <Briefcase className="w-3 h-3 text-indigo-400" /> Specialization
+                  <span className="text-[10px] uppercase font-semibold text-[#8b949e] flex items-center gap-1">
+                    <Briefcase className="w-3 h-3 text-[#58a6ff]" /> Role
                   </span>
-                  <span className="text-[10px] font-bold text-indigo-300 truncate max-w-[140px]">
+                  <span className="text-[10px] font-medium text-[#f0f6fc] truncate max-w-[130px]">
                     {roleConfig.shortLabel}
                   </span>
                 </div>
 
-                {/* Mini readiness gauge bar */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-[10px]">
-                    <span className="text-slate-400">Readiness Tier</span>
-                    <span className="text-slate-200 font-semibold">{tierInfo.tier}</span>
+                    <span className="text-[#8b949e]">Tier</span>
+                    <span className="text-[#f0f6fc] font-medium">{tierInfo.tier}</span>
                   </div>
-                  <div className="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-[#21262d] h-1.5 rounded-full overflow-hidden">
                     <div
-                      className="bg-gradient-to-r from-indigo-500 to-cyan-400 h-full rounded-full transition-all duration-500"
+                      className="bg-[#58a6ff] h-full rounded-full transition-all duration-500"
                       style={{ width: `${Math.max(4, readiness)}%` }}
                     />
                   </div>
                 </div>
 
-                {/* Target companies strip */}
                 {parsedCompanies.length > 0 && (
-                  <div className="pt-1.5 border-t border-slate-900 flex items-center justify-between text-[10px]">
-                    <span className="text-slate-400 flex items-center gap-1">
-                      <Building className="w-3 h-3 text-cyan-400" /> Target
+                  <div className="pt-1.5 border-t border-[#21262d] flex items-center justify-between text-[10px]">
+                    <span className="text-[#8b949e] flex items-center gap-1">
+                      <Building className="w-3 h-3 text-[#3fb950]" /> Target
                     </span>
                     <div className="flex items-center gap-1">
                       {parsedCompanies.slice(0, 2).map((c, i) => (
-                        <span key={i} className="px-1.5 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-800 font-semibold">
+                        <span key={i} className="px-1.5 py-0.2 rounded bg-[#161b22] text-[#c9d1d9] border border-[#30363d]">
                           {c}
                         </span>
                       ))}
                       {parsedCompanies.length > 2 && (
-                        <span className="text-slate-500 font-bold">+{parsedCompanies.length - 2}</span>
+                        <span className="text-[#8b949e]">+{parsedCompanies.length - 2}</span>
                       )}
                     </div>
                   </div>
@@ -400,25 +397,20 @@ export const Navbar = ({ onToggleMobileMenu }) => {
               </div>
 
               {/* Action Menu Links */}
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <button
                   type="button"
                   onClick={() => {
                     setIsDropdownOpen(false);
                     navigate('/profile');
                   }}
-                  className="w-full p-2.5 rounded-2xl bg-slate-950/60 hover:bg-slate-800/90 border border-slate-800/80 hover:border-slate-700 flex items-center justify-between text-xs transition-all group shadow-sm text-left cursor-pointer"
+                  className="w-full px-2.5 py-1.5 rounded-md hover:bg-[#21262d] flex items-center justify-between text-xs text-[#c9d1d9] hover:text-[#f0f6fc] transition-colors text-left cursor-pointer"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-xl bg-indigo-950 border border-indigo-800/50 flex items-center justify-center text-indigo-400 group-hover:scale-105 transition-transform">
-                      <User className="w-3.5 h-3.5" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-slate-200 group-hover:text-white transition-colors">Candidate Dossier</p>
-                      <p className="text-[10px] text-slate-500">Edit specialization, targets & handles</p>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <User className="w-3.5 h-3.5 text-[#8b949e]" />
+                    <span>Candidate Profile</span>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all" />
+                  <ChevronRight className="w-3.5 h-3.5 text-[#6e7681]" />
                 </button>
 
                 <button
@@ -427,33 +419,28 @@ export const Navbar = ({ onToggleMobileMenu }) => {
                     setIsDropdownOpen(false);
                     navigate('/analytics');
                   }}
-                  className="w-full p-2.5 rounded-2xl bg-slate-950/60 hover:bg-slate-800/90 border border-slate-800/80 hover:border-slate-700 flex items-center justify-between text-xs transition-all group shadow-sm text-left cursor-pointer"
+                  className="w-full px-2.5 py-1.5 rounded-md hover:bg-[#21262d] flex items-center justify-between text-xs text-[#c9d1d9] hover:text-[#f0f6fc] transition-colors text-left cursor-pointer"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-xl bg-cyan-950 border border-cyan-800/50 flex items-center justify-center text-cyan-400 group-hover:scale-105 transition-transform">
-                      <BarChart3 className="w-3.5 h-3.5" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-slate-200 group-hover:text-white transition-colors">Performance Analytics</p>
-                      <p className="text-[10px] text-slate-500">Scoring formula & breakdown</p>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <BarChart3 className="w-3.5 h-3.5 text-[#8b949e]" />
+                    <span>Readiness Analytics</span>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-cyan-400 group-hover:translate-x-0.5 transition-all" />
+                  <ChevronRight className="w-3.5 h-3.5 text-[#6e7681]" />
                 </button>
               </div>
 
-              {/* Log Out Action */}
-              <div className="pt-2 border-t border-slate-800/80">
+              {/* Sign Out */}
+              <div className="pt-2 border-t border-[#30363d]">
                 <button
                   type="button"
                   onClick={() => {
                     setIsDropdownOpen(false);
                     logout();
                   }}
-                  className="w-full px-3 py-2 rounded-xl text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 flex items-center gap-2 transition-all cursor-pointer"
+                  className="w-full px-2.5 py-1.5 rounded-md text-xs font-medium text-[#f85149] hover:bg-[#da3633]/15 flex items-center gap-2 transition-colors cursor-pointer"
                 >
                   <LogOut className="w-3.5 h-3.5" />
-                  <span>Sign Out Account</span>
+                  <span>Sign out</span>
                 </button>
               </div>
             </div>

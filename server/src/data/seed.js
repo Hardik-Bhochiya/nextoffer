@@ -20,6 +20,21 @@ const seedDatabase = async () => {
     await mongoose.connect(MONGODB_URI);
     console.log('✅ Connected to MongoDB for seeding');
 
+    const forceSeed = process.argv.includes('--force') || process.env.SEED_FORCE === 'true';
+
+    // Check if database already contains permanent user data
+    const existingUserCount = await User.countDocuments();
+    if (existingUserCount > 0 && !forceSeed) {
+      console.log(`🛡️ Permanent Data Protection: Found ${existingUserCount} existing user account(s).`);
+      console.log(`🔒 Skipping wipe to preserve your permanent database data.`);
+      console.log(`ℹ️ If you intentionally want to reset and re-seed all collections, run:\n   npm run seed -- --force\n`);
+      process.exit(0);
+    }
+
+    if (forceSeed) {
+      console.log('⚠️ Force flag detected. Cleaning up existing collections...');
+    }
+
     // Clean existing collections
     await User.deleteMany({});
     await Note.deleteMany({});
@@ -30,9 +45,9 @@ const seedDatabase = async () => {
     await DailyTask.deleteMany({});
     await Roadmap.deleteMany({});
 
-    console.log('🧹 Cleaned up existing collections.');
+    console.log('🧹 Cleaned up collections.');
 
-    // Seed Demo User
+    // Seed Demo Users
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash('password123', salt);
     const demoUser = await User.create({
@@ -50,43 +65,59 @@ const seedDatabase = async () => {
         leetcode: 'https://leetcode.com/hardik-bhochiya'
       }
     });
-    console.log(`👤 Seeded demo user: ${demoUser.email} (password: password123)`);
 
-    // Seed DSA Problems
-    const dsaDocs = defaultDsaProblems.map(({ id, ...rest }) => rest);
-    await DsaProblem.insertMany(dsaDocs);
-    console.log(`💡 Seeded ${dsaDocs.length} DSA Problems.`);
+    const demoUserAlex = await User.create({
+      name: 'Alex Developer',
+      email: 'alex@example.com',
+      password: hashedPassword,
+      targetRole: 'Full Stack Engineer',
+      dreamCompany: 'Google, Uber, Microsoft',
+      gradYear: '2026',
+      streak: 14,
+      readinessScore: 82,
+      socialLinks: {
+        github: 'https://github.com/alex-dev',
+        linkedin: 'https://linkedin.com',
+        leetcode: 'https://leetcode.com'
+      }
+    });
+    console.log(`👤 Seeded demo users: ${demoUser.email}, ${demoUserAlex.email} (password: password123)`);
 
-    // Seed Roadmaps
+    const usersToSeed = [demoUser, demoUserAlex];
+
+    // Seed Roadmaps (global catalog)
     await Roadmap.insertMany(defaultRoadmaps);
     console.log(`🗺️ Seeded ${defaultRoadmaps.length} Roadmaps.`);
 
-    // Seed Projects
-    const projectDocs = defaultProjects.map(({ id, ...rest }) => rest);
-    await Project.insertMany(projectDocs);
-    console.log(`🚀 Seeded ${projectDocs.length} Projects.`);
+    for (const u of usersToSeed) {
+      // Seed DSA Problems
+      const dsaDocs = defaultDsaProblems.map(({ id, ...rest }) => ({ ...rest, userId: u._id }));
+      await DsaProblem.insertMany(dsaDocs);
 
-    // Seed Notes
-    const noteDocs = defaultNotes.map(({ id, ...rest }) => rest);
-    await Note.insertMany(noteDocs);
-    console.log(`📝 Seeded ${noteDocs.length} Notes.`);
+      // Seed Projects
+      const projectDocs = defaultProjects.map(({ id, ...rest }) => ({ ...rest, userId: u._id }));
+      await Project.insertMany(projectDocs);
 
-    // Seed Revisions
-    const revDocs = defaultRevisions.map(({ id, ...rest }) => rest);
-    await Revision.insertMany(revDocs);
-    console.log(`🔄 Seeded ${revDocs.length} Revision items.`);
+      // Seed Notes
+      const noteDocs = defaultNotes.map(({ id, ...rest }) => ({ ...rest, userId: u._id }));
+      await Note.insertMany(noteDocs);
 
-    // Seed Planner Goals & Daily Tasks
-    await StudyGoal.create([
-      { goalTitle: 'Solve 100 LeetCode Blind 75 questions', deadline: '2026-06-30', priority: 'High', progress: 45 },
-      { goalTitle: 'Complete System Design high-level architectures', deadline: '2026-07-15', priority: 'Medium', progress: 30 }
-    ]);
-    await DailyTask.create([
-      { taskDetails: 'Solve 2 Tree Traversal problems (LeetCode 102 & 104)', taskStatus: true },
-      { taskDetails: 'Revise ACID properties and SQL joins for interview', taskStatus: false },
-      { taskDetails: 'Build Mongoose CRUD models and test with Postman', taskStatus: true }
-    ]);
-    console.log(`📅 Seeded Planner Goals and Daily Tasks.`);
+      // Seed Revisions
+      const revDocs = defaultRevisions.map(({ id, ...rest }) => ({ ...rest, userId: u._id }));
+      await Revision.insertMany(revDocs);
+
+      // Seed Planner Goals & Daily Tasks
+      await StudyGoal.create([
+        { userId: u._id, goalTitle: 'Solve 100 LeetCode Blind 75 questions', deadline: '2026-06-30', priority: 'High', progress: 45 },
+        { userId: u._id, goalTitle: 'Complete System Design high-level architectures', deadline: '2026-07-15', priority: 'Medium', progress: 30 }
+      ]);
+      await DailyTask.create([
+        { userId: u._id, taskDetails: 'Solve 2 Tree Traversal problems (LeetCode 102 & 104)', taskStatus: true },
+        { userId: u._id, taskDetails: 'Revise ACID properties and SQL joins for interview', taskStatus: false },
+        { userId: u._id, taskDetails: 'Build Mongoose CRUD models and test with Postman', taskStatus: true }
+      ]);
+    }
+    console.log(`💡 Seeded DSA, Projects, Notes, Revisions, and Planner tasks for users.`);
 
     console.log('🎉 All Seed Data Inserted Successfully!');
     process.exit(0);

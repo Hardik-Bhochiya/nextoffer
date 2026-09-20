@@ -2,29 +2,22 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
-  Rocket,
+  ArrowLeft,
   Eye,
   EyeOff,
   CheckCircle2,
-  Mail,
-  Lock,
-  User,
-  Briefcase,
-  Building,
-  GraduationCap,
-  Sparkles,
-  ShieldCheck,
+  AlertCircle,
   Code2,
-  TrendingUp,
-  BrainCircuit,
-  ArrowRight
+  Terminal,
+  HelpCircle,
+  Lock
 } from 'lucide-react';
-
 import { allRoles } from '../data/rolesData';
 
 export const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
 
   // Form Fields
   const [email, setEmail] = useState('');
@@ -41,8 +34,8 @@ export const AuthPage = () => {
   const { login, register } = useAuth();
   const navigate = useNavigate();
 
-  const handleFillDemo = () => {
-    setEmail('alex@example.com');
+  const handleFillDemo = (demoEmail = 'hardik@nextoffer.dev') => {
+    setEmail(demoEmail);
     setPassword('password123');
     setError('');
     setSuccessMessage('');
@@ -63,22 +56,31 @@ export const AuthPage = () => {
         setError(res?.message || 'Invalid email or password. Please check your credentials.');
       }
     } else {
+      if (!fullName.trim()) {
+        setError('Please enter your full name.');
+        setLoading(false);
+        return;
+      }
+      if (password.length < 6) {
+        setError('Password must be at least 6 characters.');
+        setLoading(false);
+        return;
+      }
+
       const res = await register({
-        fullName,
-        name: fullName,
-        email,
+        fullName: fullName.trim(),
+        name: fullName.trim(),
+        email: email.trim().toLowerCase(),
         password,
         targetRole,
-        dreamCompany: dreamCompany || 'Tier-1 Tech Companies',
+        dreamCompany: dreamCompany || 'Google, Uber, Microsoft',
         gradYear
       });
       setLoading(false);
       if (res?.success) {
-        setSuccessMessage('Account created successfully! Please sign in with your password to continue.');
+        setSuccessMessage('Account created successfully! Please sign in with your credentials.');
         setIsLogin(true);
         setPassword('');
-        setFullName('');
-        setDreamCompany('');
       } else {
         setError(res?.message || 'Registration failed. Please try again.');
       }
@@ -93,299 +95,335 @@ export const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center p-4 lg:p-8 relative overflow-hidden selection:bg-indigo-500 selection:text-white">
-      {/* Dynamic Background Glowing Orbs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/15 rounded-full blur-[120px] pointer-events-none animate-pulse" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-cyan-500/15 rounded-full blur-[120px] pointer-events-none animate-pulse" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-900/10 rounded-full blur-[140px] pointer-events-none" />
+    <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-2 font-sans bg-white">
+      {/* LEFT COLUMN: Brand Identity & Mission (GitHub Dark Canvas) */}
+      <div className="relative bg-[#0d1117] text-white flex flex-col justify-between p-8 sm:p-12 lg:p-16 border-r border-[#30363d]/50">
+        {/* Top bar: Back button */}
+        <div>
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="inline-flex items-center gap-2 text-sm text-[#8b949e] hover:text-[#f0f6fc] transition-colors py-1.5 px-2.5 -ml-2.5 rounded-md hover:bg-[#161b22]"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="font-medium">Back</span>
+          </button>
+        </div>
 
-      {/* Main Container Card */}
-      <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 bg-slate-900/90 backdrop-blur-2xl rounded-3xl border border-slate-800/80 shadow-2xl overflow-hidden relative z-10">
-        
-        {/* Left Column: Brand Story & Platform Highlights */}
-        <div className="lg:col-span-5 p-8 lg:p-10 bg-gradient-to-br from-slate-900 via-indigo-950/40 to-slate-950 border-b lg:border-b-0 lg:border-r border-slate-800/80 flex flex-col justify-between space-y-8">
-          <div className="space-y-6">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-indigo-600/30">
-                <Rocket className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <span className="text-xl font-black tracking-tight text-white flex items-center gap-1.5">
-                  NextOffer <span className="text-[10px] bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded font-mono font-normal">AI v1.0</span>
-                </span>
-                <p className="text-[11px] text-slate-400 font-medium">Placement Preparation Platform</p>
-              </div>
-            </div>
-
-            {/* Hero Copy */}
-            <div className="space-y-2 pt-2">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-950/80 border border-indigo-800/50 text-[11px] text-indigo-300 font-semibold">
-                <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Predictive Placement Engine</span>
-              </div>
-              <h2 className="text-2xl lg:text-3xl font-extrabold text-white leading-tight tracking-tight">
-                Master your technical placement journey.
-              </h2>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Streamline your DSA patterns, track curated roadmaps, diagnose algorithmic weak spots, and benchmark your readiness index for top tech companies.
-              </p>
-            </div>
-
-            {/* Feature Highlights */}
-            <div className="space-y-3.5 pt-2">
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-xl bg-indigo-950/90 border border-indigo-800/40 flex items-center justify-center text-indigo-400 shrink-0 mt-0.5">
-                  <Code2 className="w-3.5 h-3.5" />
-                </div>
-                <div className="text-xs">
-                  <p className="font-bold text-slate-200">Curated DSA & Spaced Revision</p>
-                  <p className="text-[11px] text-slate-400">Master 350+ pattern-based interview problems with automated revision schedules.</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-xl bg-cyan-950/90 border border-cyan-800/40 flex items-center justify-center text-cyan-400 shrink-0 mt-0.5">
-                  <TrendingUp className="w-3.5 h-3.5" />
-                </div>
-                <div className="text-xs">
-                  <p className="font-bold text-slate-200">Predictive Readiness Index</p>
-                  <p className="text-[11px] text-slate-400">Dynamic score telemetry weighted for your specific target software engineering role.</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-xl bg-amber-950/90 border border-amber-800/40 flex items-center justify-center text-amber-400 shrink-0 mt-0.5">
-                  <BrainCircuit className="w-3.5 h-3.5" />
-                </div>
-                <div className="text-xs">
-                  <p className="font-bold text-slate-200">Goal Setter & Spaced Repetition</p>
-                  <p className="text-[11px] text-slate-400">1-day, 3-day, 7-day, 14-day revision intervals and daily task checklists.</p>
-                </div>
+        {/* Center: Branding & Mission matching reference image */}
+        <div className="flex flex-col items-center text-center my-auto py-12">
+          {/* Logo Illustration */}
+          <div className="mb-6 relative">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-b from-[#161b22] to-[#21262d] border border-[#30363d] flex items-center justify-center shadow-2xl relative">
+              <Terminal className="w-9 h-9 text-[#58a6ff]" />
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-lg bg-[#238636] border-2 border-[#0d1117] flex items-center justify-center">
+                <Code2 className="w-3.5 h-3.5 text-white" />
               </div>
             </div>
           </div>
 
-          {/* Social Proof / Metrics Footer */}
-          <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-            <div className="flex items-center gap-1.5 text-emerald-400 font-semibold">
-              <ShieldCheck className="w-4 h-4" />
-              <span>Full Stack Preparation Platform</span>
-            </div>
-            <span className="text-[10px] text-slate-500 font-mono">2026 Ready</span>
+          {/* Platform Title */}
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#f0f6fc]">
+            NextOffer
+          </h1>
+
+          {/* Subtitle / Description matching ICPC reference style */}
+          <p className="mt-4 text-sm sm:text-base text-[#8b949e] max-w-md leading-relaxed font-normal">
+            NextOffer is an algorithmic interview &amp; career placement acceleration platform for engineers.
+          </p>
+
+          {/* Feature Badges in GitHub style */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-2 max-w-sm">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-[#161b22] border border-[#30363d] text-[#c9d1d9]">
+              <span className="w-2 h-2 rounded-full bg-[#238636]"></span>
+              Curated DSA Patterns
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-[#161b22] border border-[#30363d] text-[#c9d1d9]">
+              <span className="w-2 h-2 rounded-full bg-[#58a6ff]"></span>
+              Role Readiness Engine
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-[#161b22] border border-[#30363d] text-[#c9d1d9]">
+              <span className="w-2 h-2 rounded-full bg-[#d29922]"></span>
+              Spaced Repetition
+            </span>
           </div>
         </div>
 
-        {/* Right Column: Authentication Form */}
-        <div className="lg:col-span-7 p-8 lg:p-10 flex flex-col justify-center space-y-6">
+        {/* Footer Note */}
+        <div className="text-center pt-8 border-t border-[#21262d]/80">
+          <p className="text-xs text-[#6e7681]">
+            &copy; {new Date().getFullYear()} NextOffer. All rights reserved.
+          </p>
+        </div>
+      </div>
+
+      {/* RIGHT COLUMN: Clean Minimalist Authentication Form (Light Canvas) */}
+      <div className="bg-white text-slate-900 flex flex-col justify-center items-center p-8 sm:p-12 lg:p-16">
+        <div className="w-full max-w-md space-y-6">
           
-          {/* Tab Switcher */}
-          <div className="flex bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
-            <button
-              type="button"
-              onClick={() => switchMode(true)}
-              className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                isLogin
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Sign In
-            </button>
-            <button
-              type="button"
-              onClick={() => switchMode(false)}
-              className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                !isLogin
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Create Account
-            </button>
+          {/* Heading */}
+          <div className="space-y-1 text-center sm:text-left">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+              {isLogin ? 'Sign in to your account' : 'Create your account'}
+            </h2>
+            <p className="text-sm text-slate-500">
+              {isLogin
+                ? 'Enter your credentials to access the NextOffer platform'
+                : 'Start tracking your technical placement prep and readiness'}
+            </p>
           </div>
 
-          {/* Form Subheader & Demo Helper */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-bold text-white">
-                {isLogin ? 'Sign In to Your Workspace' : 'Create Candidate Account'}
-              </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                {isLogin ? 'Enter your credentials to continue your preparation' : 'Fill in your target details to build your custom roadmap'}
-              </p>
-            </div>
-
-            {isLogin && (
-              <button
-                type="button"
-                onClick={handleFillDemo}
-                className="text-[11px] px-2.5 py-1 rounded-lg bg-indigo-950/80 hover:bg-indigo-900/80 text-indigo-300 border border-indigo-800/40 font-semibold transition"
-                title="Auto-fill sample credentials"
-              >
-                ⚡ Demo Account
-              </button>
-            )}
-          </div>
-
-          {/* Success Banner */}
-          {successMessage && (
-            <div className="p-4 rounded-2xl bg-emerald-950/80 border border-emerald-800 text-xs text-emerald-200 flex items-start gap-3 shadow-sm animate-fadeIn">
-              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-bold text-emerald-300">Registration Complete!</p>
-                <p className="text-emerald-400/90 mt-0.5 leading-relaxed">{successMessage}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Error Banner */}
+          {/* Alerts */}
           {error && (
-            <div className="p-3.5 rounded-2xl bg-rose-950/80 border border-rose-800/80 text-xs text-rose-300 flex items-center gap-2 animate-fadeIn">
-              <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
-              <span>{error}</span>
+            <div className="p-3.5 rounded-lg text-xs font-medium bg-red-50 border border-red-200 text-red-700 flex items-start gap-2.5 animate-fadeIn">
+              <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+              <div className="flex-1">{error}</div>
             </div>
           )}
 
-          {/* Actual Form */}
+          {successMessage && (
+            <div className="p-3.5 rounded-lg text-xs font-medium bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-start gap-2.5 animate-fadeIn">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <div className="flex-1">{successMessage}</div>
+            </div>
+          )}
+
+          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            
-            {/* Full Name (Register Only) */}
+            {/* Registration specific fields */}
             {!isLogin && (
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Full Name *</label>
-                <div className="relative">
-                  <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5" htmlFor="fullName">
+                    Full Name
+                  </label>
                   <input
+                    id="fullName"
                     type="text"
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="e.g. Alex Kumar"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+                    placeholder="e.g. Alex Developer"
+                    className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0969da] focus:border-transparent transition-all"
                   />
                 </div>
-              </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5" htmlFor="targetRole">
+                      Target Role
+                    </label>
+                    <select
+                      id="targetRole"
+                      value={targetRole}
+                      onChange={(e) => setTargetRole(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#0969da]"
+                    >
+                      {allRoles.map((role) => (
+                        <option key={role.id} value={role.title}>
+                          {role.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5" htmlFor="gradYear">
+                      Graduation Year
+                    </label>
+                    <select
+                      id="gradYear"
+                      value={gradYear}
+                      onChange={(e) => setGradYear(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 text-slate-900 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#0969da]"
+                    >
+                      {['2024', '2025', '2026', '2027', '2028'].map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </>
             )}
 
-            {/* Email Address */}
+            {/* Email Field */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">Email Address *</label>
-              <div className="relative">
-                <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@example.com"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
-                />
-              </div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5" htmlFor="email">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@example.com"
+                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0969da] focus:border-transparent transition-all"
+              />
             </div>
 
-            {/* Password */}
+            {/* Password Field */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">Password *</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-semibold text-slate-700" htmlFor="password">
+                  Password
+                </label>
+                {isLogin && (
+                  <button
+                    type="button"
+                    onClick={() => setShowHelpModal(true)}
+                    className="text-xs text-slate-500 hover:text-slate-900 hover:underline transition-colors"
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </div>
+
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
+                  id="password"
                   type={showPassword ? 'text' : 'password'}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder={isLogin ? '••••••••' : 'Minimum 6 characters'}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-10 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+                  placeholder={isLogin ? 'Enter your password' : 'Create a password (min. 6 chars)'}
+                  className="w-full px-3.5 py-2.5 pr-10 rounded-lg border border-slate-300 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0969da] focus:border-transparent transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
-            {/* Extra Register Fields */}
-            {!isLogin && (
-              <div className="space-y-4 pt-1">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">Target Developer Role</label>
-                  <div className="relative">
-                    <Briefcase className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                    <select
-                      value={targetRole}
-                      onChange={(e) => setTargetRole(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-indigo-500 transition"
-                    >
-                      {allRoles.map((role) => (
-                        <option key={role.id} value={role.title}>{role.title}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">Dream Companies</label>
-                    <div className="relative">
-                      <Building className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="text"
-                        value={dreamCompany}
-                        onChange={(e) => setDreamCompany(e.target.value)}
-                        placeholder="e.g. Google, Uber"
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">Graduation Year</label>
-                    <div className="relative">
-                      <GraduationCap className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="text"
-                        value={gradYear}
-                        onChange={(e) => setGradYear(e.target.value)}
-                        placeholder="2026"
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full py-2.5 px-4 mt-2 bg-[#0d1117] hover:bg-[#161b22] active:bg-[#21262d] text-white text-sm font-semibold rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              <span>{loading ? 'Please wait...' : isLogin ? 'Sign In to Workspace' : 'Create Candidate Account'}</span>
-              <ArrowRight className="w-4 h-4" />
+              {loading && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+              <span>{isLogin ? 'Sign in' : 'Create account'}</span>
             </button>
           </form>
 
-          {/* Mode Switch Helper */}
-          <div className="text-center pt-2">
-            <p className="text-xs text-slate-400">
-              {isLogin ? "Don't have an account yet? " : 'Already have a registered account? '}
+          {/* Toggle between Sign In and Sign Up */}
+          <div className="text-center pt-2 text-xs text-slate-600">
+            {isLogin ? (
+              <span>
+                Don't have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => switchMode(false)}
+                  className="font-semibold text-slate-900 hover:underline"
+                >
+                  Sign up
+                </button>
+              </span>
+            ) : (
+              <span>
+                Already have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => switchMode(true)}
+                  className="font-semibold text-slate-900 hover:underline"
+                >
+                  Sign in
+                </button>
+              </span>
+            )}
+          </div>
+
+          {/* Need help logging in? / Demo Autofill Helper */}
+          <div className="pt-4 border-t border-slate-100 flex flex-col items-center gap-2.5 text-center">
+            <button
+              type="button"
+              onClick={() => setShowHelpModal(true)}
+              className="text-xs text-slate-500 hover:text-slate-800 transition-colors inline-flex items-center gap-1 font-medium"
+            >
+              <HelpCircle className="w-3.5 h-3.5" />
+              Need help logging in?
+            </button>
+
+            {/* Quick Demo Fill Pills */}
+            <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => switchMode(!isLogin)}
-                className="text-indigo-400 font-bold hover:underline transition"
+                onClick={() => handleFillDemo('hardik@nextoffer.dev')}
+                className="px-2.5 py-1 text-[11px] font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors"
+                title="Fill demo user: Hardik Bhochiya"
               >
-                {isLogin ? 'Create one now' : 'Sign in here'}
+                Autofill Demo (Hardik)
               </button>
-            </p>
+              <button
+                type="button"
+                onClick={() => handleFillDemo('alex@example.com')}
+                className="px-2.5 py-1 text-[11px] font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors"
+                title="Fill demo user: Alex Developer"
+              >
+                Autofill Demo (Alex)
+              </button>
+            </div>
           </div>
+
         </div>
       </div>
+
+      {/* Help Modal */}
+      {showHelpModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 space-y-4 border border-slate-200 text-slate-900">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-2 text-slate-900 font-bold">
+                <Lock className="w-5 h-5 text-[#0969da]" />
+                <h3>Login Assistance</h3>
+              </div>
+              <button
+                onClick={() => setShowHelpModal(false)}
+                className="text-slate-400 hover:text-slate-600 text-sm font-semibold"
+              >
+                &times;
+              </button>
+            </div>
+            
+            <p className="text-xs text-slate-600 leading-relaxed">
+              For your evaluation or demo, you can either sign in with the pre-seeded demo accounts or register your own permanent personal account.
+            </p>
+
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs space-y-1.5 font-mono">
+              <div><span className="text-slate-400">Demo User 1:</span> hardik@nextoffer.dev</div>
+              <div><span className="text-slate-400">Demo User 2:</span> alex@example.com</div>
+              <div><span className="text-slate-400">Password:</span> password123</div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  handleFillDemo('hardik@nextoffer.dev');
+                  setShowHelpModal(false);
+                }}
+                className="px-3 py-1.5 bg-[#0d1117] hover:bg-[#161b22] text-white text-xs font-semibold rounded-md"
+              >
+                Apply Demo Credentials
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowHelpModal(false)}
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-md"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
-
-export default AuthPage;

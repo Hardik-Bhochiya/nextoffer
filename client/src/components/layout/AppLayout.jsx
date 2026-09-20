@@ -7,7 +7,7 @@ export const AppLayout = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white">
+    <div className="flex min-h-screen bg-[#0d1117] text-[#f0f6fc] selection:bg-[#264f78] selection:text-white">
       {/* Navigation Sidebar (Desktop Pinned + Mobile Slide-over Drawer) */}
       <Sidebar
         isMobileOpen={isMobileSidebarOpen}

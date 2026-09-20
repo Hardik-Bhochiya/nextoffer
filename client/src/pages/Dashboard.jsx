@@ -18,12 +18,13 @@ import {
   BrainCircuit,
   Building,
   Plus,
-  Sparkles,
   Layers,
   Briefcase,
   ArrowRight,
   Check,
-  Rocket
+  Rocket,
+  Terminal,
+  Activity
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -70,324 +71,310 @@ export const Dashboard = () => {
   ];
 
   return (
-    <div className="space-y-8 animate-fadeIn max-w-6xl mx-auto pb-16">
+    <div className="space-y-6 animate-fadeIn max-w-6xl mx-auto pb-16 font-sans">
       
-      {/* 1. WELCOME COMMAND CENTER BANNER */}
-      <div className="rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/40 border border-slate-800 p-6 md:p-8 shadow-xl relative overflow-hidden">
-        <div className="absolute right-0 top-0 w-80 h-80 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-          <div className="flex items-start sm:items-center gap-4">
-            <Link to="/profile" className="shrink-0 group" title="Open Candidate Dossier">
+      {/* 1. WELCOME COMMAND CENTER BANNER (GitHub Primer Header) */}
+      <div className="rounded-lg bg-[#161b22] border border-[#30363d] p-5 md:p-6 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className="flex items-start sm:items-center gap-3.5">
+            <Link to="/profile" className="shrink-0 group" title="Open Candidate Profile">
               <UserAvatar
                 user={user}
-                size="xl"
+                size="lg"
                 showStatus={true}
-                className="group-hover:ring-2 ring-indigo-500/50 rounded-3xl transition-all"
+                className="rounded-lg border border-[#30363d] group-hover:border-[#58a6ff] transition-colors"
               />
             </Link>
 
-            <div className="space-y-1.5">
-              <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-slate-950 border border-slate-800 text-xs text-indigo-400 font-semibold">
-                <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#0d1117] border border-[#30363d] text-[11px] text-[#58a6ff] font-medium">
+                <Terminal className="w-3 h-3" />
                 <span>Placement Command Center</span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-black text-slate-100 tracking-tight flex items-center gap-2">
-                Welcome back, <span className="text-indigo-400">{user?.name || 'Candidate'}</span>
+              <h1 className="text-xl md:text-2xl font-bold text-[#f0f6fc] tracking-tight">
+                Welcome back, {user?.name || 'Candidate'}
               </h1>
-              <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
-                Targeting <span className="font-bold text-white underline decoration-indigo-500 underline-offset-4">{roleConfig.title}</span> for <span className="text-indigo-300 font-bold">{user?.dreamCompany || 'Tier-1 Tech'}</span>.
+              <p className="text-xs text-[#8b949e] max-w-xl leading-relaxed">
+                Targeting <span className="font-semibold text-[#f0f6fc]">{roleConfig.title}</span> for <span className="text-[#58a6ff] font-medium">{user?.dreamCompany || 'Tier-1 Tech Firms'}</span>.
               </p>
             </div>
           </div>
 
-          {/* Quick Action Buttons */}
-          <div className="flex flex-wrap gap-2.5 self-start md:self-auto">
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-2 self-start md:self-auto">
             <Link
               to="/dsa"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 transition-all hover:scale-105"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#238636] hover:bg-[#2ea043] border border-[#2ea043]/30 text-white text-xs font-medium shadow-sm transition-colors"
             >
-              <Code2 className="w-4 h-4" /> Practice DSA
+              <Code2 className="w-3.5 h-3.5" /> Practice DSA
             </Link>
             <Link
               to="/roadmaps"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-bold transition-all hover:scale-105"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#c9d1d9] text-xs font-medium transition-colors"
             >
-              <GitBranch className="w-4 h-4 text-indigo-400" /> View Roadmaps
+              <GitBranch className="w-3.5 h-3.5 text-[#8b949e]" /> View Roadmaps
             </Link>
           </div>
         </div>
 
-        {/* 2. CONFIGURED TARGET ROLE STATUS STRIP */}
-        <div className="pt-5 mt-5 border-t border-slate-800/80">
-          <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/90 flex flex-col md:flex-row md:items-center justify-between gap-3">
-            <div className="space-y-1">
+        {/* TARGET ROLE STATUS STRIP */}
+        <div className="pt-4 mt-4 border-t border-[#30363d]">
+          <div className="p-3 rounded-md bg-[#0d1117] border border-[#30363d] flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="space-y-0.5">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-indigo-950 text-indigo-300 border border-indigo-800/50 flex items-center gap-1">
-                  <Briefcase className="w-3 h-3 text-indigo-400" /> Target Specialization
+                <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded bg-[#388bfd]/15 text-[#58a6ff] border border-[#388bfd]/30 flex items-center gap-1">
+                  <Briefcase className="w-3 h-3" /> Specialization
                 </span>
-                <span className="text-xs font-bold text-white">
+                <span className="text-xs font-semibold text-[#f0f6fc]">
                   {roleConfig.title}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400">{roleConfig.desc}</p>
+              <p className="text-[11px] text-[#8b949e]">{roleConfig.desc}</p>
             </div>
 
-            <div className="flex items-center gap-2.5 shrink-0">
-              <div className="hidden sm:flex items-center gap-1.5 flex-wrap">
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="hidden sm:flex items-center gap-1 flex-wrap">
                 {roleConfig.primarySkills?.slice(0, 3).map((skill, idx) => (
-                  <span key={idx} className="text-[10px] px-2 py-0.5 rounded-md bg-slate-900 text-slate-300 border border-slate-800 font-mono">
+                  <span key={idx} className="text-[10px] px-2 py-0.5 rounded bg-[#161b22] text-[#c9d1d9] border border-[#30363d] font-mono">
                     {skill}
                   </span>
                 ))}
               </div>
               <Link
                 to="/profile"
-                className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-indigo-950 border border-slate-700 hover:border-indigo-700 text-slate-300 hover:text-indigo-300 text-xs font-semibold flex items-center gap-1.5 transition"
+                className="px-2.5 py-1 rounded-md bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#c9d1d9] text-xs font-medium flex items-center gap-1 transition"
                 title="Change target role from your profile dossier"
               >
-                <span>Change in Profile</span>
-                <ChevronRight className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Edit Profile</span>
+                <ChevronRight className="w-3 h-3 text-[#8b949e]" />
               </Link>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 3. 4 KEY PLACEMENT TELEMETRY CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 2. KEY PLACEMENT TELEMETRY CARDS (GitHub Card Style) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
         {/* Metric 1: Readiness Score */}
-        <div className="rounded-2xl bg-slate-900/90 border border-slate-800 p-5 space-y-3 shadow-sm">
+        <div className="rounded-lg bg-[#161b22] border border-[#30363d] p-4 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400">Readiness Score</span>
-            <div className="w-8 h-8 rounded-xl bg-indigo-950/80 border border-indigo-800/50 flex items-center justify-center text-indigo-400">
-              <Target className="w-4 h-4" />
+            <span className="text-xs font-medium text-[#8b949e]">Readiness Score</span>
+            <div className="w-7 h-7 rounded-md bg-[#21262d] border border-[#30363d] flex items-center justify-center text-[#58a6ff]">
+              <Target className="w-3.5 h-3.5" />
             </div>
           </div>
           <div className="flex items-baseline justify-between gap-2">
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-black text-slate-100">{readiness}%</span>
-              <span className="text-[10px] text-slate-500 font-medium">{roleConfig.shortLabel}</span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-2xl font-bold text-[#f0f6fc]">{readiness}%</span>
+              <span className="text-[10px] text-[#8b949e]">{roleConfig.shortLabel}</span>
             </div>
-            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${tierInfo.badgeClass}`}>
+            <span className={`text-[9px] font-medium px-2 py-0.5 rounded-full border ${tierInfo.badgeClass}`}>
               {tierInfo.tier.split(' ')[0]}
             </span>
           </div>
-          <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden border border-slate-800">
+          <div className="w-full bg-[#0d1117] h-1.5 rounded-full overflow-hidden border border-[#21262d]">
             <div
-              className="bg-indigo-500 h-full rounded-full transition-all duration-500"
+              className="bg-[#58a6ff] h-full rounded-full transition-all duration-500"
               style={{ width: `${Math.max(2, readiness)}%` }}
             />
           </div>
         </div>
 
         {/* Metric 2: DSA Problems Solved */}
-        <div className="rounded-2xl bg-slate-900/90 border border-slate-800 p-5 space-y-3 shadow-sm">
+        <div className="rounded-lg bg-[#161b22] border border-[#30363d] p-4 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400">DSA Solved</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-950/80 border border-emerald-800/50 flex items-center justify-center text-emerald-400">
-              <Code2 className="w-4 h-4" />
+            <span className="text-xs font-medium text-[#8b949e]">DSA Solved</span>
+            <div className="w-7 h-7 rounded-md bg-[#21262d] border border-[#30363d] flex items-center justify-center text-[#3fb950]">
+              <Code2 className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-slate-100">{dsaStats.solved}</span>
-            <span className="text-[10px] text-slate-500">/ {dsaStats.total} Questions</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-bold text-[#f0f6fc]">{dsaStats.solved}</span>
+            <span className="text-[10px] text-[#8b949e]">/ {dsaStats.total} Questions</span>
           </div>
-          <p className="text-[10px] text-slate-400">
-            {dsaStats.easySolved} Easy • {dsaStats.mediumSolved} Med • {dsaStats.hardSolved} Hard
+          <p className="text-[10px] text-[#8b949e]">
+            <span className="text-[#3fb950] font-medium">{dsaStats.easySolved}E</span> • <span className="text-[#d29922] font-medium">{dsaStats.mediumSolved}M</span> • <span className="text-[#f85149] font-medium">{dsaStats.hardSolved}H</span>
           </p>
         </div>
 
         {/* Metric 3: Roadmaps Milestones */}
-        <div className="rounded-2xl bg-slate-900/90 border border-slate-800 p-5 space-y-3 shadow-sm">
+        <div className="rounded-lg bg-[#161b22] border border-[#30363d] p-4 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400">Roadmap Progress</span>
-            <div className="w-8 h-8 rounded-xl bg-cyan-950/80 border border-cyan-800/50 flex items-center justify-center text-cyan-400">
-              <GitBranch className="w-4 h-4" />
+            <span className="text-xs font-medium text-[#8b949e]">Roadmap Progress</span>
+            <div className="w-7 h-7 rounded-md bg-[#21262d] border border-[#30363d] flex items-center justify-center text-[#58a6ff]">
+              <GitBranch className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-slate-100">{roadmapPct}%</span>
-            <span className="text-[10px] text-slate-500">{completedRoadmapTopics}/{totalRoadmapTopics} Topics</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-bold text-[#f0f6fc]">{roadmapPct}%</span>
+            <span className="text-[10px] text-[#8b949e]">{completedRoadmapTopics}/{totalRoadmapTopics} Topics</span>
           </div>
-          <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden border border-slate-800">
+          <div className="w-full bg-[#0d1117] h-1.5 rounded-full overflow-hidden border border-[#21262d]">
             <div
-              className="bg-cyan-500 h-full rounded-full transition-all duration-500"
+              className="bg-[#238636] h-full rounded-full transition-all duration-500"
               style={{ width: `${Math.max(2, roadmapPct)}%` }}
             />
           </div>
         </div>
 
         {/* Metric 4: Daily Consistency Streak */}
-        <div className="rounded-2xl bg-slate-900/90 border border-slate-800 p-5 space-y-3 shadow-sm">
+        <div className="rounded-lg bg-[#161b22] border border-[#30363d] p-4 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400">Study Streak</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-950/80 border border-amber-800/50 flex items-center justify-center text-amber-400">
-              <Flame className="w-4 h-4" />
+            <span className="text-xs font-medium text-[#8b949e]">Consistency Streak</span>
+            <div className="w-7 h-7 rounded-md bg-[#21262d] border border-[#30363d] flex items-center justify-center text-[#d29922]">
+              <Flame className="w-3.5 h-3.5" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-slate-100">{user?.streak || 1}</span>
-            <span className="text-[10px] text-slate-500">Days Active</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-bold text-[#f0f6fc]">{user?.streak || 1}</span>
+            <span className="text-[10px] text-[#8b949e]">Days Active</span>
           </div>
-          <p className="text-[10px] text-amber-400 font-medium">
-            Daily consistency multiplier
+          <p className="text-[10px] text-[#d29922] font-medium">
+            Daily placement streak
           </p>
         </div>
       </div>
 
-      {/* 4. ROLE-RECOMMENDED TRACKS & PRIORITY TOPICS */}
-      <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 md:p-8 space-y-4 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+      {/* 3. ROLE-RECOMMENDED TRACKS */}
+      <div className="rounded-lg bg-[#161b22] border border-[#30363d] p-4 md:p-5 space-y-3.5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#30363d] pb-2.5">
           <div>
-            <h2 className="text-sm font-bold text-white flex items-center gap-2">
-              <Layers className="w-4 h-4 text-cyan-400" />
-              Curated Roadmap Tracks for {roleConfig.shortLabel}
+            <h2 className="text-sm font-semibold text-[#f0f6fc] flex items-center gap-2">
+              <Layers className="w-4 h-4 text-[#58a6ff]" />
+              Recommended Tracks for {roleConfig.shortLabel}
             </h2>
-            <p className="text-[11px] text-slate-400">
-              Primary learning tracks and problem patterns calibrated for {roleConfig.title}
+            <p className="text-[11px] text-[#8b949e]">
+              Core learning paths calibrated for your target role
             </p>
           </div>
 
           <Link
             to="/roadmaps"
-            className="text-xs text-indigo-400 hover:text-indigo-300 font-bold flex items-center gap-1 self-start sm:self-auto transition"
+            className="text-xs text-[#58a6ff] hover:underline font-medium flex items-center gap-1 self-start sm:self-auto"
           >
-            <span>Explore All Roadmaps</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <span>All Roadmaps</span>
+            <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
           {roleConfig.recommendedRoadmapTitles.map((title, idx) => (
             <div
               key={idx}
-              className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center gap-3 text-xs text-slate-200"
+              className="p-3 rounded-md bg-[#0d1117] border border-[#30363d] flex items-center gap-2.5 text-xs text-[#c9d1d9]"
             >
-              <div className="w-6 h-6 rounded-lg bg-indigo-950/80 border border-indigo-800/40 flex items-center justify-center text-indigo-400 font-bold text-[10px] shrink-0">
+              <div className="w-5 h-5 rounded bg-[#21262d] border border-[#30363d] flex items-center justify-center text-[#58a6ff] font-mono text-[10px] shrink-0">
                 {idx + 1}
               </div>
-              <span className="font-semibold truncate">{title}</span>
+              <span className="font-medium truncate">{title}</span>
             </div>
           ))}
         </div>
 
-        {/* Priority DSA topics for this role */}
-        <div className="pt-2 flex flex-wrap items-center gap-2">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-            High Priority DSA Topics:
+        {/* Priority DSA topics */}
+        <div className="pt-2 flex flex-wrap items-center gap-1.5">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[#8b949e]">
+            Priority Topics:
           </span>
           {roleConfig.recommendedDsaTopics.map((topic, i) => (
             <Link
               key={i}
               to="/dsa"
-              className="text-[10px] px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-slate-700 font-semibold transition"
+              className="text-[10px] px-2 py-0.5 rounded-md bg-[#0d1117] hover:bg-[#21262d] text-[#c9d1d9] border border-[#30363d] transition-colors"
             >
-              ⚡ {topic}
+              {topic}
             </Link>
           ))}
         </div>
       </div>
 
-      {/* 5. MAIN GRID: WEEKLY ACTIVITY + SPICED REVISIONS */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* 4. MAIN GRID: WEEKLY ACTIVITY + PENDING REVISIONS */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Left: Study Velocity Chart (7 cols) */}
-        <div className="lg:col-span-7 rounded-3xl bg-slate-900/90 border border-slate-800 p-6 space-y-4">
-          <div className="flex items-center justify-between">
+        <div className="lg:col-span-7 rounded-lg bg-[#161b22] border border-[#30363d] p-4 md:p-5 space-y-3">
+          <div className="flex items-center justify-between border-b border-[#30363d] pb-2.5">
             <div>
-              <h2 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-indigo-400" /> Weekly Activity Telemetry
+              <h2 className="text-sm font-semibold text-[#f0f6fc] flex items-center gap-2">
+                <Activity className="w-4 h-4 text-[#58a6ff]" /> Weekly Activity Telemetry
               </h2>
-              <p className="text-[11px] text-slate-400">DSA problem solving velocity over the current cycle</p>
+              <p className="text-[11px] text-[#8b949e]">Questions solved over the past 7 days</p>
             </div>
+            <Link to="/analytics" className="text-xs text-[#58a6ff] hover:underline font-medium">
+              Full Analytics &rarr;
+            </Link>
           </div>
 
-          <div className="h-56 w-full pt-2">
+          <div className="h-52 w-full pt-2">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <XAxis dataKey="day" stroke="#64748b" fontSize={11} tickLine={false} />
-                <YAxis stroke="#64748b" fontSize={11} tickLine={false} allowDecimals={false} />
+                <XAxis dataKey="day" stroke="#8b949e" fontSize={11} tickLine={false} axisLine={{ stroke: '#30363d' }} />
+                <YAxis stroke="#8b949e" fontSize={11} tickLine={false} axisLine={{ stroke: '#30363d' }} allowDecimals={false} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '11px', color: '#f8fafc' }}
+                  cursor={{ fill: 'rgba(56, 139, 253, 0.08)' }}
+                  contentStyle={{
+                    backgroundColor: '#161b22',
+                    border: '1px solid #30363d',
+                    borderRadius: '6px',
+                    fontSize: '11px',
+                    color: '#f0f6fc'
+                  }}
                 />
-                <Bar dataKey="solved" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={24} />
+                <Bar dataKey="solved" fill="#238636" radius={[4, 4, 0, 0]} name="Questions Solved" />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Right: Quick Action Shortcuts & Revision Due (5 cols) */}
-        <div className="lg:col-span-5 space-y-4">
-          {/* Quick Revision Card */}
-          <div className="rounded-3xl bg-slate-900/90 border border-slate-800 p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-emerald-400" />
-                Spaced Revision Due
+        {/* Right: Spaced Revisions / Urgent Checklist (5 cols) */}
+        <div className="lg:col-span-5 rounded-lg bg-[#161b22] border border-[#30363d] p-4 md:p-5 space-y-3">
+          <div className="flex items-center justify-between border-b border-[#30363d] pb-2.5">
+            <div>
+              <h2 className="text-sm font-semibold text-[#f0f6fc] flex items-center gap-2">
+                <Clock className="w-4 h-4 text-[#d29922]" /> Due for Revision
               </h2>
-              <Link to="/revision" className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold">
-                View All
-              </Link>
+              <p className="text-[11px] text-[#8b949e]">Spaced repetition retention queue</p>
             </div>
-
-            <div className="space-y-2">
-              {pendingRevisions.length === 0 ? (
-                <div className="p-5 rounded-2xl bg-slate-950/60 border border-slate-800/80 text-center space-y-1">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400 mx-auto" />
-                  <p className="text-xs font-semibold text-slate-300">All Revisions Cleared</p>
-                  <p className="text-[10px] text-slate-500">No overdue concepts right now.</p>
-                </div>
-              ) : (
-                pendingRevisions.map((rev) => (
-                  <div
-                    key={rev.id || rev._id}
-                    className="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3 hover:border-slate-700 transition-all"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold text-slate-200 truncate">{rev.topic}</p>
-                      <p className="text-[10px] text-slate-400">{rev.category} • Due {rev.scheduledDate || 'Today'}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => toggleRevision(rev.id || rev._id)}
-                      className="px-2.5 py-1 rounded-lg bg-emerald-950 text-emerald-300 hover:bg-emerald-900 text-[11px] font-semibold shrink-0 transition-colors"
-                    >
-                      Done
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
+            <Link to="/revision" className="text-xs text-[#58a6ff] hover:underline font-medium">
+              View All &rarr;
+            </Link>
           </div>
 
-          {/* Quick Module Navigation Links */}
-          <div className="grid grid-cols-3 gap-2.5">
-            <Link
-              to="/projects"
-              className="p-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex flex-col items-center text-center gap-1.5 text-xs text-slate-300 hover:text-white transition-all shadow-sm"
-            >
-              <Rocket className="w-4 h-4 text-emerald-400" />
-              <span className="text-[11px] font-semibold truncate w-full">Projects</span>
-            </Link>
+          <div className="space-y-2 pt-1">
+            {pendingRevisions.length > 0 ? (
+              pendingRevisions.map((rev) => (
+                <div
+                  key={rev._id || rev.id}
+                  className="p-3 rounded-md bg-[#0d1117] border border-[#30363d] hover:border-[#8b949e] transition-colors flex items-start justify-between gap-3"
+                >
+                  <div className="min-w-0 space-y-1">
+                    <p className="text-xs font-medium text-[#f0f6fc] truncate">{rev.topic}</p>
+                    <div className="flex items-center gap-1.5 text-[10px] text-[#8b949e]">
+                      <span className="px-1.5 py-0.2 rounded bg-[#21262d] border border-[#30363d]">{rev.category}</span>
+                      <span>Due: {rev.scheduledDate}</span>
+                    </div>
+                  </div>
 
-            <Link
-              to="/notes"
-              className="p-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex flex-col items-center text-center gap-1.5 text-xs text-slate-300 hover:text-white transition-all shadow-sm"
-            >
-              <BookOpen className="w-4 h-4 text-indigo-400" />
-              <span className="text-[11px] font-semibold truncate w-full">Notes</span>
-            </Link>
-
-            <Link
-              to="/analytics"
-              className="p-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 flex flex-col items-center text-center gap-1.5 text-xs text-slate-300 hover:text-white transition-all shadow-sm"
-            >
-              <Target className="w-4 h-4 text-cyan-400" />
-              <span className="text-[11px] font-semibold truncate w-full">Analytics</span>
-            </Link>
+                  <button
+                    type="button"
+                    onClick={() => toggleRevision(rev._id || rev.id)}
+                    className="p-1.5 rounded bg-[#21262d] hover:bg-[#238636] text-[#8b949e] hover:text-white border border-[#30363d] transition-colors shrink-0"
+                    title="Mark as Revised"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-[#8b949e] space-y-1">
+                <CheckCircle2 className="w-8 h-8 text-[#238636] mx-auto opacity-80" />
+                <p className="text-xs font-medium text-[#f0f6fc]">All revisions completed!</p>
+                <p className="text-[10px]">Your algorithmic retention memory is on track.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
     </div>
   );
 };

@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
-import { connectDB } from './config/db.js';
+import { connectDB, getDBStatus } from './config/db.js';
 
 import authRoutes from './routes/authRoutes.js';
 import dsaRoutes from './routes/dsaRoutes.js';
@@ -39,6 +39,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'online',
+    database: getDBStatus() ? 'connected' : 'disconnected',
     timestamp: new Date().toISOString(),
     service: 'NextOffer API',
     version: '1.0.0'

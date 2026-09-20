@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { Camera, User } from 'lucide-react';
 
 const sizeMap = {
-  xs: 'w-6 h-6 text-[10px] rounded-lg',
-  sm: 'w-8 h-8 text-xs rounded-xl',
-  md: 'w-10 h-10 text-sm rounded-xl',
-  lg: 'w-14 h-14 text-base rounded-2xl',
-  xl: 'w-20 h-20 text-2xl rounded-3xl',
-  '2xl': 'w-24 h-24 text-3xl rounded-3xl'
+  xs: 'w-6 h-6 text-[10px] rounded-full',
+  sm: 'w-8 h-8 text-xs rounded-full',
+  md: 'w-10 h-10 text-sm rounded-full',
+  lg: 'w-14 h-14 text-base rounded-full',
+  xl: 'w-20 h-20 text-2xl rounded-full',
+  '2xl': 'w-24 h-24 text-3xl rounded-full'
 };
 
 const iconSizes = {
@@ -43,18 +43,18 @@ export const UserAvatar = ({
   return (
     <div className={`relative inline-flex shrink-0 ${className}`}>
       <div
-        className={`${sizeClass} bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 p-0.5 shadow-md shadow-indigo-600/20 overflow-hidden relative group`}
+        className={`${sizeClass} border border-[#30363d] overflow-hidden relative group bg-[#21262d]`}
       >
-        <div className="w-full h-full bg-slate-950 rounded-[inherit] overflow-hidden flex items-center justify-center relative">
+        <div className="w-full h-full rounded-[inherit] overflow-hidden flex items-center justify-center relative">
           {hasValidImage ? (
             <img
               src={finalAvatar}
               alt={finalName}
               onError={() => setImgError(true)}
-              className="w-full h-full object-cover rounded-[inherit] transition-transform duration-300 group-hover:scale-105"
+              className="w-full h-full object-cover rounded-[inherit]"
             />
           ) : (
-            <span className="font-black text-transparent bg-clip-text bg-gradient-to-tr from-indigo-300 via-cyan-200 to-white select-none">
+            <span className="font-bold text-[#e6edf3] select-none">
               {initial}
             </span>
           )}
@@ -64,12 +64,12 @@ export const UserAvatar = ({
             <button
               type="button"
               onClick={onEditClick}
-              className="absolute inset-0 bg-slate-950/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white cursor-pointer backdrop-blur-[2px]"
+              className="absolute inset-0 bg-[#0d1117]/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white cursor-pointer"
               title="Change Profile Picture"
             >
               <Camera className={`${iconSizeClass} text-white drop-shadow`} />
               {size === 'xl' || size === '2xl' ? (
-                <span className="text-[10px] font-bold text-slate-200 mt-1">Change</span>
+                <span className="text-[10px] font-medium text-[#c9d1d9] mt-1">Change</span>
               ) : null}
             </button>
           )}
@@ -79,10 +79,10 @@ export const UserAvatar = ({
       {/* Online / Active Telemetry Status Ping */}
       {showStatus && (
         <span
-          className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-slate-950 shadow flex items-center justify-center z-10"
+          className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[#238636] border-2 border-[#0d1117] shadow flex items-center justify-center z-10"
           title="Active Candidate"
         >
-          <span className="w-1 h-1 rounded-full bg-white animate-ping" />
+          <span className="w-1 h-1 rounded-full bg-white" />
         </span>
       )}
     </div>

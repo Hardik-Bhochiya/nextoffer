@@ -459,3 +459,33 @@ export const defaultNotes = [
 Paging solves external fragmentation by dividing physical memory into fixed-size frames and virtual memory into pages.`
   }
 ];
+
+export const defaultRevisions = [
+  {
+    id: 'rev-1',
+    topic: 'LRU Cache implementation using Doubly Linked List & HashMap',
+    category: 'DSA',
+    priority: 'High',
+    scheduledDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+    completed: false,
+    notes: 'Remember node removal from tail and insertion to head on access.'
+  },
+  {
+    id: 'rev-2',
+    topic: 'Course Schedule - Topological Sort (Kahn’s Algorithm)',
+    category: 'DSA',
+    priority: 'High',
+    scheduledDate: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0],
+    completed: false,
+    notes: 'Compute in-degrees, push zero in-degrees into BFS queue.'
+  },
+  {
+    id: 'rev-3',
+    topic: 'Operating Systems: Deadlock Conditions & Bankers Algorithm',
+    category: 'Core Subjects',
+    priority: 'Medium',
+    scheduledDate: new Date().toISOString().split('T')[0],
+    completed: false,
+    notes: 'Mutual Exclusion, Hold and Wait, No Preemption, Circular Wait.'
+  }
+];

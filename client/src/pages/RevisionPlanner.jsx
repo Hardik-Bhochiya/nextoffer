@@ -130,36 +130,36 @@ export const RevisionPlanner = () => {
   const upcomingRevisions = revisions.filter(r => (r.scheduledDate || r.revisionDate) > todayStr);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-6xl mx-auto pb-16">
       {/* Header & Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#30363d] pb-5">
         <div>
-          <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-            <CalendarCheck className="w-6 h-6 text-indigo-400" /> Daily Planner & Revision Management
+          <h1 className="text-xl font-bold text-[#e6edf3] flex items-center gap-2">
+            <CalendarCheck className="w-5 h-5 text-[#58a6ff]" /> Daily Planner & Revision Management
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Module R7: Organize placement goals, daily execution checklists, and spaced repetition schedules.
+          <p className="text-xs text-[#8b949e] mt-1">
+            Organize placement study goals, daily execution checklists, and spaced repetition intervals.
           </p>
         </div>
 
         {/* Tab Toggle */}
-        <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 p-1 rounded-xl self-start sm:self-auto">
+        <div className="flex items-center gap-1.5 bg-[#161b22] border border-[#30363d] p-1 rounded-md self-start sm:self-auto">
           <button
             onClick={() => setActiveTab('planner')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${
               activeTab === 'planner'
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-[#1f6feb] text-white shadow-sm'
+                : 'text-[#8b949e] hover:text-[#e6edf3]'
             }`}
           >
-            Study Goals & Daily Tasks
+            Study Goals & Tasks
           </button>
           <button
             onClick={() => setActiveTab('spaced-repetition')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${
               activeTab === 'spaced-repetition'
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-[#1f6feb] text-white shadow-sm'
+                : 'text-[#8b949e] hover:text-[#e6edf3]'
             }`}
           >
             Spaced Revisions
@@ -168,68 +168,68 @@ export const RevisionPlanner = () => {
       </div>
 
       {activeTab === 'planner' ? (
-        /* DAILY PLANNER & GOALS VIEW (Module R7) */
+        /* DAILY PLANNER & GOALS VIEW */
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Study Goals (Class Diagram: StudyGoal) */}
-          <div className="glass-panel rounded-2xl p-6 space-y-4 flex flex-col justify-between">
+          {/* Study Goals */}
+          <div className="rounded-lg bg-[#161b22] border border-[#30363d] p-5 space-y-4 flex flex-col justify-between shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Target className="w-5 h-5 text-indigo-400" />
+                <Target className="w-4 h-4 text-[#58a6ff]" />
                 <div>
-                  <h2 className="text-base font-bold text-white">Placement Study Goals</h2>
-                  <p className="text-[11px] text-slate-400">Target milestones & deadlines</p>
+                  <h2 className="text-sm font-semibold text-[#e6edf3]">Placement Study Goals</h2>
+                  <p className="text-[11px] text-[#8b949e]">Target milestones & deadlines</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsGoalModalOpen(true)}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-medium shadow-sm"
               >
                 <Plus className="w-3.5 h-3.5" /> Add Goal
               </button>
             </div>
 
-            <div className="space-y-3 flex-1 overflow-y-auto max-h-[460px] pr-1">
+            <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[460px] pr-1">
               {studyGoals.length === 0 ? (
-                <p className="text-xs text-slate-500 text-center py-8">No goals created yet. Set your first goal!</p>
+                <p className="text-xs text-[#8b949e] text-center py-8">No goals created yet. Set your first goal!</p>
               ) : (
                 studyGoals.map((g) => {
                   const goalId = g.id || g._id || g.goalId || g.plannerId;
                   return (
                     <div
                       key={goalId}
-                      className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 space-y-2.5 transition-all"
+                      className="p-3.5 rounded-md bg-[#0d1117] border border-[#30363d] hover:border-[#8b949e] space-y-2.5 transition-all"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="space-y-1 flex-1">
                           <div className="flex items-center gap-2">
-                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
-                              g.priority === 'High' ? 'bg-rose-950 text-rose-400 border border-rose-800/40' : 'bg-slate-800 text-slate-300'
+                            <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${
+                              g.priority === 'High' ? 'bg-[#da3633]/15 text-[#f85149] border border-[#da3633]/40' : 'bg-[#21262d] text-[#8b949e] border border-[#30363d]'
                             }`}>
                               {g.priority} Priority
                             </span>
-                            <span className="text-[10px] text-slate-400 flex items-center gap-1">
-                              <Clock className="w-3 h-3 text-indigo-400" /> Deadline: {g.deadline}
+                            <span className="text-[10px] text-[#8b949e] flex items-center gap-1">
+                              <Clock className="w-3 h-3 text-[#58a6ff]" /> Deadline: {g.deadline}
                             </span>
                           </div>
-                          <h3 className="text-xs font-bold text-slate-100">{g.goalTitle}</h3>
+                          <h3 className="text-xs font-semibold text-[#e6edf3]">{g.goalTitle}</h3>
                         </div>
                         <button
                           type="button"
                           onClick={() => deleteStudyGoal(goalId)}
-                          className="p-1 text-slate-500 hover:text-rose-400 cursor-pointer"
+                          className="p-1 text-[#8b949e] hover:text-[#f85149] cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
 
                       <div className="space-y-1">
-                        <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
-                          <span>Status: <span className={g.taskStatus === 'Completed' || g.progress === 100 ? 'text-emerald-400' : 'text-amber-400'}>{g.taskStatus || (g.progress === 100 ? 'Completed' : 'In Progress')}</span></span>
-                          <span>{g.progress || 0}%</span>
+                        <div className="flex justify-between text-[10px] text-[#8b949e] font-medium">
+                          <span>Status: <span className={g.taskStatus === 'Completed' || g.progress === 100 ? 'text-[#3fb950]' : 'text-[#d29922]'}>{g.taskStatus || (g.progress === 100 ? 'Completed' : 'In Progress')}</span></span>
+                          <span className="font-mono">{g.progress || 0}%</span>
                         </div>
-                        <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden border border-slate-800">
+                        <div className="w-full bg-[#21262d] h-1.5 rounded-full overflow-hidden border border-[#30363d]">
                           <div
-                            className="h-full bg-gradient-to-r from-indigo-500 to-emerald-400 rounded-full"
+                            className="h-full bg-[#238636] rounded-full transition-all duration-300"
                             style={{ width: `${g.progress || 0}%` }}
                           />
                         </div>
@@ -241,28 +241,28 @@ export const RevisionPlanner = () => {
             </div>
           </div>
 
-          {/* Daily Tasks (Class Diagram: DailyTask) */}
-          <div className="glass-panel rounded-2xl p-6 space-y-4 flex flex-col justify-between">
+          {/* Daily Tasks */}
+          <div className="rounded-lg bg-[#161b22] border border-[#30363d] p-5 space-y-4 flex flex-col justify-between shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ListTodo className="w-5 h-5 text-emerald-400" />
+                <ListTodo className="w-4 h-4 text-[#3fb950]" />
                 <div>
-                  <h2 className="text-base font-bold text-white">Daily Execution Checklist</h2>
-                  <p className="text-[11px] text-slate-400">{dailyTasks.filter(t => t.taskStatus === true || t.taskStatus === 'Completed').length} of {dailyTasks.length} Done Today</p>
+                  <h2 className="text-sm font-semibold text-[#e6edf3]">Daily Execution Checklist</h2>
+                  <p className="text-[11px] text-[#8b949e]">{dailyTasks.filter(t => t.taskStatus === true || t.taskStatus === 'Completed').length} of {dailyTasks.length} Done Today</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setIsTaskModalOpen(true)}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md cursor-pointer"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-medium shadow-sm cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" /> Add Task
               </button>
             </div>
 
-            <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[460px] pr-1">
+            <div className="space-y-2 flex-1 overflow-y-auto max-h-[460px] pr-1">
               {dailyTasks.length === 0 ? (
-                <p className="text-xs text-slate-500 text-center py-8">No tasks for today. Add a new task!</p>
+                <p className="text-xs text-[#8b949e] text-center py-8">No tasks for today. Add a new task!</p>
               ) : (
                 dailyTasks.map((t) => {
                   const taskId = t.id || t._id || t.taskId;
@@ -270,22 +270,22 @@ export const RevisionPlanner = () => {
                   return (
                     <div
                       key={taskId}
-                      className={`p-3.5 rounded-xl border transition-all flex items-center justify-between gap-3 ${
+                      className={`p-3 rounded-md border transition-all flex items-center justify-between gap-3 ${
                         isCompleted
-                          ? 'bg-emerald-950/20 border-emerald-900/30 text-slate-400'
-                          : 'bg-slate-900/60 border-slate-800 hover:border-slate-700 text-slate-200'
+                          ? 'bg-[#238636]/10 border-[#238636]/30 text-[#8b949e]'
+                          : 'bg-[#0d1117] border-[#30363d] hover:border-[#8b949e] text-[#e6edf3]'
                       }`}
                     >
                       <div
                         onClick={() => handleToggleTask(taskId, t.taskStatus)}
-                        className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
+                        className="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer"
                       >
                         {isCompleted ? (
-                          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                          <CheckCircle2 className="w-4 h-4 text-[#3fb950] shrink-0" />
                         ) : (
-                          <Circle className="w-5 h-5 text-slate-500 hover:text-emerald-400 shrink-0 transition-colors" />
+                          <Circle className="w-4 h-4 text-[#484f58] hover:text-[#58a6ff] shrink-0 transition-colors" />
                         )}
-                        <span className={`text-xs font-medium truncate ${isCompleted ? 'line-through text-slate-500' : ''}`}>
+                        <span className={`text-xs font-medium truncate ${isCompleted ? 'line-through text-[#8b949e]' : ''}`}>
                           {t.taskDetails}
                         </span>
                       </div>
@@ -293,7 +293,7 @@ export const RevisionPlanner = () => {
                       <button
                         type="button"
                         onClick={() => deleteDailyTask(taskId)}
-                        className="p-1 text-slate-500 hover:text-rose-400 cursor-pointer"
+                        className="p-1 text-[#8b949e] hover:text-[#f85149] cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -307,92 +307,92 @@ export const RevisionPlanner = () => {
       ) : (
         /* SPACED REPETITIONS VIEW */
         <div className="space-y-6">
-          {/* Spaced Intervals Science Header */}
+          {/* Spaced Intervals Header */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="glass-panel p-3.5 rounded-xl text-center space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Day 1</span>
-              <p className="text-xs font-bold text-indigo-400">Immediate Recall</p>
-              <p className="text-[10px] text-slate-500">Solidify initial intuition</p>
+            <div className="bg-[#161b22] border border-[#30363d] p-3.5 rounded-lg text-center space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#8b949e]">Day 1</span>
+              <p className="text-xs font-bold text-[#58a6ff]">Immediate Recall</p>
+              <p className="text-[10px] text-[#8b949e]">Solidify initial intuition</p>
             </div>
-            <div className="glass-panel p-3.5 rounded-xl text-center space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400">Day 3</span>
-              <p className="text-xs font-bold text-cyan-400">Edge Case Check</p>
-              <p className="text-[10px] text-slate-500">Test boundaries without code</p>
+            <div className="bg-[#161b22] border border-[#30363d] p-3.5 rounded-lg text-center space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#58a6ff]">Day 3</span>
+              <p className="text-xs font-bold text-[#58a6ff]">Edge Case Check</p>
+              <p className="text-[10px] text-[#8b949e]">Test boundaries without code</p>
             </div>
-            <div className="glass-panel p-3.5 rounded-xl text-center space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Day 7</span>
-              <p className="text-xs font-bold text-amber-400">Active Recall Test</p>
-              <p className="text-[10px] text-slate-500">Write dry run on whiteboard</p>
+            <div className="bg-[#161b22] border border-[#30363d] p-3.5 rounded-lg text-center space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#d29922]">Day 7</span>
+              <p className="text-xs font-bold text-[#d29922]">Active Recall Test</p>
+              <p className="text-[10px] text-[#8b949e]">Write dry run on whiteboard</p>
             </div>
-            <div className="glass-panel p-3.5 rounded-xl text-center space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Day 14</span>
-              <p className="text-xs font-bold text-emerald-400">Long-Term Memory</p>
-              <p className="text-[10px] text-slate-500">Mock interview condition</p>
+            <div className="bg-[#161b22] border border-[#30363d] p-3.5 rounded-lg text-center space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#3fb950]">Day 14</span>
+              <p className="text-xs font-bold text-[#3fb950]">Long-Term Memory</p>
+              <p className="text-[10px] text-[#8b949e]">Mock interview condition</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Due Today Section */}
-            <div className="glass-panel rounded-2xl p-6 space-y-4">
+            <div className="rounded-lg bg-[#161b22] border border-[#30363d] p-5 space-y-4 shadow-sm">
               <div className="flex items-center justify-between">
-                <h2 className="text-base font-bold text-white flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-amber-400" /> Due Today / Overdue ({todayRevisions.filter(r => !r.completed).length})
+                <h2 className="text-sm font-semibold text-[#e6edf3] flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-[#d29922]" /> Due Today / Overdue ({todayRevisions.filter(r => !r.completed).length})
                 </h2>
                 <button
                   onClick={() => setIsRevisionModalOpen(true)}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-medium shadow-sm"
                 >
                   <Plus className="w-3.5 h-3.5" /> Schedule
                 </button>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {todayRevisions.length === 0 ? (
-                  <p className="text-xs text-slate-500 py-6 text-center">No revisions scheduled for today. Great job!</p>
+                  <p className="text-xs text-[#8b949e] py-6 text-center">No revisions scheduled for today. Great job!</p>
                 ) : (
                   todayRevisions.map((r) => (
                     <div
                       key={r.id || r.revisionId}
-                      className={`p-4 rounded-xl border transition-all flex items-start justify-between gap-3 ${
+                      className={`p-3 rounded-md border transition-all flex items-start justify-between gap-3 ${
                         r.completed
-                          ? 'bg-emerald-950/20 border-emerald-900/30 text-slate-400'
-                          : 'bg-slate-900/50 border-slate-800 hover:border-slate-700 text-slate-200'
+                          ? 'bg-[#238636]/10 border-[#238636]/30 text-[#8b949e]'
+                          : 'bg-[#0d1117] border-[#30363d] hover:border-[#8b949e] text-[#e6edf3]'
                       }`}
                     >
-                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                      <div className="flex items-start gap-2.5 flex-1 min-w-0">
                         <button
                           onClick={() => handleToggleRevision(r.id || r.revisionId, r.completed)}
                           className="mt-0.5"
                         >
                           {r.completed ? (
-                            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                            <CheckCircle2 className="w-4 h-4 text-[#3fb950]" />
                           ) : (
-                            <Circle className="w-5 h-5 text-slate-500 hover:text-indigo-400 transition-colors" />
+                            <Circle className="w-4 h-4 text-[#484f58] hover:text-[#58a6ff] transition-colors" />
                           )}
                         </button>
 
                         <div className="space-y-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
-                              r.priority === 'High' ? 'bg-rose-950 text-rose-400' : 'bg-slate-800 text-slate-300'
+                          <div className="flex items-center gap-1.5">
+                            <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${
+                              r.priority === 'High' ? 'bg-[#da3633]/15 text-[#f85149] border border-[#da3633]/40' : 'bg-[#21262d] text-[#8b949e] border border-[#30363d]'
                             }`}>
                               {r.priority}
                             </span>
-                            <span className="text-[10px] text-slate-400 font-semibold">{r.category}</span>
-                            {r.revisionTime && <span className="text-[10px] text-indigo-400 font-mono">{r.revisionTime}</span>}
+                            <span className="text-[10px] text-[#8b949e] font-medium">{r.category}</span>
+                            {r.revisionTime && <span className="text-[10px] text-[#58a6ff] font-mono">{r.revisionTime}</span>}
                           </div>
-                          <p className={`text-xs font-bold leading-tight ${r.completed ? 'line-through' : 'text-slate-100'}`}>
+                          <p className={`text-xs font-semibold leading-tight ${r.completed ? 'line-through text-[#8b949e]' : 'text-[#e6edf3]'}`}>
                             {r.topic}
                           </p>
                           {r.notes && (
-                            <p className="text-[11px] text-slate-400 leading-snug">{r.notes}</p>
+                            <p className="text-[11px] text-[#8b949e] leading-snug">{r.notes}</p>
                           )}
                         </div>
                       </div>
 
                       <button
                         onClick={() => deleteRevision(r.id || r.revisionId)}
-                        className="p-1 text-slate-500 hover:text-rose-400"
+                        className="p-1 text-[#8b949e] hover:text-[#f85149]"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -403,39 +403,39 @@ export const RevisionPlanner = () => {
             </div>
 
             {/* Upcoming Revisions Section */}
-            <div className="glass-panel rounded-2xl p-6 space-y-4">
+            <div className="rounded-lg bg-[#161b22] border border-[#30363d] p-5 space-y-4 shadow-sm">
               <div className="flex items-center justify-between">
-                <h2 className="text-base font-bold text-white flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-indigo-400" /> Upcoming Revisions ({upcomingRevisions.length})
+                <h2 className="text-sm font-semibold text-[#e6edf3] flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-[#58a6ff]" /> Upcoming Revisions ({upcomingRevisions.length})
                 </h2>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {upcomingRevisions.length === 0 ? (
-                  <p className="text-xs text-slate-500 py-6 text-center">No upcoming revisions scheduled yet.</p>
+                  <p className="text-xs text-[#8b949e] py-6 text-center">No upcoming revisions scheduled yet.</p>
                 ) : (
                   upcomingRevisions.map((r) => (
                     <div
                       key={r.id || r.revisionId}
-                      className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 flex items-start justify-between gap-3"
+                      className="p-3 rounded-md bg-[#0d1117] border border-[#30363d] flex items-start justify-between gap-3"
                     >
                       <div className="space-y-1 flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-indigo-400 font-mono font-semibold">
+                          <span className="text-[10px] text-[#58a6ff] font-mono font-medium">
                             Scheduled: {r.scheduledDate || r.revisionDate}
                           </span>
-                          <span className="text-[10px] text-slate-500">•</span>
-                          <span className="text-[10px] text-slate-400">{r.category}</span>
+                          <span className="text-[10px] text-[#8b949e]">•</span>
+                          <span className="text-[10px] text-[#8b949e]">{r.category}</span>
                         </div>
-                        <p className="text-xs font-bold text-slate-200">{r.topic}</p>
+                        <p className="text-xs font-semibold text-[#e6edf3]">{r.topic}</p>
                         {r.notes && (
-                          <p className="text-[11px] text-slate-400">{r.notes}</p>
+                          <p className="text-[11px] text-[#8b949e]">{r.notes}</p>
                         )}
                       </div>
 
                       <button
                         onClick={() => deleteRevision(r.id || r.revisionId)}
-                        className="p-1 text-slate-500 hover:text-rose-400"
+                        className="p-1 text-[#8b949e] hover:text-[#f85149]"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -451,14 +451,14 @@ export const RevisionPlanner = () => {
       {/* Add Revision Modal */}
       {isRevisionModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="glass-panel bg-slate-900 border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
-                <RotateCcw className="w-4 h-4 text-indigo-400" /> Schedule Topic Revision
+          <div className="bg-[#161b22] border border-[#30363d] rounded-lg max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+              <h2 className="text-sm font-bold text-[#e6edf3] flex items-center gap-2">
+                <RotateCcw className="w-4 h-4 text-[#58a6ff]" /> Schedule Topic Revision
               </h2>
               <button
                 onClick={() => setIsRevisionModalOpen(false)}
-                className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white"
+                className="p-1 rounded hover:bg-[#21262d] text-[#8b949e] hover:text-[#e6edf3]"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -466,24 +466,24 @@ export const RevisionPlanner = () => {
 
             <form onSubmit={handleAddRevisionSubmit} className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Topic / Problem to Revise *</label>
+                <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Topic / Problem to Revise *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Graph Cycle Detection (DFS & Kahn's Algorithm)"
                   value={newTopic}
                   onChange={(e) => setNewTopic(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-2 text-xs text-[#e6edf3] focus:outline-none focus:border-[#58a6ff]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Category</label>
+                  <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Category</label>
                   <select
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-2 text-xs text-[#e6edf3] focus:outline-none focus:border-[#58a6ff]"
                   >
                     <option value="DSA">DSA</option>
                     <option value="Core Subjects">Core Subjects</option>
@@ -493,11 +493,11 @@ export const RevisionPlanner = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Priority</label>
+                  <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Priority</label>
                   <select
                     value={newPriority}
                     onChange={(e) => setNewPriority(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-2 text-xs text-[#e6edf3] focus:outline-none focus:border-[#58a6ff]"
                   >
                     <option value="High">High</option>
                     <option value="Medium">Medium</option>
@@ -508,48 +508,48 @@ export const RevisionPlanner = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Date</label>
+                  <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Date</label>
                   <input
                     type="date"
                     value={newDate}
                     onChange={(e) => setNewDate(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-2 text-xs text-[#e6edf3] focus:outline-none focus:border-[#58a6ff]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Time</label>
+                  <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Time</label>
                   <input
                     type="text"
                     value={newTime}
                     onChange={(e) => setNewTime(e.target.value)}
                     placeholder="10:00 AM"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-2 text-xs text-[#e6edf3] focus:outline-none focus:border-[#58a6ff]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Revision Cue / Key Notes</label>
+                <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Revision Cue / Key Notes</label>
                 <textarea
                   rows="2"
                   value={newNotes}
                   onChange={(e) => setNewNotes(e.target.value)}
                   placeholder="Key catch or memory trigger..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-[#0d1117] border border-[#30363d] rounded-md p-2.5 text-xs text-[#e6edf3] focus:outline-none focus:border-[#58a6ff]"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-3 border-t border-[#30363d]">
                 <button
                   type="button"
                   onClick={() => setIsRevisionModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
+                  className="px-3.5 py-1.5 rounded-md bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#c9d1d9] text-xs font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/30"
+                  className="px-3.5 py-1.5 rounded-md bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-medium shadow-sm"
                 >
                   Schedule
                 </button>
@@ -562,14 +562,14 @@ export const RevisionPlanner = () => {
       {/* Add Study Goal Modal */}
       {isGoalModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="glass-panel bg-slate-900 border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
-                <Target className="w-4 h-4 text-indigo-400" /> Create Placement Goal
+          <div className="bg-[#161b22] border border-[#30363d] rounded-lg max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+              <h2 className="text-sm font-bold text-[#e6edf3] flex items-center gap-2">
+                <Target className="w-4 h-4 text-[#58a6ff]" /> Create Placement Goal
               </h2>
               <button
                 onClick={() => setIsGoalModalOpen(false)}
-                className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white"
+                className="p-1 rounded hover:bg-[#21262d] text-[#8b949e] hover:text-[#e6edf3]"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -577,24 +577,24 @@ export const RevisionPlanner = () => {
 
             <form onSubmit={handleAddGoalSubmit} className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Goal Title *</label>
+                <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Goal Title *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Solve 50 DP Questions before Month End"
                   value={newGoalTitle}
                   onChange={(e) => setNewGoalTitle(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-2 text-xs text-[#e6edf3] focus:outline-none focus:border-[#58a6ff]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Priority</label>
+                  <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Priority</label>
                   <select
                     value={newGoalPriority}
                     onChange={(e) => setNewGoalPriority(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-2 text-xs text-[#e6edf3] focus:outline-none focus:border-[#58a6ff]"
                   >
                     <option value="High">High</option>
                     <option value="Medium">Medium</option>
@@ -603,27 +603,27 @@ export const RevisionPlanner = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Target Deadline</label>
+                  <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Target Deadline</label>
                   <input
                     type="date"
                     value={newGoalDeadline}
                     onChange={(e) => setNewGoalDeadline(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-2 text-xs text-[#e6edf3] focus:outline-none focus:border-[#58a6ff]"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-3 border-t border-[#30363d]">
                 <button
                   type="button"
                   onClick={() => setIsGoalModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
+                  className="px-3.5 py-1.5 rounded-md bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#c9d1d9] text-xs font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/30"
+                  className="px-3.5 py-1.5 rounded-md bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-medium shadow-sm"
                 >
                   Create Goal
                 </button>
@@ -636,14 +636,14 @@ export const RevisionPlanner = () => {
       {/* Add Daily Task Modal */}
       {isTaskModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="glass-panel bg-slate-900 border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
-                <ListTodo className="w-4 h-4 text-emerald-400" /> Add Daily Task
+          <div className="bg-[#161b22] border border-[#30363d] rounded-lg max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+              <h2 className="text-sm font-bold text-[#e6edf3] flex items-center gap-2">
+                <ListTodo className="w-4 h-4 text-[#3fb950]" /> Add Daily Task
               </h2>
               <button
                 onClick={() => setIsTaskModalOpen(false)}
-                className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white"
+                className="p-1 rounded hover:bg-[#21262d] text-[#8b949e] hover:text-[#e6edf3]"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -651,28 +651,28 @@ export const RevisionPlanner = () => {
 
             <form onSubmit={handleAddTaskSubmit} className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Task Details *</label>
+                <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Task Details *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Review OS Paging vs Segmentation notes"
                   value={newTaskDetails}
                   onChange={(e) => setNewTaskDetails(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-2 text-xs text-[#e6edf3] focus:outline-none focus:border-[#58a6ff]"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-3 border-t border-[#30363d]">
                 <button
                   type="button"
                   onClick={() => setIsTaskModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
+                  className="px-3.5 py-1.5 rounded-md bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#c9d1d9] text-xs font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-lg shadow-emerald-600/30"
+                  className="px-3.5 py-1.5 rounded-md bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-medium shadow-sm"
                 >
                   Add Task
                 </button>
@@ -684,3 +684,5 @@ export const RevisionPlanner = () => {
     </div>
   );
 };
+
+export default RevisionPlanner;

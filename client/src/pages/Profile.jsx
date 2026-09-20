@@ -203,15 +203,12 @@ export const Profile = () => {
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-fadeIn pb-24">
       
-      {/* 1. EXECUTIVE CANDIDATE DOSSIER HEADER */}
-      <div className="rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/50 border border-slate-800 p-6 md:p-8 shadow-xl relative overflow-hidden">
-        <div className="absolute right-0 top-0 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute left-1/3 bottom-0 w-64 h-64 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
-
+      {/* 1. CANDIDATE PROFILE HEADER (GitHub Primer Header) */}
+      <div className="rounded-lg bg-[#161b22] border border-[#30363d] p-5 md:p-6 shadow-sm relative">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
           
           {/* Avatar & Candidate Credentials */}
-          <div className="flex items-start sm:items-center gap-5">
+          <div className="flex items-start sm:items-center gap-4">
             <div className="relative shrink-0">
               <UserAvatar
                 avatar={formData.avatar}
@@ -223,21 +220,21 @@ export const Profile = () => {
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                  {formData.name || 'Candidate Dossier'}
+                <h1 className="text-xl sm:text-2xl font-bold text-[#f0f6fc] tracking-tight">
+                  {formData.name || 'Candidate Profile'}
                 </h1>
-                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${tierInfo.badgeClass}`}>
+                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${tierInfo.badgeClass}`}>
                   {tierInfo.tier}
                 </span>
                 <button
                   type="button"
                   onClick={() => setIsAvatarModalOpen(true)}
-                  className="text-[10px] px-2.5 py-0.5 rounded-lg bg-slate-800/90 hover:bg-indigo-950 border border-slate-700 hover:border-indigo-600/60 text-slate-300 hover:text-indigo-300 font-semibold transition flex items-center gap-1 cursor-pointer"
+                  className="text-[10px] px-2.5 py-0.5 rounded-md bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#c9d1d9] hover:text-[#f0f6fc] font-medium transition flex items-center gap-1 cursor-pointer"
                   title="Change avatar picture"
                 >
-                  <Sparkles className="w-3 h-3 text-indigo-400" />
+                  <Sparkles className="w-3 h-3 text-[#58a6ff]" />
                   <span>Edit Picture</span>
                 </button>
               </div>
@@ -265,20 +262,20 @@ export const Profile = () => {
           </div>
 
           {/* Live Readiness Telemetry Dial & Quick Stats */}
-          <div className="flex flex-wrap items-center gap-3 self-start lg:self-center">
+          <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-center">
             {/* Readiness Dial Card */}
-            <div className="px-4 py-3 rounded-2xl bg-slate-950/90 border border-slate-800/90 flex items-center gap-3 shadow-inner">
-              <div className="relative w-12 h-12 flex items-center justify-center">
-                <svg className="w-12 h-12 -rotate-90" viewBox="0 0 36 36">
+            <div className="px-3.5 py-2.5 rounded-lg bg-[#0d1117] border border-[#30363d] flex items-center gap-3">
+              <div className="relative w-11 h-11 flex items-center justify-center">
+                <svg className="w-11 h-11 -rotate-90" viewBox="0 0 36 36">
                   <path
-                    className="text-slate-800"
+                    className="text-[#21262d]"
                     strokeWidth="3.5"
                     stroke="currentColor"
                     fill="none"
                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   />
                   <path
-                    className="text-indigo-500 transition-all duration-700"
+                    className="text-[#58a6ff] transition-all duration-700"
                     strokeDasharray={`${readiness}, 100`}
                     strokeWidth="3.5"
                     strokeLinecap="round"
@@ -287,32 +284,32 @@ export const Profile = () => {
                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   />
                 </svg>
-                <span className="absolute text-xs font-black text-white">{readiness}%</span>
+                <span className="absolute text-xs font-bold text-[#f0f6fc]">{readiness}%</span>
               </div>
               <div>
-                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">
+                <span className="text-[10px] text-[#8b949e] font-semibold uppercase tracking-wider block">
                   Readiness Index
                 </span>
-                <span className="text-xs font-bold text-indigo-300">{tierInfo.label}</span>
+                <span className="text-xs font-semibold text-[#58a6ff]">{tierInfo.label}</span>
               </div>
             </div>
 
             {/* Streak Counter */}
-            <div className="px-4 py-3 rounded-2xl bg-slate-950/90 border border-slate-800/90 text-center min-w-[95px] shadow-inner">
-              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">
+            <div className="px-3.5 py-2.5 rounded-lg bg-[#0d1117] border border-[#30363d] text-center min-w-[90px]">
+              <span className="text-[10px] text-[#8b949e] font-semibold uppercase tracking-wider block">
                 Consistency
               </span>
-              <span className="text-lg font-black text-amber-400 flex items-center justify-center gap-1">
+              <span className="text-base font-bold text-[#d29922] flex items-center justify-center gap-1">
                 <Flame className="w-4 h-4" /> {streak}d
               </span>
             </div>
 
             {/* LeetCode Counter */}
-            <div className="px-4 py-3 rounded-2xl bg-slate-950/90 border border-slate-800/90 text-center min-w-[95px] shadow-inner">
-              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">
+            <div className="px-3.5 py-2.5 rounded-lg bg-[#0d1117] border border-[#30363d] text-center min-w-[90px]">
+              <span className="text-[10px] text-[#8b949e] font-semibold uppercase tracking-wider block">
                 DSA Solved
               </span>
-              <span className="text-lg font-black text-emerald-400">
+              <span className="text-base font-bold text-[#3fb950]">
                 {lc.totalSolved || 0}
               </span>
             </div>
@@ -355,23 +352,23 @@ export const Profile = () => {
       )}
 
       {/* 2. ROLE SPECIALIZATION & READINESS EVALUATION MATRIX */}
-      <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6 md:p-8 space-y-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-4">
+      <div className="bg-[#161b22] rounded-lg border border-[#30363d] p-5 md:p-6 space-y-5 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#30363d] pb-3">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800/50 text-[10px] font-bold uppercase tracking-wider mb-1">
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#388bfd]/15 text-[#58a6ff] border border-[#388bfd]/30 text-[10px] font-semibold uppercase tracking-wider mb-1">
               <Cpu className="w-3 h-3" /> Specialization Matrix
             </div>
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
+            <h2 className="text-base font-bold text-[#f0f6fc] flex items-center gap-2">
               Role-Wise Placement Scoring & Formula Weights
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-[#8b949e] mt-0.5">
               Select your target engineering profile to inspect its exact mathematical formula, prioritized DSA topics, and roadmap tracks.
             </p>
           </div>
         </div>
 
         {/* 8-Role Interactive Selector Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
           {allRoles.map((role) => {
             const isSelected = role.title === formData.targetRole || role.id === activeRoleObj.id;
             return (
@@ -379,24 +376,24 @@ export const Profile = () => {
                 key={role.id}
                 type="button"
                 onClick={() => handleChange('targetRole', role.title)}
-                className={`p-3 rounded-2xl border text-left flex flex-col justify-between gap-2 transition-all relative overflow-hidden ${
+                className={`p-2.5 rounded-md border text-left flex flex-col justify-between gap-1.5 transition-all relative ${
                   isSelected
-                    ? 'bg-gradient-to-b from-indigo-950/80 to-slate-950 border-indigo-500 shadow-md shadow-indigo-600/20 ring-1 ring-indigo-400/40'
-                    : 'bg-slate-950/80 hover:bg-slate-800/80 border-slate-800 text-slate-400 hover:text-slate-200'
+                    ? 'bg-[#21262d] border-[#58a6ff] text-[#f0f6fc]'
+                    : 'bg-[#0d1117] hover:bg-[#21262d]/60 border-[#30363d] text-[#8b949e] hover:text-[#f0f6fc]'
                 }`}
               >
                 {isSelected && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-indigo-400" />
+                  <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#58a6ff]" />
                 )}
                 <div>
-                  <span className="text-[9px] font-bold uppercase tracking-wider block text-slate-500">
+                  <span className="text-[9px] font-medium uppercase tracking-wider block text-[#8b949e]">
                     {role.category.split(' ')[0]}
                   </span>
-                  <span className={`text-xs font-bold line-clamp-2 mt-0.5 ${isSelected ? 'text-white' : 'text-slate-300'}`}>
+                  <span className={`text-xs font-semibold line-clamp-2 mt-0.5 ${isSelected ? 'text-[#f0f6fc]' : 'text-[#c9d1d9]'}`}>
                     {role.shortLabel}
                   </span>
                 </div>
-                <div className="text-[10px] font-mono text-indigo-400/90 font-semibold">
+                <div className="text-[10px] font-mono text-[#58a6ff] font-medium">
                   {role.weights.dsa ? `${Math.round(role.weights.dsa * 100)}% DSA` : `${Math.round(role.weights.roadmaps * 100)}% Trk`}
                 </div>
               </button>
@@ -504,16 +501,16 @@ export const Profile = () => {
       </div>
 
       {/* 3. LIVE CODING FOOTPRINT & TELEMETRY */}
-      <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6 md:p-8 space-y-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+      <div className="bg-[#161b22] rounded-lg border border-[#30363d] p-5 md:p-6 space-y-5 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#30363d] pb-3">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-950 text-amber-400 border border-amber-800/50 text-[10px] font-bold uppercase tracking-wider mb-1">
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#d29922]/15 text-[#d29922] border border-[#d29922]/30 text-[10px] font-semibold uppercase tracking-wider mb-1">
               <Zap className="w-3 h-3" /> Live Telemetry
             </div>
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
+            <h2 className="text-base font-bold text-[#f0f6fc] flex items-center gap-2">
               Public Coding Profiles Telemetry
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-[#8b949e] mt-0.5">
               Synchronized metrics from public LeetCode and GitHub profiles.
             </p>
           </div>
@@ -522,10 +519,10 @@ export const Profile = () => {
             type="button"
             onClick={handleSyncProfiles}
             disabled={syncing}
-            className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-bold flex items-center gap-2 transition-all self-start sm:self-auto disabled:opacity-50 shadow-sm"
+            className="px-3 py-1.5 rounded-md bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#c9d1d9] text-xs font-medium flex items-center gap-2 transition-colors self-start sm:self-auto disabled:opacity-50"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-indigo-400 ${syncing ? 'animate-spin' : ''}`} />
-            <span>{syncing ? 'Synchronizing Handles...' : 'Sync Live Stats'}</span>
+            <RefreshCw className={`w-3.5 h-3.5 text-[#58a6ff] ${syncing ? 'animate-spin' : ''}`} />
+            <span>{syncing ? 'Synchronizing...' : 'Sync Live Stats'}</span>
           </button>
         </div>
 
@@ -876,10 +873,14 @@ export const Profile = () => {
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 transition-all hover:scale-105 flex items-center justify-center gap-2 disabled:opacity-50"
+            className="px-5 py-2 rounded-md bg-[#238636] hover:bg-[#2ea043] border border-[#2ea043]/30 text-white text-xs font-medium shadow-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
           >
-            <Save className="w-4 h-4" />
-            <span>{loading ? 'Updating Dossier...' : 'Save Career Dossier'}</span>
+            {loading ? (
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <Save className="w-3.5 h-3.5" />
+            )}
+            <span>Save Profile</span>
           </button>
         </div>
       </form>
