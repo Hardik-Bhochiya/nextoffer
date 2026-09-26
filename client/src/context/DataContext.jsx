@@ -205,22 +205,57 @@ export const DataProvider = ({ children }) => {
   };
 
   const toggleRoadmapTopic = async (roadmapId, topicId) => {
+    let isAllowed = true;
+    let warningMsg = '';
+
     setRoadmaps(prev => prev.map(r => {
       if (r.id === roadmapId || r._id?.toString() === roadmapId) {
-        return {
-          ...r,
-          isEnrolled: true,
-          topics: r.topics.map(t => (t.id === topicId || t._id?.toString() === topicId) ? { ...t, completed: !t.completed } : t)
-        };
+        const topicsList = r.topics || [];
+        const tIndex = topicsList.findIndex(t => t.id === topicId || t._id?.toString() === topicId || t.title === topicId);
+        if (tIndex === -1) return r;
+
+        const currentTopic = topicsList[tIndex];
+        const willBeCompleted = !currentTopic.completed;
+
+        if (willBeCompleted) {
+          // Check all previous milestones
+          for (let j = 0; j < tIndex; j++) {
+            if (!topicsList[j].completed) {
+              isAllowed = false;
+              warningMsg = `Prerequisite milestone locked! Complete "${topicsList[j].title}" first.`;
+              return r;
+            }
+          }
+          const updatedTopics = topicsList.map((t, idx) => idx === tIndex ? { ...t, completed: true } : t);
+          return { ...r, isEnrolled: true, topics: updatedTopics };
+        } else {
+          // Cascading uncheck: uncheck this milestone AND all subsequent milestones
+          const updatedTopics = topicsList.map((t, idx) => idx >= tIndex ? { ...t, completed: false } : t);
+          return { ...r, topics: updatedTopics };
+        }
       }
       return r;
     }));
+
+    if (!isAllowed) {
+      return { success: false, message: warningMsg };
+    }
+
     try {
-      await api.patch(`/roadmap/${roadmapId}/topic/${topicId}`);
+      const res = await api.patch(`/roadmap/${roadmapId}/topic/${topicId}`);
+      if (res?.data?.data) {
+        setRoadmaps(res.data.data);
+      }
       const anRes = await api.get('/analytics/dashboard').catch(() => null);
       if (anRes?.data) setMetrics(anRes.data);
-    } catch (err) { handleApiError(err); }
+      return { success: true };
+    } catch (err) {
+      handleApiError(err);
+      refreshData();
+      return { success: false, message: err.response?.data?.message || err.message };
+    }
   };
+
 
   // ---- Project Actions ----
   const addProject = async (projectData) => {

@@ -118,16 +118,43 @@ export const toggleTopic = async (req, res) => {
       user.completedTopics = [];
     }
 
-    const idx = user.completedTopics.indexOf(topicId);
-    if (idx > -1) {
-      user.completedTopics.splice(idx, 1);
-    } else {
+    const roadmap = defaultRoadmaps.find(r => r.id === roadmapId);
+    if (!roadmap) {
+      return res.status(404).json({ success: false, message: 'Roadmap not found' });
+    }
+
+    const topicIndex = roadmap.topics.findIndex(t => t.id === topicId || t.title === topicId);
+    if (topicIndex === -1) {
+      return res.status(404).json({ success: false, message: 'Topic not found' });
+    }
+
+    const completedSet = new Set(user.completedTopics);
+    const isCurrentlyCompleted = completedSet.has(topicId) || completedSet.has(roadmap.topics[topicIndex].title);
+
+    if (!isCurrentlyCompleted) {
+      // Trying to mark complete -> Check all previous topics in strict sequential order
+      for (let j = 0; j < topicIndex; j++) {
+        const prevT = roadmap.topics[j];
+        if (!completedSet.has(prevT.id) && !completedSet.has(prevT.title)) {
+          return res.status(400).json({
+            success: false,
+            message: `Sequential milestone locked: Complete "${prevT.title}" before proceeding.`
+          });
+        }
+      }
+      // Mark this topic complete
       user.completedTopics.push(topicId);
+    } else {
+      // Trying to uncheck -> Cascade uncheck all subsequent topics in this roadmap
+      for (let k = topicIndex; k < roadmap.topics.length; k++) {
+        const target = roadmap.topics[k];
+        user.completedTopics = user.completedTopics.filter(t => t !== target.id && t !== target.title);
+      }
     }
 
     await user.save();
 
-    const completedSet = new Set(user.completedTopics);
+    const updatedCompletedSet = new Set(user.completedTopics);
     const enrolledSet = new Set(user.enrolledRoadmaps);
 
     const updatedRoadmaps = defaultRoadmaps.map(r => ({
@@ -135,16 +162,17 @@ export const toggleTopic = async (req, res) => {
       isEnrolled: enrolledSet.has(r.id),
       topics: r.topics.map(t => ({
         ...t,
-        completed: completedSet.has(t.id) || completedSet.has(t.title)
+        completed: updatedCompletedSet.has(t.id) || updatedCompletedSet.has(t.title)
       }))
     }));
 
     return res.json({
       success: true,
-      message: 'Topic progress saved',
+      message: isCurrentlyCompleted ? 'Milestone progress updated (downstream milestones reset)' : 'Milestone marked completed',
       data: updatedRoadmaps
     });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+

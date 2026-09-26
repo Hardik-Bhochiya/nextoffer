@@ -19,7 +19,7 @@ import {
   Building,
   BarChart3,
   GitBranch,
-  Rocket,
+  FolderGit2,
   CalendarCheck,
   Menu
 } from 'lucide-react';
@@ -234,7 +234,7 @@ export const Navbar = ({ onToggleMobileMenu }) => {
             {searchResults.projects?.length > 0 && (
               <div className="space-y-0.5 pt-1 border-t border-[#30363d]">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-[#bc8cff] flex items-center gap-1 px-2 py-1">
-                  <Rocket className="w-3 h-3" /> Projects ({searchResults.projects.length})
+                  <FolderGit2 className="w-3 h-3" /> Projects ({searchResults.projects.length})
                 </p>
                 {searchResults.projects.slice(0, 3).map((item) => (
                   <div

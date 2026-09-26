@@ -7,8 +7,8 @@ import {
   Circle,
   HelpCircle,
   Sparkles,
-  GitBranch,
-  Layers,
+  Lock,
+  ListChecks,
   ArrowRight
 } from 'lucide-react';
 import { getTopicReference } from '../../data/topicReferenceData';
@@ -19,11 +19,22 @@ export const TopicInspectorModal = ({
   onClose,
   topic,
   roadmapCategory,
+  isLocked = false,
+  prerequisiteTitle = '',
   onToggleComplete
 }) => {
   if (!isOpen || !topic) return null;
 
-  const refData = getTopicReference(topic.title);
+  const fallbackRef = getTopicReference(topic.title);
+
+  const overview = topic.overview || fallbackRef.overview;
+  const keyTakeaways = topic.keyTakeaways || [];
+  const interviewQuestions = (topic.interviewQuestions && topic.interviewQuestions.length > 0)
+    ? topic.interviewQuestions
+    : fallbackRef.interviewQuestions;
+  const docLinks = (topic.learningLinks && topic.learningLinks.length > 0)
+    ? topic.learningLinks
+    : fallbackRef.docLinks;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
@@ -32,7 +43,7 @@ export const TopicInspectorModal = ({
         {/* Header */}
         <div className="p-5 border-b border-[#30363d] flex items-start justify-between bg-[#161b22]">
           <div className="space-y-1.5 pr-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-[10px] uppercase font-bold text-[#58a6ff] bg-[#388bfd]/10 px-2 py-0.5 rounded border border-[#388bfd]/30">
                 {roadmapCategory || 'Software Engineering Track'}
               </span>
@@ -40,9 +51,13 @@ export const TopicInspectorModal = ({
                 <span className="text-[10px] font-semibold text-[#3fb950] bg-[#238636]/15 px-2 py-0.5 rounded border border-[#238636]/40 flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3" /> Completed
                 </span>
+              ) : isLocked ? (
+                <span className="text-[10px] font-semibold text-[#f85149] bg-[#da3633]/15 px-2 py-0.5 rounded border border-[#da3633]/40 flex items-center gap-1">
+                  <Lock className="w-3 h-3" /> Prerequisite Locked
+                </span>
               ) : (
-                <span className="text-[10px] font-semibold text-[#d29922] bg-[#bb8009]/15 px-2 py-0.5 rounded border border-[#bb8009]/40">
-                  In Progress
+                <span className="text-[10px] font-semibold text-[#58a6ff] bg-[#388bfd]/15 px-2 py-0.5 rounded border border-[#388bfd]/40">
+                  Ready to Solve
                 </span>
               )}
             </div>
@@ -62,30 +77,67 @@ export const TopicInspectorModal = ({
         {/* Modal Body */}
         <div className="p-6 space-y-6 overflow-y-auto flex-1">
           
+          {/* Prerequisite Alert if Locked */}
+          {isLocked && (
+            <div className="p-3.5 rounded-md bg-[#da3633]/10 border border-[#da3633]/30 flex items-start gap-3 text-xs text-[#f85149]">
+              <Lock className="w-4 h-4 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold">Sequential Track Locked</p>
+                <p className="text-[#8b949e] mt-0.5">
+                  Complete previous milestone <span className="text-[#e6edf3] font-medium font-mono">"{prerequisiteTitle}"</span> before checking off this milestone.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Architectural Overview */}
           <div className="p-4 rounded-md bg-[#0d1117] border border-[#30363d] space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span className="text-[10px] uppercase font-bold text-[#58a6ff] tracking-wider flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" /> Conceptual Overview
               </span>
-              <span className="text-[10px] text-[#8b949e] font-mono">Reference</span>
+              <span className="text-[10px] text-[#8b949e] font-mono">Curated Notes</span>
             </div>
             <p className="text-xs text-[#c9d1d9] leading-relaxed font-sans">
-              {refData.overview}
+              {overview}
             </p>
           </div>
 
-          {/* Key Interview Questions */}
+          {/* Key Takeaways */}
+          {keyTakeaways.length > 0 && (
+            <div className="space-y-2.5">
+              <div className="flex items-center gap-2">
+                <ListChecks className="w-4 h-4 text-[#3fb950]" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#e6edf3]">
+                  Key Engineering Takeaways
+                </h3>
+              </div>
+
+              <div className="space-y-1.5">
+                {keyTakeaways.map((point, idx) => (
+                  <div
+                    key={idx}
+                    className="p-2.5 rounded-md bg-[#0d1117] border border-[#30363d] flex items-start gap-2 text-xs text-[#c9d1d9]"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#3fb950] shrink-0 mt-1.5" />
+                    <span className="leading-relaxed">{point}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Technical Interview Questions */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <HelpCircle className="w-4 h-4 text-[#d29922]" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-[#e6edf3]">
-                Technical Interview Questions
+                Top Interview Questions
               </h3>
             </div>
 
             <div className="space-y-2">
-              {refData.interviewQuestions.map((q, idx) => (
+              {interviewQuestions.map((q, idx) => (
                 <div
                   key={idx}
                   className="p-3 rounded-md bg-[#0d1117] border border-[#30363d] flex items-start gap-2.5 text-xs text-[#c9d1d9]"
@@ -99,17 +151,17 @@ export const TopicInspectorModal = ({
             </div>
           </div>
 
-          {/* Official Documentation & Practice Links */}
+          {/* Curated Resources & Practice Links */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-[#58a6ff]" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-[#e6edf3]">
-                Official References & Standards
+                Curated Free Documentation & Standards
               </h3>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {refData.docLinks.map((link, idx) => (
+              {docLinks.map((link, idx) => (
                 <a
                   key={idx}
                   href={link.url}
@@ -119,7 +171,7 @@ export const TopicInspectorModal = ({
                 >
                   <div className="flex items-center gap-2 truncate pr-2">
                     <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-[#21262d] text-[#58a6ff] border border-[#30363d]">
-                      {link.tag}
+                      {link.tag || 'Guide'}
                     </span>
                     <span className="font-medium truncate text-[#e6edf3]">{link.label}</span>
                   </div>
@@ -132,27 +184,21 @@ export const TopicInspectorModal = ({
           {/* Quick Cross-Module Shortcuts */}
           <div className="p-3.5 rounded-md bg-[#0d1117] border border-[#30363d] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="space-y-0.5">
-              <p className="font-semibold text-[#e6edf3]">Apply in practice</p>
-              <p className="text-[11px] text-[#8b949e]">Add a smart revision note or practice related DSA problems.</p>
+              <p className="font-semibold text-[#e6edf3]">Save Key Learnings</p>
+              <p className="text-[11px] text-[#8b949e]">Record personal summary notes or cheatsheets for this specific milestone.</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <Link
                 to="/notes"
                 onClick={onClose}
-                className="px-3 py-1.5 rounded-md bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#c9d1d9] text-[11px] font-medium transition"
+                className="px-3.5 py-1.5 rounded-md bg-[#1f6feb] hover:bg-[#388bfd] text-white text-[11px] font-semibold transition flex items-center gap-1.5 shadow-sm"
               >
-                Create Note
-              </Link>
-              <Link
-                to="/dsa"
-                onClick={onClose}
-                className="px-3 py-1.5 rounded-md bg-[#238636] hover:bg-[#2ea043] text-white text-[11px] font-medium transition flex items-center gap-1"
-              >
-                <span>DSA Practice</span>
+                <span>Create Revision Note</span>
                 <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
           </div>
+
         </div>
 
         {/* Footer */}
@@ -167,19 +213,28 @@ export const TopicInspectorModal = ({
 
           <button
             type="button"
+            disabled={isLocked && !topic.completed}
             onClick={() => {
+              if (isLocked && !topic.completed) return;
               onToggleComplete();
             }}
             className={`px-4 py-2 rounded-md text-xs font-semibold flex items-center gap-2 transition-all shadow-sm ${
               topic.completed
                 ? 'bg-[#21262d] hover:bg-[#da3633]/20 text-[#8b949e] hover:text-[#f85149] border border-[#30363d]'
+                : isLocked
+                ? 'bg-[#21262d] text-[#484f58] border border-[#30363d] cursor-not-allowed'
                 : 'bg-[#238636] hover:bg-[#2ea043] text-white'
             }`}
           >
             {topic.completed ? (
               <>
                 <Circle className="w-3.5 h-3.5" />
-                <span>Mark Incomplete</span>
+                <span>Mark Incomplete (Resets Downstream)</span>
+              </>
+            ) : isLocked ? (
+              <>
+                <Lock className="w-3.5 h-3.5" />
+                <span>Locked: Complete Prerequisite First</span>
               </>
             ) : (
               <>
@@ -195,3 +250,4 @@ export const TopicInspectorModal = ({
 };
 
 export default TopicInspectorModal;
+

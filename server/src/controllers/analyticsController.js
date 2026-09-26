@@ -44,15 +44,14 @@ export const calculateRoleBasedReadiness = (targetRole = '', dsaProblems = [], u
   let weightsExplanation = {};
 
   if (role.includes('sdet') || role.includes('testing') || role.includes('qa') || role.includes('test engineer') || role.includes('test automation')) {
-    recommendedRoadmapIds = ['fe-typescript', 'be-node', 'dsa-foundation', 'do-cicd-cloud'];
+    recommendedRoadmapIds = ['sdet-automation', 'fe-typescript', 'be-node'];
     recommendedRoadmapTitles = [
-      'TypeScript & Modern JavaScript',
-      'Node.js & Express Architecture',
-      'Data Structures Foundation',
-      'CI/CD Pipelines & AWS Cloud Deployment'
+      'Automated Testing & SDET Architecture',
+      'TypeScript & Modern JavaScript Internals',
+      'Node.js & Express Architecture'
     ];
 
-    const sdetRoadmapScore = getRoadmapsProgress(['fe-typescript', 'be-node', 'dsa-foundation']);
+    const sdetRoadmapScore = getRoadmapsProgress(['sdet-automation', 'fe-typescript', 'be-node']);
     finalScore = (sdetRoadmapScore * 0.40) + (projectScore * 0.35) + (dsaProgress * 0.25);
 
     nextActionItems = [
@@ -70,19 +69,18 @@ export const calculateRoleBasedReadiness = (targetRole = '', dsaProblems = [], u
       ]
     };
   } else if (role.includes('full stack') || role.includes('fullstack') || role.includes('mern')) {
-    recommendedRoadmapIds = ['fs-mern', 'fs-postgres', 'dsa-foundation', 'sys-lld'];
+    recommendedRoadmapIds = ['fe-react', 'fe-nextjs', 'be-node'];
     recommendedRoadmapTitles = [
-      'MERN Stack Production Track',
-      'Next.js + PostgreSQL + Prisma Stack',
-      'Data Structures Foundation',
-      'Low-Level Design & Clean Architecture'
+      'React.js & Modern UI Architecture',
+      'Next.js 15 & Full-Stack Frontend',
+      'Node.js & Express Architecture'
     ];
 
-    const fsRoadmapScore = getRoadmapsProgress(['fs-mern', 'fs-postgres', 'dsa-foundation', 'sys-lld']);
+    const fsRoadmapScore = getRoadmapsProgress(['fe-react', 'fe-nextjs', 'be-node']);
     finalScore = (fsRoadmapScore * 0.35) + (dsaProgress * 0.35) + (projectScore * 0.20) + (noteScore * 0.10);
 
     nextActionItems = [
-      { action: 'Complete Full-Stack MERN & Next.js production track', boost: '+15%', done: fsRoadmapScore >= 50 },
+      { action: 'Complete Full-Stack React & Next.js production tracks', boost: '+15%', done: fsRoadmapScore >= 50 },
       { action: 'Solve 20+ DSA questions across Trees, Graphs & DP', boost: '+15%', done: dsaProgress >= 50 },
       { action: 'Build 2 deployed full-stack capstone projects', boost: '+10%', done: projects.length >= 2 }
     ];
@@ -97,15 +95,14 @@ export const calculateRoleBasedReadiness = (targetRole = '', dsaProblems = [], u
       ]
     };
   } else if (role.includes('sde') || role.includes('core dsa') || role.includes('algorithm')) {
-    recommendedRoadmapIds = ['dsa-foundation', 'dsa-advanced', 'sys-lld', 'cs-os-dbms'];
+    recommendedRoadmapIds = ['dsa-foundation', 'dsa-advanced', 'sys-hld'];
     recommendedRoadmapTitles = [
       'Data Structures Foundation',
-      'Advanced Algorithms & DP Masterclass',
-      'Low-Level Design & Clean Architecture (LLD)',
-      'Operating Systems & DBMS Fundamentals'
+      'Advanced Algorithms & Graph Mastery',
+      'High-Level Distributed Systems (HLD)'
     ];
 
-    const sdeRoadmapScore = getRoadmapsProgress(['dsa-foundation', 'dsa-advanced', 'sys-lld']);
+    const sdeRoadmapScore = getRoadmapsProgress(['dsa-foundation', 'dsa-advanced', 'sys-hld']);
     finalScore = (dsaProgress * 0.40) + (sdeRoadmapScore * 0.30) + (projectScore * 0.20) + (noteScore * 0.10);
 
     nextActionItems = [
@@ -118,18 +115,17 @@ export const calculateRoleBasedReadiness = (targetRole = '', dsaProblems = [], u
       roleCategory: 'Software Development Engineer (SDE / Core DSA)',
       breakdown: [
         { label: 'DSA Problem Solving & Patterns (40%)', score: dsaProgress, weight: '40%' },
-        { label: 'Algorithms & LLD Roadmaps (30%)', score: sdeRoadmapScore, weight: '30%' },
+        { label: 'Algorithms & System Roadmaps (30%)', score: sdeRoadmapScore, weight: '30%' },
         { label: 'System Implementations & Projects (20%)', score: projectScore, weight: '20%' },
         { label: 'Core CS Notes & Fundamentals (10%)', score: noteScore, weight: '10%' }
       ]
     };
   } else if (role.includes('frontend') || role.includes('react') || role.includes('ui')) {
-    recommendedRoadmapIds = ['fe-react', 'fe-nextjs', 'fe-typescript', 'dsa-foundation'];
+    recommendedRoadmapIds = ['fe-react', 'fe-nextjs', 'fe-typescript'];
     recommendedRoadmapTitles = [
-      'React.js & Client Architecture',
-      'Next.js & Full-Stack Frontend',
-      'TypeScript & Modern JavaScript',
-      'Data Structures Foundation'
+      'React.js & Modern UI Architecture',
+      'Next.js 15 & Full-Stack Frontend',
+      'TypeScript & Modern JavaScript Internals'
     ];
 
     const feRoadmapScore = getRoadmapsProgress(['fe-react', 'fe-nextjs', 'fe-typescript']);
@@ -150,15 +146,14 @@ export const calculateRoleBasedReadiness = (targetRole = '', dsaProblems = [], u
       ]
     };
   } else if (role.includes('ai') || role.includes('ml') || role.includes('machine learning') || role.includes('genai') || role.includes('pytorch')) {
-    recommendedRoadmapIds = ['be-python', 'dsa-foundation', 'dsa-advanced', 'cs-os-dbms'];
+    recommendedRoadmapIds = ['ai-ml-python', 'ai-genai-llm', 'be-python'];
     recommendedRoadmapTitles = [
-      'Python & FastAPI High-Performance Backend',
-      'Data Structures Foundation',
-      'Advanced Algorithms & DP Masterclass',
-      'Operating Systems & DBMS Fundamentals'
+      'Applied Machine Learning & PyTorch',
+      'Generative AI, LLMs & RAG Systems',
+      'Python & FastAPI High-Performance Backend'
     ];
 
-    const aiRoadmapScore = getRoadmapsProgress(['be-python', 'dsa-foundation', 'dsa-advanced']);
+    const aiRoadmapScore = getRoadmapsProgress(['ai-ml-python', 'ai-genai-llm', 'be-python']);
     finalScore = (aiRoadmapScore * 0.40) + (dsaProgress * 0.30) + (projectScore * 0.30);
 
     nextActionItems = [
@@ -176,14 +171,14 @@ export const calculateRoleBasedReadiness = (targetRole = '', dsaProblems = [], u
       ]
     };
   } else if (role.includes('devops') || role.includes('docker') || role.includes('k8s') || role.includes('kubernetes') || role.includes('sre')) {
-    recommendedRoadmapIds = ['do-docker-k8s', 'do-cicd-cloud', 'cs-networks'];
+    recommendedRoadmapIds = ['do-docker-k8s', 'do-cicd-cloud', 'do-monitoring-linux'];
     recommendedRoadmapTitles = [
       'Docker & Kubernetes Orchestration',
       'CI/CD Pipelines & AWS Cloud Deployment',
-      'Computer Networks & Web Protocols'
+      'Linux Administration & Observability'
     ];
 
-    const doRoadmapScore = getRoadmapsProgress(['do-docker-k8s', 'do-cicd-cloud']);
+    const doRoadmapScore = getRoadmapsProgress(['do-docker-k8s', 'do-cicd-cloud', 'do-monitoring-linux']);
     finalScore = (doRoadmapScore * 0.45) + (projectScore * 0.30) + (dsaProgress * 0.25);
 
     nextActionItems = [
@@ -201,15 +196,14 @@ export const calculateRoleBasedReadiness = (targetRole = '', dsaProblems = [], u
       ]
     };
   } else if (role.includes('cloud') || role.includes('aws') || role.includes('azure') || role.includes('gcp') || role.includes('infra')) {
-    recommendedRoadmapIds = ['do-cicd-cloud', 'do-docker-k8s', 'cs-networks', 'sys-hld'];
+    recommendedRoadmapIds = ['do-cicd-cloud', 'do-docker-k8s', 'sys-hld'];
     recommendedRoadmapTitles = [
       'CI/CD Pipelines & AWS Cloud Deployment',
       'Docker & Kubernetes Orchestration',
-      'Computer Networks & Web Protocols',
       'High-Level Distributed Systems (HLD)'
     ];
 
-    const cloudRoadmapScore = getRoadmapsProgress(['do-cicd-cloud', 'do-docker-k8s', 'cs-networks', 'sys-hld']);
+    const cloudRoadmapScore = getRoadmapsProgress(['do-cicd-cloud', 'do-docker-k8s', 'sys-hld']);
     finalScore = (cloudRoadmapScore * 0.45) + (projectScore * 0.30) + (dsaProgress * 0.25);
 
     nextActionItems = [
@@ -227,15 +221,14 @@ export const calculateRoleBasedReadiness = (targetRole = '', dsaProblems = [], u
       ]
     };
   } else if (role.includes('backend') || role.includes('node') || role.includes('java') || role.includes('spring') || role.includes('express') || role.includes('api')) {
-    recommendedRoadmapIds = ['be-node', 'be-spring', 'sys-lld', 'cs-os-dbms'];
+    recommendedRoadmapIds = ['be-node', 'be-spring', 'sys-hld'];
     recommendedRoadmapTitles = [
       'Node.js & Express Architecture',
       'Java Spring Boot Enterprise SDE',
-      'Low-Level Design & Clean Architecture',
-      'Operating Systems & DBMS Fundamentals'
+      'High-Level Distributed Systems (HLD)'
     ];
 
-    const beRoadmapScore = getRoadmapsProgress(['be-node', 'be-spring', 'sys-lld']);
+    const beRoadmapScore = getRoadmapsProgress(['be-node', 'be-spring', 'sys-hld']);
     finalScore = (beRoadmapScore * 0.40) + (dsaProgress * 0.35) + (projectScore * 0.25);
 
     nextActionItems = [
@@ -248,6 +241,7 @@ export const calculateRoleBasedReadiness = (targetRole = '', dsaProblems = [], u
       roleCategory: 'Backend Engineer (Node.js / Java / Python)',
       breakdown: [
         { label: 'Backend & LLD Roadmaps (40%)', score: beRoadmapScore, weight: '40%' },
+
         { label: 'DSA & Algorithms (35%)', score: dsaProgress, weight: '35%' },
         { label: 'Backend Architecture Projects (25%)', score: projectScore, weight: '25%' }
       ]

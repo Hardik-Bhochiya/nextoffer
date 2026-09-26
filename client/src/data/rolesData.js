@@ -1,3 +1,5 @@
+export const universalCoreCsIds = ['cs-os', 'cs-dbms', 'cs-networks', 'cs-oop-lld'];
+
 export const allRoles = [
   {
     id: 'sde',
@@ -7,26 +9,35 @@ export const allRoles = [
     color: 'from-indigo-600 to-blue-600',
     borderColor: 'border-indigo-500/30',
     bgBadge: 'bg-indigo-950 text-indigo-300 border-indigo-800/40',
-    desc: 'Heavy algorithmic problem solving, time/space complexity optimization, data structures mastery, and low-level system design (LLD).',
-    focusArea: 'DSA Mastery (40%) • LLD Design (30%) • Capstone Projects (20%) • Core CS (10%)',
-    formulaDesc: 'Score = (0.40 × DSA) + (0.30 × Roadmaps) + (0.20 × Projects) + (0.10 × Core CS)',
+    desc: 'Heavy algorithmic problem solving, time/space complexity optimization, data structures mastery, and high-level system design (HLD).',
+    focusArea: 'DSA Mastery (40%) • Compulsory Roadmaps (30%) • Capstone Projects (20%) • Core CS (10%)',
+    formulaDesc: 'Score = (0.40 × DSA) + (0.30 × Compulsory Roadmaps) + (0.20 × Projects) + (0.10 × Core CS)',
     weights: { dsa: 0.40, roadmaps: 0.30, projects: 0.20, notes: 0.10 },
     weightsList: [
       { label: 'DSA Problem Solving & Patterns', weight: 40, color: 'text-indigo-400', barColor: 'bg-indigo-500' },
-      { label: 'Algorithms & LLD Roadmaps', weight: 30, color: 'text-cyan-400', barColor: 'bg-cyan-500' },
+      { label: 'Compulsory Domain Roadmaps', weight: 30, color: 'text-cyan-400', barColor: 'bg-cyan-500' },
       { label: 'System Implementations & Projects', weight: 20, color: 'text-emerald-400', barColor: 'bg-emerald-500' },
-      { label: 'Core CS Notes & Fundamentals', weight: 10, color: 'text-amber-400', barColor: 'bg-amber-500' }
+      { label: '4 Universal Core CS Subjects', weight: 10, color: 'text-amber-400', barColor: 'bg-amber-500' }
     ],
     recommendedDsaTopics: ['Arrays & Hashing', 'Two Pointers', 'Trees', 'Graphs', 'Dynamic Programming', 'Sliding Window'],
-    recommendedRoadmapIds: ['dsa-foundation', 'dsa-advanced', 'sys-lld', 'cs-os-dbms'],
+    compulsoryRoadmapIds: ['dsa-foundation', 'dsa-advanced', 'sys-hld'],
+    compulsoryRoadmapTitles: [
+      'Data Structures Foundation',
+      'Advanced Algorithms & Graph Mastery',
+      'High-Level Distributed Systems (HLD)'
+    ],
+    recommendedRoadmapIds: ['dsa-foundation', 'dsa-advanced', 'sys-hld', 'cs-os', 'cs-dbms', 'cs-networks', 'cs-oop-lld'],
     recommendedRoadmapTitles: [
       'Data Structures Foundation',
-      'Advanced Algorithms & DP Masterclass',
-      'Low-Level Design & Clean Architecture (LLD)',
-      'Operating Systems & DBMS Fundamentals'
+      'Advanced Algorithms & Graph Mastery',
+      'High-Level Distributed Systems (HLD)',
+      'Operating Systems & Concurrency',
+      'DBMS, SQL & Relational Architecture',
+      'Computer Networks & Web Protocols',
+      'Object-Oriented Programming & Clean LLD Design'
     ],
-    primarySkills: ['Data Structures', 'C++ / Java / Python', 'Algorithms', 'LLD Design Patterns', 'Complexity Analysis'],
-    targetBenchmarks: { minSolvedDsa: 25, minProjects: 2, minRoadmapPills: 4 }
+    primarySkills: ['Data Structures', 'C++ / Java / Python', 'Graph Algorithms', 'Dynamic Programming', 'System Design (HLD)'],
+    targetBenchmarks: { minSolvedDsa: 25, minProjects: 2, minRoadmapPills: 5 }
   },
   {
     id: 'fullstack',
@@ -37,25 +48,34 @@ export const allRoles = [
     borderColor: 'border-cyan-500/30',
     bgBadge: 'bg-cyan-950 text-cyan-300 border-cyan-800/40',
     desc: 'Complete end-to-end web engineering covering modern React/Next.js frontends, Node.js/Express APIs, PostgreSQL/MongoDB, and cloud deployments.',
-    focusArea: 'Full-Stack Tracks (35%) • DSA Mastery (35%) • Capstone Projects (20%) • Core CS (10%)',
-    formulaDesc: 'Score = (0.35 × Roadmaps) + (0.35 × DSA) + (0.20 × Projects) + (0.10 × Core CS)',
+    focusArea: 'Compulsory Roadmaps (35%) • DSA Mastery (35%) • Capstone Projects (20%) • Core CS (10%)',
+    formulaDesc: 'Score = (0.35 × Compulsory Roadmaps) + (0.35 × DSA) + (0.20 × Projects) + (0.10 × Core CS)',
     weights: { dsa: 0.35, roadmaps: 0.35, projects: 0.20, notes: 0.10 },
     weightsList: [
-      { label: 'Full-Stack Roadmaps (MERN/Next.js)', weight: 35, color: 'text-cyan-400', barColor: 'bg-cyan-500' },
+      { label: 'Compulsory Full-Stack Roadmaps', weight: 35, color: 'text-cyan-400', barColor: 'bg-cyan-500' },
       { label: 'DSA Mastery & Problem Patterns', weight: 35, color: 'text-indigo-400', barColor: 'bg-indigo-500' },
       { label: 'Deployed Portfolio Projects', weight: 20, color: 'text-emerald-400', barColor: 'bg-emerald-500' },
-      { label: 'Core CS Notes & Architecture', weight: 10, color: 'text-amber-400', barColor: 'bg-amber-500' }
+      { label: '4 Universal Core CS Subjects', weight: 10, color: 'text-amber-400', barColor: 'bg-amber-500' }
     ],
     recommendedDsaTopics: ['Arrays & Hashing', 'Two Pointers', 'Sliding Window', 'Trees', 'Linked List'],
-    recommendedRoadmapIds: ['fs-mern', 'fs-postgres', 'dsa-foundation', 'sys-lld'],
-    recommendedRoadmapTitles: [
-      'MERN Stack Production Track',
-      'Next.js + PostgreSQL + Prisma Stack',
-      'Data Structures Foundation',
-      'Low-Level Design & Clean Architecture'
+    compulsoryRoadmapIds: ['fe-react', 'fe-nextjs', 'be-node'],
+    compulsoryRoadmapTitles: [
+      'React.js & Modern UI Architecture',
+      'Next.js 15 & Full-Stack Frontend',
+      'Node.js & Express Architecture'
     ],
-    primarySkills: ['React / Next.js', 'Node.js & Express', 'PostgreSQL / MongoDB', 'REST & GraphQL', 'Tailwind CSS'],
-    targetBenchmarks: { minSolvedDsa: 20, minProjects: 2, minRoadmapPills: 4 }
+    recommendedRoadmapIds: ['fe-react', 'fe-nextjs', 'be-node', 'cs-os', 'cs-dbms', 'cs-networks', 'cs-oop-lld'],
+    recommendedRoadmapTitles: [
+      'React.js & Modern UI Architecture',
+      'Next.js 15 & Full-Stack Frontend',
+      'Node.js & Express Architecture',
+      'Operating Systems & Concurrency',
+      'DBMS, SQL & Relational Architecture',
+      'Computer Networks & Web Protocols',
+      'Object-Oriented Programming & Clean LLD Design'
+    ],
+    primarySkills: ['React / Next.js', 'Node.js & Express', 'PostgreSQL / MongoDB', 'REST APIs', 'Tailwind CSS'],
+    targetBenchmarks: { minSolvedDsa: 20, minProjects: 2, minRoadmapPills: 5 }
   },
   {
     id: 'frontend',
@@ -70,20 +90,27 @@ export const allRoles = [
     formulaDesc: 'Score = (0.40 × Frontend Tracks) + (0.35 × UI Projects) + (0.25 × DSA)',
     weights: { dsa: 0.25, roadmaps: 0.40, projects: 0.35, notes: 0.0 },
     weightsList: [
-      { label: 'Frontend & Next.js Roadmaps', weight: 40, color: 'text-teal-400', barColor: 'bg-teal-500' },
+      { label: 'Compulsory Frontend Roadmaps', weight: 40, color: 'text-teal-400', barColor: 'bg-teal-500' },
       { label: 'UI Capstone Applications', weight: 35, color: 'text-cyan-400', barColor: 'bg-cyan-500' },
       { label: 'DSA & Algorithmic Patterns', weight: 25, color: 'text-indigo-400', barColor: 'bg-indigo-500' }
     ],
     recommendedDsaTopics: ['Arrays & Hashing', 'Two Pointers', 'Sliding Window', 'Linked List'],
-    recommendedRoadmapIds: ['fe-react', 'fe-nextjs', 'fe-typescript', 'dsa-foundation'],
-    recommendedRoadmapTitles: [
-      'React.js & Client Architecture',
-      'Next.js & Full-Stack Frontend',
-      'TypeScript & Modern JavaScript',
-      'Data Structures Foundation'
+    compulsoryRoadmapIds: ['fe-react', 'fe-nextjs', 'fe-typescript'],
+    compulsoryRoadmapTitles: [
+      'React.js & Modern UI Architecture',
+      'Next.js 15 & Full-Stack Frontend',
+      'TypeScript & Modern JavaScript Internals'
     ],
-    primarySkills: ['React 19 / RSC', 'TypeScript', 'Next.js App Router', 'Tailwind CSS', 'Browser Performance'],
-    targetBenchmarks: { minSolvedDsa: 15, minProjects: 2, minRoadmapPills: 3 }
+    recommendedRoadmapIds: ['fe-react', 'fe-nextjs', 'fe-typescript', 'fe-css-performance', 'cs-networks'],
+    recommendedRoadmapTitles: [
+      'React.js & Modern UI Architecture',
+      'Next.js 15 & Full-Stack Frontend',
+      'TypeScript & Modern JavaScript Internals',
+      'Modern CSS, Tailwind & UI Engineering',
+      'Computer Networks & Web Protocols'
+    ],
+    primarySkills: ['React 19 / RSC', 'TypeScript', 'Next.js App Router', 'Tailwind CSS', 'Browser Performance (CWV)'],
+    targetBenchmarks: { minSolvedDsa: 15, minProjects: 2, minRoadmapPills: 4 }
   },
   {
     id: 'backend',
@@ -94,24 +121,33 @@ export const allRoles = [
     borderColor: 'border-emerald-500/30',
     bgBadge: 'bg-emerald-950 text-emerald-300 border-emerald-800/40',
     desc: 'Scalable RESTful & gRPC APIs, database indexing, transactions, Redis distributed caching, message queues (Kafka), and clean architecture.',
-    focusArea: 'Backend & LLD Roadmaps (40%) • DSA & Graph Algos (35%) • Backend Projects (25%)',
+    focusArea: 'Backend Roadmaps (40%) • DSA & Graph Algos (35%) • Backend Projects (25%)',
     formulaDesc: 'Score = (0.40 × Backend Tracks) + (0.35 × DSA) + (0.25 × Backend Projects)',
     weights: { dsa: 0.35, roadmaps: 0.40, projects: 0.25, notes: 0.0 },
     weightsList: [
-      { label: 'Backend & System Architecture', weight: 40, color: 'text-emerald-400', barColor: 'bg-emerald-500' },
+      { label: 'Compulsory Backend & System Design', weight: 40, color: 'text-emerald-400', barColor: 'bg-emerald-500' },
       { label: 'DSA & Non-Linear Algorithms', weight: 35, color: 'text-indigo-400', barColor: 'bg-indigo-500' },
       { label: 'Scalable API Projects', weight: 25, color: 'text-cyan-400', barColor: 'bg-cyan-500' }
     ],
     recommendedDsaTopics: ['Trees', 'Graphs', 'Arrays & Hashing', 'Dynamic Programming'],
-    recommendedRoadmapIds: ['be-node', 'be-spring', 'sys-lld', 'cs-os-dbms'],
+    compulsoryRoadmapIds: ['be-node', 'be-spring', 'sys-hld'],
+    compulsoryRoadmapTitles: [
+      'Node.js & Express Architecture',
+      'Java Spring Boot Enterprise SDE',
+      'High-Level Distributed Systems (HLD)'
+    ],
+    recommendedRoadmapIds: ['be-node', 'be-spring', 'sys-hld', 'cs-os', 'cs-dbms', 'cs-networks', 'cs-oop-lld'],
     recommendedRoadmapTitles: [
       'Node.js & Express Architecture',
       'Java Spring Boot Enterprise SDE',
-      'Low-Level Design & Clean Architecture',
-      'Operating Systems & DBMS Fundamentals'
+      'High-Level Distributed Systems (HLD)',
+      'Operating Systems & Concurrency',
+      'DBMS, SQL & Relational Architecture',
+      'Computer Networks & Web Protocols',
+      'Object-Oriented Programming & Clean LLD Design'
     ],
     primarySkills: ['Node.js / Spring Boot', 'PostgreSQL / MongoDB', 'Redis Caching', 'Kafka Queues', 'Docker'],
-    targetBenchmarks: { minSolvedDsa: 20, minProjects: 2, minRoadmapPills: 4 }
+    targetBenchmarks: { minSolvedDsa: 20, minProjects: 2, minRoadmapPills: 5 }
   },
   {
     id: 'devops',
@@ -131,14 +167,22 @@ export const allRoles = [
       { label: 'Systems & Problem Solving', weight: 25, color: 'text-indigo-400', barColor: 'bg-indigo-500' }
     ],
     recommendedDsaTopics: ['Arrays & Hashing', 'Two Pointers', 'Linked List'],
-    recommendedRoadmapIds: ['do-docker-k8s', 'do-cicd-cloud', 'cs-networks'],
+    compulsoryRoadmapIds: ['do-docker-k8s', 'do-cicd-cloud', 'do-monitoring-linux'],
+    compulsoryRoadmapTitles: [
+      'Docker & Kubernetes Orchestration',
+      'CI/CD Pipelines & AWS Cloud Deployment',
+      'Linux Administration & Observability'
+    ],
+    recommendedRoadmapIds: ['do-docker-k8s', 'do-cicd-cloud', 'do-monitoring-linux', 'cs-os', 'cs-networks'],
     recommendedRoadmapTitles: [
       'Docker & Kubernetes Orchestration',
       'CI/CD Pipelines & AWS Cloud Deployment',
+      'Linux Administration & Observability',
+      'Operating Systems & Concurrency',
       'Computer Networks & Web Protocols'
     ],
-    primarySkills: ['Docker & Kubernetes', 'GitHub Actions CI/CD', 'Linux Shell Scripting', 'Terraform', 'Monitoring'],
-    targetBenchmarks: { minSolvedDsa: 12, minProjects: 2, minRoadmapPills: 3 }
+    primarySkills: ['Docker & Kubernetes', 'GitHub Actions CI/CD', 'Linux Shell Scripting', 'Terraform', 'Prometheus & Grafana'],
+    targetBenchmarks: { minSolvedDsa: 12, minProjects: 2, minRoadmapPills: 4 }
   },
   {
     id: 'cloud',
@@ -158,12 +202,19 @@ export const allRoles = [
       { label: 'Networking & Problem Solving', weight: 25, color: 'text-indigo-400', barColor: 'bg-indigo-500' }
     ],
     recommendedDsaTopics: ['Arrays & Hashing', 'Two Pointers', 'Graphs'],
-    recommendedRoadmapIds: ['do-cicd-cloud', 'do-docker-k8s', 'cs-networks', 'sys-hld'],
+    compulsoryRoadmapIds: ['do-cicd-cloud', 'do-docker-k8s', 'sys-hld'],
+    compulsoryRoadmapTitles: [
+      'CI/CD Pipelines & AWS Cloud Deployment',
+      'Docker & Kubernetes Orchestration',
+      'High-Level Distributed Systems (HLD)'
+    ],
+    recommendedRoadmapIds: ['do-cicd-cloud', 'do-docker-k8s', 'sys-hld', 'cs-networks', 'cs-os'],
     recommendedRoadmapTitles: [
       'CI/CD Pipelines & AWS Cloud Deployment',
       'Docker & Kubernetes Orchestration',
+      'High-Level Distributed Systems (HLD)',
       'Computer Networks & Web Protocols',
-      'High-Level Distributed Systems (HLD)'
+      'Operating Systems & Concurrency'
     ],
     primarySkills: ['AWS EC2/S3/Lambda', 'Cloud Networking (VPC/DNS)', 'IAM Security', 'Docker', 'Terraform'],
     targetBenchmarks: { minSolvedDsa: 15, minProjects: 2, minRoadmapPills: 4 }
@@ -186,15 +237,23 @@ export const allRoles = [
       { label: 'Deployed GenAI / RAG Projects', weight: 30, color: 'text-indigo-400', barColor: 'bg-indigo-500' }
     ],
     recommendedDsaTopics: ['Arrays & Hashing', 'Two Pointers', 'Dynamic Programming', 'Graphs'],
-    recommendedRoadmapIds: ['be-python', 'dsa-foundation', 'dsa-advanced', 'cs-os-dbms'],
+    compulsoryRoadmapIds: ['ai-ml-python', 'ai-genai-llm', 'be-python'],
+    compulsoryRoadmapTitles: [
+      'Applied Machine Learning & PyTorch',
+      'Generative AI, LLMs & RAG Systems',
+      'Python & FastAPI High-Performance Backend'
+    ],
+    recommendedRoadmapIds: ['ai-ml-python', 'ai-genai-llm', 'be-python', 'cs-os', 'cs-dbms', 'dsa-foundation'],
     recommendedRoadmapTitles: [
+      'Applied Machine Learning & PyTorch',
+      'Generative AI, LLMs & RAG Systems',
       'Python & FastAPI High-Performance Backend',
-      'Data Structures Foundation',
-      'Advanced Algorithms & DP Masterclass',
-      'Operating Systems & DBMS Fundamentals'
+      'Operating Systems & Concurrency',
+      'DBMS, SQL & Relational Architecture',
+      'Data Structures Foundation'
     ],
     primarySkills: ['Python & PyTorch', 'Transformers & HuggingFace', 'RAG Pipelines & LangChain', 'Vector DBs', 'FastAPI'],
-    targetBenchmarks: { minSolvedDsa: 18, minProjects: 2, minRoadmapPills: 4 }
+    targetBenchmarks: { minSolvedDsa: 18, minProjects: 2, minRoadmapPills: 5 }
   },
   {
     id: 'sdet',
@@ -209,20 +268,29 @@ export const allRoles = [
     formulaDesc: 'Score = (0.40 × Testing Tracks) + (0.35 × Test Automation Projects) + (0.25 × DSA)',
     weights: { dsa: 0.25, roadmaps: 0.40, projects: 0.35, notes: 0.0 },
     weightsList: [
-      { label: 'TypeScript & Test Automation Tracks', weight: 40, color: 'text-rose-400', barColor: 'bg-rose-500' },
+      { label: 'Test Automation & Core Tracks', weight: 40, color: 'text-rose-400', barColor: 'bg-rose-500' },
       { label: 'Automated E2E Test Suites', weight: 35, color: 'text-amber-400', barColor: 'bg-amber-500' },
       { label: 'String, Array & Core DSA', weight: 25, color: 'text-indigo-400', barColor: 'bg-indigo-500' }
     ],
     recommendedDsaTopics: ['Arrays & Hashing', 'Two Pointers', 'Strings', 'Linked List'],
-    recommendedRoadmapIds: ['fe-typescript', 'be-node', 'dsa-foundation', 'do-cicd-cloud'],
-    recommendedRoadmapTitles: [
-      'TypeScript & Modern JavaScript',
-      'Node.js & Express Architecture',
-      'Data Structures Foundation',
-      'CI/CD Pipelines & AWS Cloud Deployment'
+    compulsoryRoadmapIds: ['sdet-automation', 'fe-typescript', 'be-node'],
+    compulsoryRoadmapTitles: [
+      'Automated Testing & SDET Architecture',
+      'TypeScript & Modern JavaScript Internals',
+      'Node.js & Express Architecture'
     ],
-    primarySkills: ['Playwright / Cypress', 'Jest / Mocha', 'API Automation', 'CI/CD Pipelines', 'Performance Testing'],
-    targetBenchmarks: { minSolvedDsa: 15, minProjects: 2, minRoadmapPills: 4 }
+    recommendedRoadmapIds: ['sdet-automation', 'fe-typescript', 'be-node', 'cs-os', 'cs-dbms', 'cs-networks', 'cs-oop-lld'],
+    recommendedRoadmapTitles: [
+      'Automated Testing & SDET Architecture',
+      'TypeScript & Modern JavaScript Internals',
+      'Node.js & Express Architecture',
+      'Operating Systems & Concurrency',
+      'DBMS, SQL & Relational Architecture',
+      'Computer Networks & Web Protocols',
+      'Object-Oriented Programming & Clean LLD Design'
+    ],
+    primarySkills: ['Playwright / Cypress', 'Jest / Mocha', 'API Automation', 'k6 Load Testing', 'CI/CD Pipelines'],
+    targetBenchmarks: { minSolvedDsa: 15, minProjects: 2, minRoadmapPills: 5 }
   }
 ];
 

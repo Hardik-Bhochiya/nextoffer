@@ -49,11 +49,6 @@ const projectSchema = new mongoose.Schema({
     default: 'Full Stack Web Application',
     trim: true
   },
-  allocatedRole: {
-    type: String,
-    default: 'Full Stack Engineer',
-    trim: true
-  },
   status: {
     type: String,
     enum: ['In Progress', 'Completed', 'Planning', 'On Hold'],
