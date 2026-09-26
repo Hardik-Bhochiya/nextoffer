@@ -39,6 +39,11 @@ const projectSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  category: {
+    type: String,
+    default: 'Full Stack',
+    trim: true
+  },
   status: {
     type: String,
     enum: ['In Progress', 'Completed', 'Planning', 'On Hold'],

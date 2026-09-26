@@ -20,15 +20,16 @@ export const getProjects = async (req, res) => {
 export const createProject = async (req, res) => {
   try {
     const userId = req.user?.id;
-    const { title, description, techStack, githubUrl, liveUrl, status, milestones } = req.body;
+    const { title, description, category, techStack, githubUrl, liveUrl, status, milestones } = req.body;
     if (!title) {
       return res.status(400).json({ success: false, message: 'Project title is required' });
     }
     const newProject = await Project.create({
       userId,
-      title,
+      title: title.trim(),
       description: description || '',
-      techStack: Array.isArray(techStack) ? techStack : (techStack ? techStack.split(',').map(s => s.trim()) : []),
+      category: category || 'Full Stack',
+      techStack: Array.isArray(techStack) ? techStack : (techStack ? techStack.split(',').map(s => s.trim()).filter(Boolean) : []),
       githubUrl: githubUrl || '',
       liveUrl: liveUrl || '',
       status: status || 'In Progress',
@@ -46,7 +47,7 @@ export const updateProject = async (req, res) => {
     const { id } = req.params;
     const updateData = { ...req.body };
     if (updateData.techStack && typeof updateData.techStack === 'string') {
-      updateData.techStack = updateData.techStack.split(',').map(s => s.trim());
+      updateData.techStack = updateData.techStack.split(',').map(s => s.trim()).filter(Boolean);
     }
 
     const updated = await Project.findOneAndUpdate(

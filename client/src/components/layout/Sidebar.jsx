@@ -47,7 +47,7 @@ export const Sidebar = ({ isMobileOpen = false, onClose }) => {
     { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/dsa', icon: Code2, label: 'DSA Tracker' },
     { to: '/roadmaps', icon: GitBranch, label: 'Roadmaps' },
-    { to: '/projects', icon: Rocket, label: 'Capstone Projects' },
+    { to: '/projects', icon: Rocket, label: 'Projects' },
     { to: '/notes', icon: BookOpen, label: 'Smart Notes' },
     { to: '/revision', icon: CalendarCheck, label: 'Goal & Task Setter' },
     { to: '/analytics', icon: BarChart3, label: 'Analytics' },
