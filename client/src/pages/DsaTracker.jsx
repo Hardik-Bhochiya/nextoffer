@@ -18,8 +18,11 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
-  Filter
+  Filter,
+  Target,
+  Sparkles
 } from 'lucide-react';
+import { LeetCodeProgressRing } from '../components/dsa/LeetCodeProgressRing';
 
 const CODING_PLATFORMS = [
   {
@@ -212,21 +215,32 @@ export const DsaTracker = () => {
     let attended = 0;
     let needsRev = 0;
     let unsolved = 0;
-    let easy = 0;
-    let medium = 0;
-    let hard = 0;
+    let easyTotal = 0;
+    let mediumTotal = 0;
+    let hardTotal = 0;
+    let easySolved = 0;
+    let mediumSolved = 0;
+    let hardSolved = 0;
 
     dsaProblems.forEach(p => {
       const s = p.status || p.problemStatus;
-      if (s === 'Completed' || s === 'Solved') completed++;
+      const isSolved = s === 'Completed' || s === 'Solved';
+      if (isSolved) completed++;
       else if (s === 'Attended' || s === 'Attempted') attended++;
       else if (s === 'Needs Revision') needsRev++;
       else unsolved++;
 
       const d = p.difficulty;
-      if (d === 'Easy') easy++;
-      else if (d === 'Hard') hard++;
-      else medium++;
+      if (d === 'Easy') {
+        easyTotal++;
+        if (isSolved) easySolved++;
+      } else if (d === 'Hard') {
+        hardTotal++;
+        if (isSolved) hardSolved++;
+      } else {
+        mediumTotal++;
+        if (isSolved) mediumSolved++;
+      }
     });
 
     return {
@@ -235,9 +249,12 @@ export const DsaTracker = () => {
       attended,
       needsRev,
       unsolved,
-      easy,
-      medium,
-      hard
+      easyTotal,
+      mediumTotal,
+      hardTotal,
+      easySolved,
+      mediumSolved,
+      hardSolved
     };
   }, [dsaProblems]);
 
@@ -584,59 +601,87 @@ export const DsaTracker = () => {
         </div>
       )}
 
-      {/* DSA Placement Mastery Overview Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex items-center justify-between shadow-sm">
-          <div>
-            <p className="text-[10px] text-[#8b949e] font-medium uppercase tracking-wider">Total Questions</p>
-            <div className="flex items-baseline gap-1.5 mt-0.5">
-              <span className="text-xl font-bold text-[#f0f6fc]">{stats.total}</span>
-              <span className="text-[10px] text-[#8b949e]">tracked</span>
-            </div>
+      {/* DSA Placement Mastery Overview with LeetCode Circular Ring */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
+        {/* LeetCode Circular Progress Ring Card (5 cols) */}
+        <div className="lg:col-span-5 bg-[#161b22] border border-[#30363d] rounded-lg p-4 shadow-sm flex flex-col justify-between">
+          <div className="flex items-center justify-between border-b border-[#30363d] pb-2.5 mb-3">
+            <span className="text-xs font-semibold text-[#f0f6fc] flex items-center gap-1.5">
+              <Target className="w-3.5 h-3.5 text-[#58a6ff]" /> Difficulty Distribution
+            </span>
+            <span className="text-[10px] text-[#8b949e] font-mono">
+              {stats.total > 0 ? `${Math.round((stats.completed / stats.total) * 100)}% Complete` : '0%'}
+            </span>
           </div>
-          <div className="w-8 h-8 rounded-md bg-[#58a6ff]/10 border border-[#58a6ff]/20 flex items-center justify-center text-[#58a6ff]">
-            <Code2 className="w-4 h-4" />
-          </div>
+
+          <LeetCodeProgressRing
+            easySolved={stats.easySolved}
+            easyTotal={stats.easyTotal}
+            mediumSolved={stats.mediumSolved}
+            mediumTotal={stats.mediumTotal}
+            hardSolved={stats.hardSolved}
+            hardTotal={stats.hardTotal}
+            totalSolved={stats.completed}
+            totalQuestions={stats.total}
+            size={120}
+            strokeWidth={8}
+          />
         </div>
 
-        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex items-center justify-between shadow-sm">
-          <div>
-            <p className="text-[10px] text-[#8b949e] font-medium uppercase tracking-wider">Completed / Solved</p>
-            <div className="flex items-baseline gap-1.5 mt-0.5">
-              <span className="text-xl font-bold text-[#3fb950]">{stats.completed}</span>
+        {/* 4 Stat Overview Cards (7 cols) */}
+        <div className="lg:col-span-7 grid grid-cols-2 gap-2.5">
+          <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3.5 flex flex-col justify-between shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] text-[#8b949e] font-medium uppercase tracking-wider">Total Questions</p>
+              <div className="w-7 h-7 rounded-md bg-[#58a6ff]/10 border border-[#58a6ff]/20 flex items-center justify-center text-[#58a6ff]">
+                <Code2 className="w-3.5 h-3.5" />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5 mt-2">
+              <span className="text-2xl font-bold text-[#f0f6fc]">{stats.total}</span>
+              <span className="text-[10px] text-[#8b949e]">in question bank</span>
+            </div>
+          </div>
+
+          <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3.5 flex flex-col justify-between shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] text-[#8b949e] font-medium uppercase tracking-wider">Completed / Solved</p>
+              <div className="w-7 h-7 rounded-md bg-[#238636]/10 border border-[#238636]/20 flex items-center justify-center text-[#3fb950]">
+                <Check className="w-3.5 h-3.5" />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5 mt-2">
+              <span className="text-2xl font-bold text-[#3fb950]">{stats.completed}</span>
               <span className="text-[10px] text-[#3fb950]/80">
                 {stats.total > 0 ? `${Math.round((stats.completed / stats.total) * 100)}%` : '0%'}
               </span>
             </div>
           </div>
-          <div className="w-8 h-8 rounded-md bg-[#238636]/10 border border-[#238636]/20 flex items-center justify-center text-[#3fb950]">
-            <Check className="w-4 h-4" />
-          </div>
-        </div>
 
-        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex items-center justify-between shadow-sm">
-          <div>
-            <p className="text-[10px] text-[#8b949e] font-medium uppercase tracking-wider">Attended / Attempted</p>
-            <div className="flex items-baseline gap-1.5 mt-0.5">
-              <span className="text-xl font-bold text-[#d29922]">{stats.attended}</span>
+          <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3.5 flex flex-col justify-between shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] text-[#8b949e] font-medium uppercase tracking-wider">Attended / Attempted</p>
+              <div className="w-7 h-7 rounded-md bg-[#d29922]/10 border border-[#d29922]/20 flex items-center justify-center text-[#d29922]">
+                <Layers className="w-3.5 h-3.5" />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5 mt-2">
+              <span className="text-2xl font-bold text-[#d29922]">{stats.attended}</span>
               <span className="text-[10px] text-[#d29922]/80">in progress</span>
             </div>
           </div>
-          <div className="w-8 h-8 rounded-md bg-[#d29922]/10 border border-[#d29922]/20 flex items-center justify-center text-[#d29922]">
-            <Layers className="w-4 h-4" />
-          </div>
-        </div>
 
-        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3 flex items-center justify-between shadow-sm">
-          <div>
-            <p className="text-[10px] text-[#8b949e] font-medium uppercase tracking-wider">Needs Revision</p>
-            <div className="flex items-baseline gap-1.5 mt-0.5">
-              <span className="text-xl font-bold text-[#f85149]">{stats.needsRev}</span>
+          <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-3.5 flex flex-col justify-between shadow-sm">
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] text-[#8b949e] font-medium uppercase tracking-wider">Needs Revision</p>
+              <div className="w-7 h-7 rounded-md bg-[#da3633]/10 border border-[#da3633]/20 flex items-center justify-center text-[#f85149]">
+                <RotateCcw className="w-3.5 h-3.5" />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-1.5 mt-2">
+              <span className="text-2xl font-bold text-[#f85149]">{stats.needsRev}</span>
               <span className="text-[10px] text-[#f85149]/80">to review</span>
             </div>
-          </div>
-          <div className="w-8 h-8 rounded-md bg-[#da3633]/10 border border-[#da3633]/20 flex items-center justify-center text-[#f85149]">
-            <RotateCcw className="w-4 h-4" />
           </div>
         </div>
       </div>

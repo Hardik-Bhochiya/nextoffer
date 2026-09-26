@@ -340,14 +340,35 @@ export const DataProvider = ({ children }) => {
   const addDailyTask = async (taskData) => {
     try {
       const res = await api.post('/planner/tasks', taskData);
-      if (res?.data) setDailyTasks(prev => [...prev, res.data]);
+      if (res?.data) {
+        setDailyTasks(prev => [...prev, res.data]);
+        const anRes = await api.get('/analytics/dashboard').catch(() => null);
+        if (anRes?.data) setMetrics(anRes.data);
+      }
+    } catch (err) { handleApiError(err); }
+  };
+
+  const updateDailyTask = async (id, updates) => {
+    setDailyTasks(prev => prev.map(t => (t.id === id || t._id === id) ? { ...t, ...updates } : t));
+    try {
+      const res = await api.put(`/planner/tasks/${id}`, updates);
+      if (res?.data) {
+        setDailyTasks(prev => prev.map(t => (t.id === id || t._id === id) ? { ...t, ...res.data } : t));
+      }
+      const anRes = await api.get('/analytics/dashboard').catch(() => null);
+      if (anRes?.data) setMetrics(anRes.data);
     } catch (err) { handleApiError(err); }
   };
 
   const toggleDailyTask = async (id) => {
     setDailyTasks(prev => prev.map(t => (t.id === id || t._id === id) ? { ...t, taskStatus: !t.taskStatus } : t));
     try {
-      await api.patch(`/planner/tasks/${id}/toggle`);
+      const res = await api.patch(`/planner/tasks/${id}/toggle`);
+      if (res?.data) {
+        setDailyTasks(prev => prev.map(t => (t.id === id || t._id === id) ? { ...t, ...res.data } : t));
+      }
+      const anRes = await api.get('/analytics/dashboard').catch(() => null);
+      if (anRes?.data) setMetrics(anRes.data);
     } catch (err) { handleApiError(err); }
   };
 
@@ -362,14 +383,35 @@ export const DataProvider = ({ children }) => {
   const addRevision = async (revData) => {
     try {
       const res = await api.post('/revision', revData);
-      if (res?.data) setRevisions(prev => [res.data, ...prev]);
+      if (res?.data) {
+        setRevisions(prev => [res.data, ...prev]);
+        const anRes = await api.get('/analytics/dashboard').catch(() => null);
+        if (anRes?.data) setMetrics(anRes.data);
+      }
+    } catch (err) { handleApiError(err); }
+  };
+
+  const updateRevision = async (id, updates) => {
+    setRevisions(prev => prev.map(r => (r.id === id || r._id === id) ? { ...r, ...updates } : r));
+    try {
+      const res = await api.put(`/revision/${id}`, updates);
+      if (res?.data) {
+        setRevisions(prev => prev.map(r => (r.id === id || r._id === id) ? { ...r, ...res.data } : r));
+      }
+      const anRes = await api.get('/analytics/dashboard').catch(() => null);
+      if (anRes?.data) setMetrics(anRes.data);
     } catch (err) { handleApiError(err); }
   };
 
   const toggleRevision = async (id) => {
     setRevisions(prev => prev.map(r => (r.id === id || r._id === id) ? { ...r, completed: !r.completed } : r));
     try {
-      await api.patch(`/revision/${id}/toggle`);
+      const res = await api.patch(`/revision/${id}/toggle`);
+      if (res?.data) {
+        setRevisions(prev => prev.map(r => (r.id === id || r._id === id) ? { ...r, ...res.data } : r));
+      }
+      const anRes = await api.get('/analytics/dashboard').catch(() => null);
+      if (anRes?.data) setMetrics(anRes.data);
     } catch (err) { handleApiError(err); }
   };
 
@@ -391,8 +433,8 @@ export const DataProvider = ({ children }) => {
       addProject, updateProject, deleteProject,
       addNote, updateNote, deleteNote,
       addStudyGoal, updateStudyGoal, deleteStudyGoal,
-      addDailyTask, toggleDailyTask, deleteDailyTask,
-      addRevision, toggleRevision, deleteRevision
+      addDailyTask, updateDailyTask, toggleDailyTask, deleteDailyTask,
+      addRevision, updateRevision, toggleRevision, deleteRevision
     }}>
       {children}
     </DataContext.Provider>

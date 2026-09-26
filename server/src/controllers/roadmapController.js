@@ -1,5 +1,6 @@
 import User from '../models/User.js';
 import { defaultRoadmaps } from '../data/seedData.js';
+import { recordUserActivity } from '../utils/streakHelper.js';
 
 export const getRoadmaps = async (req, res) => {
   try {
@@ -144,6 +145,7 @@ export const toggleTopic = async (req, res) => {
       }
       // Mark this topic complete
       user.completedTopics.push(topicId);
+      await recordUserActivity(userId, `Completed Roadmap Milestone: ${roadmap.topics[topicIndex].title}`);
     } else {
       // Trying to uncheck -> Cascade uncheck all subsequent topics in this roadmap
       for (let k = topicIndex; k < roadmap.topics.length; k++) {

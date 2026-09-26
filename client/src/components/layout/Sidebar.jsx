@@ -9,6 +9,7 @@ import {
   CalendarCheck,
   FolderGit2,
   Target,
+  Sparkles,
   Plus,
   Check,
   ChevronRight,
@@ -49,7 +50,7 @@ export const Sidebar = ({ isMobileOpen = false, onClose }) => {
     { to: '/roadmaps', icon: GitBranch, label: 'Roadmaps' },
     { to: '/projects', icon: FolderGit2, label: 'Projects' },
     { to: '/notes', icon: BookOpen, label: 'Smart Notes' },
-    { to: '/revision', icon: CalendarCheck, label: 'Goal & Task Setter' },
+    { to: '/planner', icon: CalendarCheck, label: 'Goal & Task Setter' },
     { to: '/analytics', icon: BarChart3, label: 'Analytics' },
   ];
 

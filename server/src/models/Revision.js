@@ -21,6 +21,21 @@ const revisionSchema = new mongoose.Schema({
     enum: ['High', 'Medium', 'Low'],
     default: 'Medium'
   },
+  difficulty: {
+    type: String,
+    enum: ['Hard', 'Medium', 'Easy'],
+    default: 'Medium'
+  },
+  interval: {
+    type: String,
+    enum: ['Day 1', 'Day 3', 'Day 7', 'Day 14', 'Day 30'],
+    default: 'Day 1'
+  },
+  confidence: {
+    type: String,
+    enum: ['Needs Practice', 'Familiar', 'Mastered'],
+    default: 'Needs Practice'
+  },
   scheduledDate: {
     type: String,
     default: () => new Date().toISOString().split('T')[0]
@@ -32,6 +47,10 @@ const revisionSchema = new mongoose.Schema({
   notes: {
     type: String,
     default: ''
+  },
+  completedAt: {
+    type: Date,
+    default: null
   }
 }, {
   timestamps: true

@@ -21,11 +21,55 @@ export const globalSearch = async (req, res) => {
     const regex = new RegExp(safePattern, 'i');
 
     const [problems, notes, projects, roadmaps, revisions] = await Promise.all([
-      DsaProblem.find({ userId, $or: [{ title: regex }, { topic: regex }, { notes: regex }] }).limit(6),
-      Note.find({ userId, $or: [{ title: regex }, { content: regex }, { tags: regex }] }).limit(6),
-      Project.find({ userId, $or: [{ title: regex }, { description: regex }, { techStack: regex }] }).limit(6),
-      Roadmap.find({ $or: [{ category: regex }, { description: regex }, { 'topics.title': regex }] }).limit(6),
-      Revision.find({ userId, $or: [{ topic: regex }, { category: regex }, { notes: regex }] }).limit(6)
+      DsaProblem.find({
+        $and: [
+          { userId },
+          {
+            $or: [
+              { title: regex },
+              { topic: regex },
+              { topics: regex },
+              { difficulty: regex },
+              { companies: regex },
+              { notes: regex },
+              { platform: regex }
+            ]
+          }
+        ]
+      }).limit(8),
+      Note.find({
+        userId,
+        $or: [
+          { title: regex },
+          { content: regex },
+          { tags: regex }
+        ]
+      }).limit(8),
+      Project.find({
+        userId,
+        $or: [
+          { title: regex },
+          { description: regex },
+          { techStack: regex },
+          { category: regex }
+        ]
+      }).limit(8),
+      Roadmap.find({
+        $or: [
+          { category: regex },
+          { description: regex },
+          { 'topics.title': regex },
+          { 'topics.resources': regex }
+        ]
+      }).limit(8),
+      Revision.find({
+        userId,
+        $or: [
+          { topic: regex },
+          { category: regex },
+          { notes: regex }
+        ]
+      }).limit(8)
     ]);
 
     return res.json({

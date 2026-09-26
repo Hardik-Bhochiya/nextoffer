@@ -5,6 +5,7 @@ import {
   updateStudyGoal,
   deleteStudyGoal,
   addDailyTask,
+  updateDailyTask,
   toggleDailyTask,
   deleteDailyTask
 } from '../controllers/plannerController.js';
@@ -18,6 +19,7 @@ router.put('/goals/:id', authenticate, updateStudyGoal);
 router.delete('/goals/:id', authenticate, deleteStudyGoal);
 
 router.post('/tasks', authenticate, addDailyTask);
+router.put('/tasks/:id', authenticate, updateDailyTask);
 router.patch('/tasks/:id/toggle', authenticate, toggleDailyTask);
 router.delete('/tasks/:id', authenticate, deleteDailyTask);
 

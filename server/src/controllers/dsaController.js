@@ -1,5 +1,6 @@
 import DsaProblem from '../models/DsaProblem.js';
 import User from '../models/User.js';
+import { recordUserActivity } from '../utils/streakHelper.js';
 
 const formatDoc = (doc) => {
   if (!doc) return null;
@@ -345,6 +346,10 @@ export const updateProblem = async (req, res) => {
 
     if (!updated) {
       return res.status(404).json({ success: false, message: 'DSA Problem not found' });
+    }
+
+    if (updated.status === 'Solved' || updated.status === 'Completed') {
+      await recordUserActivity(userId, `Solved DSA: ${updated.title}`);
     }
 
     return res.json({ success: true, data: formatDoc(updated) });

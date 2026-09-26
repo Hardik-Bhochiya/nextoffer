@@ -26,17 +26,15 @@ import {
 import { getRoleConfig, getReadinessTier } from '../../data/rolesData';
 import { UserAvatar } from '../common/UserAvatar';
 
+import { UniversalSearchModal } from '../common/UniversalSearchModal';
+
 export const Navbar = ({ onToggleMobileMenu }) => {
   const { user, logout } = useAuth();
   const { metrics } = useData();
   const navigate = useNavigate();
 
-  // Search State
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState(null);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const searchRef = useRef(null);
-  const searchInputRef = useRef(null);
+  // Search Modal State
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   // Profile Dropdown State
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -54,44 +52,18 @@ export const Navbar = ({ onToggleMobileMenu }) => {
   // Global Ctrl + K / Cmd + K Hotkey Listener
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        searchInputRef.current?.focus();
-        setIsSearchOpen(true);
+        setIsSearchModalOpen(true);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Handle Global Search with Debounce
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setSearchResults(null);
-      return;
-    }
-
-    const timer = setTimeout(async () => {
-      try {
-        const res = await api.get(`/search?q=${encodeURIComponent(searchQuery)}`);
-        if (res?.data) {
-          setSearchResults(res.data);
-          setIsSearchOpen(true);
-        }
-      } catch (err) {
-        console.error('Search error:', err);
-      }
-    }, 200);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
-  // Click outside listener for search & profile dropdown
+  // Click outside listener for profile dropdown
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (searchRef.current && !searchRef.current.contains(e.target)) {
-        setIsSearchOpen(false);
-      }
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setIsDropdownOpen(false);
       }
@@ -100,203 +72,77 @@ export const Navbar = ({ onToggleMobileMenu }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleResultClick = (route) => {
-    setIsSearchOpen(false);
-    setSearchQuery('');
-    navigate(route);
-  };
-
-  const hasAnyResults = searchResults && (
-    (searchResults.problems?.length || 0) > 0 ||
-    (searchResults.roadmaps?.length || 0) > 0 ||
-    (searchResults.notes?.length || 0) > 0 ||
-    (searchResults.projects?.length || 0) > 0 ||
-    (searchResults.revisions?.length || 0) > 0
-  );
-
   return (
-    <header className="h-14 border-b border-[#30363d] bg-[#161b22] px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 font-sans">
-      {/* Mobile Hamburger Drawer Trigger */}
-      <button
-        type="button"
-        onClick={onToggleMobileMenu}
-        className="p-1.5 -ml-1 mr-2 rounded-md text-[#8b949e] hover:text-[#f0f6fc] hover:bg-[#21262d] md:hidden flex items-center justify-center shrink-0"
-        title="Toggle Menu"
-      >
-        <Menu className="w-5 h-5" />
-      </button>
+    <>
+      <UniversalSearchModal
+        isOpen={isSearchModalOpen}
+        onClose={() => setIsSearchModalOpen(false)}
+      />
 
-      {/* Global Search Bar with Ctrl+K Shortcut */}
-      <div ref={searchRef} className="relative flex-1 max-w-md">
-        <div className="relative w-full">
-          <Search className="w-4 h-4 text-[#8b949e] absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            ref={searchInputRef}
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => searchQuery.trim() && setIsSearchOpen(true)}
-            placeholder="Type / to search questions, roadmaps, notes..."
-            className="w-full bg-[#0d1117] border border-[#30363d] rounded-md pl-9 pr-14 py-1.5 text-xs text-[#f0f6fc] placeholder-[#6e7681] focus:outline-none focus:border-[#58a6ff] focus:ring-1 focus:ring-[#58a6ff] transition-colors"
-          />
-          <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-            {searchQuery ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchQuery('');
-                  setIsSearchOpen(false);
-                }}
-                className="text-[#8b949e] hover:text-[#f0f6fc]"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            ) : (
-              <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[9px] font-mono font-semibold text-[#8b949e] bg-[#21262d] border border-[#30363d] rounded">
-                Ctrl K
-              </kbd>
-            )}
-          </div>
+      <header className="relative h-14 border-b border-[#30363d] bg-[#161b22]/95 backdrop-blur shadow-sm px-4 sm:px-6 flex items-center justify-between sticky top-0 z-40 font-sans">
+        {/* Mobile Hamburger Drawer Trigger */}
+        <button
+          type="button"
+          onClick={onToggleMobileMenu}
+          className="p-1.5 -ml-1 mr-2 rounded-md text-[#8b949e] hover:text-[#f0f6fc] hover:bg-[#21262d] md:hidden flex items-center justify-center shrink-0"
+          title="Toggle Menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+
+        {/* Global Search Bar (Triggers Universal Command Palette) */}
+        <div className="relative flex-1 max-w-md">
+          <button
+            type="button"
+            onClick={() => setIsSearchModalOpen(true)}
+            className="w-full bg-[#0d1117] border border-[#30363d] hover:border-[#58a6ff]/60 hover:bg-[#161b22] rounded-md pl-9 pr-3 py-1.5 text-xs text-[#8b949e] hover:text-[#c9d1d9] flex items-center justify-between transition-all group text-left cursor-pointer"
+          >
+            <Search className="w-4 h-4 text-[#8b949e] group-hover:text-[#58a6ff] absolute left-3 top-1/2 -translate-y-1/2 transition-colors" />
+            <span className="truncate">Type <span className="font-mono text-[#58a6ff]">Ctrl K</span> or click to search...</span>
+            <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[9px] font-mono font-semibold text-[#8b949e] bg-[#21262d] border border-[#30363d] rounded group-hover:text-[#f0f6fc]">
+              Ctrl K
+            </kbd>
+          </button>
         </div>
 
-        {/* Global Search Dropdown Results */}
-        {isSearchOpen && searchResults && (
-          <div className="absolute top-full left-0 right-0 mt-1.5 bg-[#161b22] border border-[#30363d] rounded-md shadow-2xl overflow-hidden z-50 max-h-96 overflow-y-auto p-2 space-y-2 animate-fadeIn">
-            
-            {/* 1. DSA Problems */}
-            {searchResults.problems?.length > 0 && (
-              <div className="space-y-0.5">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#58a6ff] flex items-center gap-1 px-2 py-1">
-                  <Code2 className="w-3 h-3" /> DSA Questions ({searchResults.problems.length})
-                </p>
-                {searchResults.problems.slice(0, 3).map((item) => (
-                  <div
-                    key={item._id || item.id}
-                    onClick={() => handleResultClick('/dsa')}
-                    className="px-2 py-1.5 rounded-md hover:bg-[#21262d] cursor-pointer flex items-center justify-between text-xs text-[#f0f6fc] transition-colors"
-                  >
-                    <span className="font-medium truncate">{item.title}</span>
-                    <span className={`text-[10px] px-1.5 py-0.2 rounded font-medium border ${
-                      item.difficulty === 'Easy' ? 'bg-[#238636]/10 text-[#3fb950] border-[#238636]/30' :
-                      item.difficulty === 'Medium' ? 'bg-[#d29922]/10 text-[#d29922] border-[#d29922]/30' :
-                      'bg-[#da3633]/10 text-[#f85149] border-[#da3633]/30'
-                    }`}>
-                      {item.difficulty}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* 2. Roadmaps */}
-            {searchResults.roadmaps?.length > 0 && (
-              <div className="space-y-0.5 pt-1 border-t border-[#30363d]">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#58a6ff] flex items-center gap-1 px-2 py-1">
-                  <GitBranch className="w-3 h-3" /> Roadmaps ({searchResults.roadmaps.length})
-                </p>
-                {searchResults.roadmaps.slice(0, 3).map((item) => (
-                  <div
-                    key={item._id || item.id}
-                    onClick={() => handleResultClick('/roadmaps')}
-                    className="px-2 py-1.5 rounded-md hover:bg-[#21262d] cursor-pointer flex items-center justify-between text-xs text-[#f0f6fc] transition-colors"
-                  >
-                    <span className="truncate">{item.title}</span>
-                    <span className="text-[10px] text-[#8b949e]">{item.stageCount || item.stages?.length} Stages</span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* 3. Notes */}
-            {searchResults.notes?.length > 0 && (
-              <div className="space-y-0.5 pt-1 border-t border-[#30363d]">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#3fb950] flex items-center gap-1 px-2 py-1">
-                  <BookOpen className="w-3 h-3" /> Notes ({searchResults.notes.length})
-                </p>
-                {searchResults.notes.slice(0, 3).map((item) => (
-                  <div
-                    key={item._id || item.id}
-                    onClick={() => handleResultClick('/notes')}
-                    className="px-2 py-1.5 rounded-md hover:bg-[#21262d] cursor-pointer flex items-center justify-between text-xs text-[#f0f6fc] transition-colors"
-                  >
-                    <span className="truncate">{item.title}</span>
-                    {item.tags?.[0] && (
-                      <span className="text-[10px] text-[#8b949e] bg-[#21262d] px-1.5 py-0.2 rounded border border-[#30363d]">
-                        #{item.tags[0]}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* 4. Projects */}
-            {searchResults.projects?.length > 0 && (
-              <div className="space-y-0.5 pt-1 border-t border-[#30363d]">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#bc8cff] flex items-center gap-1 px-2 py-1">
-                  <FolderGit2 className="w-3 h-3" /> Projects ({searchResults.projects.length})
-                </p>
-                {searchResults.projects.slice(0, 3).map((item) => (
-                  <div
-                    key={item._id || item.id}
-                    onClick={() => handleResultClick('/projects')}
-                    className="px-2 py-1.5 rounded-md hover:bg-[#21262d] cursor-pointer flex items-center justify-between text-xs text-[#f0f6fc] transition-colors"
-                  >
-                    <span className="truncate font-medium">{item.title}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* 5. Revisions */}
-            {searchResults.revisions?.length > 0 && (
-              <div className="space-y-0.5 pt-1 border-t border-[#30363d]">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#d29922] flex items-center gap-1 px-2 py-1">
-                  <CalendarCheck className="w-3 h-3" /> Revisions ({searchResults.revisions.length})
-                </p>
-                {searchResults.revisions.slice(0, 3).map((item) => (
-                  <div
-                    key={item._id || item.id}
-                    onClick={() => handleResultClick('/revision')}
-                    className="px-2 py-1.5 rounded-md hover:bg-[#21262d] cursor-pointer flex items-center justify-between text-xs text-[#f0f6fc] transition-colors"
-                  >
-                    <span className="truncate">{item.topic}</span>
-                    <span className="text-[10px] text-[#8b949e] bg-[#21262d] px-1.5 py-0.2 rounded border border-[#30363d]">
-                      {item.category}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Empty state */}
-            {!hasAnyResults && (
-              <p className="text-xs text-[#8b949e] text-center py-3">No matching results found for "{searchQuery}"</p>
-            )}
+      {/* Right Side: Readiness Metrics & Candidate Profile */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        {/* Streak Pill */}
+        {streak > 0 && (
+          <div
+            className="hidden lg:flex items-center gap-1.5 px-2 py-1 rounded-md bg-[#21262d]/60 border border-[#30363d] text-xs font-semibold text-[#f0883e]"
+            title={`Active Streak: ${streak} day${streak > 1 ? 's' : ''}`}
+          >
+            <Flame className="w-3.5 h-3.5 fill-[#f0883e]" />
+            <span>{streak}d</span>
           </div>
         )}
-      </div>
 
-      {/* Center & Right Badges + User Dropdown */}
-      <div className="flex items-center gap-2.5 sm:gap-3">
-        {/* Placement Readiness Badge */}
-        <div className="hidden sm:flex items-center gap-2 bg-[#21262d] border border-[#30363d] px-2.5 py-1 rounded-md">
-          <Target className="w-3.5 h-3.5 text-[#58a6ff]" />
-          <span className="text-xs text-[#8b949e]">Readiness:</span>
-          <span className="text-xs font-semibold text-[#58a6ff]">{readiness}%</span>
-          <div className="w-10 bg-[#0d1117] h-1.5 rounded-full overflow-hidden ml-0.5">
+        {/* Interactive Readiness Score Pill Badge */}
+        <button
+          type="button"
+          onClick={() => navigate('/analytics')}
+          className="flex items-center gap-2 px-2 sm:px-2.5 py-1 rounded-md bg-[#0d1117] border border-[#30363d] hover:border-[#58a6ff]/60 hover:bg-[#21262d] transition-all group cursor-pointer"
+          title={`Live Placement Readiness: ${readiness}% (${tierInfo.tier}). Click to view detailed analytics.`}
+        >
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-[#3fb950] animate-pulse" />
+            <span className="text-[11px] font-medium text-[#8b949e] group-hover:text-[#c9d1d9] transition-colors hidden md:inline">
+              Readiness
+            </span>
+            <span className="text-xs font-bold text-[#58a6ff] font-mono">
+              {readiness}%
+            </span>
+          </div>
+
+          {/* Mini in-pill progress bar */}
+          <div className="hidden sm:block w-10 md:w-14 h-1.5 bg-[#21262d] rounded-full overflow-hidden border border-[#30363d]/50">
             <div
-              className="bg-[#58a6ff] h-full rounded-full transition-all duration-500"
-              style={{ width: `${Math.max(4, readiness)}%` }}
+              className="h-full bg-gradient-to-r from-[#1f6feb] to-[#3fb950] rounded-full transition-all duration-500"
+              style={{ width: `${Math.min(100, Math.max(readiness > 0 ? 5 : 0, readiness))}%` }}
             />
           </div>
-        </div>
-
-        {/* Streak Counter */}
-        <div className="flex items-center gap-1.5 bg-[#21262d] border border-[#30363d] px-2.5 py-1 rounded-md">
-          <Flame className="w-3.5 h-3.5 text-[#d29922]" />
-          <span className="text-xs font-semibold text-[#d29922]">{streak}d</span>
-        </div>
+        </button>
 
         {/* Top-Right Profile Avatar & Dropdown */}
         <div ref={dropdownRef} className="relative">
@@ -447,7 +293,19 @@ export const Navbar = ({ onToggleMobileMenu }) => {
           )}
         </div>
       </div>
+
+      {/* Persistent Live Readiness Score Progress Line on Fixed Navbar */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#21262d]/50 overflow-hidden pointer-events-none"
+        title={`Placement Readiness: ${readiness}% (${tierInfo.tier})`}
+      >
+        <div
+          className="h-full bg-gradient-to-r from-[#1f6feb] via-[#58a6ff] to-[#3fb950] transition-all duration-700 ease-out shadow-[0_0_8px_rgba(88,166,255,0.7)]"
+          style={{ width: `${Math.min(100, Math.max(readiness > 0 ? 3 : 0, readiness))}%` }}
+        />
+      </div>
     </header>
+  </>
   );
 };
 

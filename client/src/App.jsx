@@ -90,7 +90,10 @@ export function App() {
                 <Route path="/roadmaps" element={<Roadmaps />} />
                 <Route path="/projects" element={<Projects />} />
                 <Route path="/notes" element={<Notes />} />
-                <Route path="/revision" element={<RevisionPlanner />} />
+                <Route path="/planner" element={<RevisionPlanner defaultTab="tasks" />} />
+                <Route path="/goals" element={<RevisionPlanner defaultTab="goals" />} />
+                <Route path="/revision" element={<Navigate to="/planner" replace />} />
+                <Route path="/revision-planner" element={<Navigate to="/planner" replace />} />
                 <Route path="/analytics" element={<Analytics />} />
                 <Route path="/profile" element={<Profile />} />
               </Route>

@@ -39,8 +39,21 @@ const userSchema = new mongoose.Schema({
   },
   streak: {
     type: Number,
-    default: 1
+    default: 0
   },
+  longestStreak: {
+    type: Number,
+    default: 0
+  },
+  lastActiveDate: {
+    type: String,
+    default: null
+  },
+  activityLog: [{
+    date: { type: String },
+    count: { type: Number, default: 0 },
+    activities: [{ type: String }]
+  }],
   avatar: {
     type: String,
     default: ''

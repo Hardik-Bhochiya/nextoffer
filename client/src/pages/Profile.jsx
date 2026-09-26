@@ -14,40 +14,20 @@ import {
   Save,
   CheckCircle2,
   RefreshCw,
-  ArrowRight,
   Flame,
   Target,
-  ExternalLink,
   GitBranch,
   Award,
-  Layers,
-  Check,
   ChevronRight,
   ShieldCheck,
   Zap,
-  TrendingUp,
-  Cpu,
-  BarChart3,
-  Bookmark,
+  BookOpen,
   Info
 } from 'lucide-react';
 
 import { allRoles, getRoleConfig, getReadinessTier } from '../data/rolesData';
 import { UserAvatar } from '../components/common/UserAvatar';
 import { AvatarPickerModal } from '../components/profile/AvatarPickerModal';
-
-const popularCompanies = [
-  'Google',
-  'Microsoft',
-  'Amazon',
-  'Uber',
-  'Stripe',
-  'Meta',
-  'Apple',
-  'Netflix',
-  'NVIDIA',
-  'Atlassian'
-];
 
 export const Profile = () => {
   const { user, updateProfile, setUser } = useAuth();
@@ -57,7 +37,7 @@ export const Profile = () => {
     name: '',
     email: '',
     avatar: '',
-    targetRole: 'Full Stack Engineer (MERN / Next.js / APIs)',
+    targetRole: 'Full Stack Engineer',
     dreamCompany: '',
     college: '',
     branch: '',
@@ -81,7 +61,7 @@ export const Profile = () => {
         name: user.name || user.fullName || '',
         email: user.email || '',
         avatar: user.avatar || '',
-        targetRole: user.targetRole || 'Full Stack Engineer (MERN / Next.js / APIs)',
+        targetRole: user.targetRole || 'Full Stack Engineer',
         dreamCompany: user.dreamCompany || '',
         college: user.college || '',
         branch: user.branch || '',
@@ -125,24 +105,6 @@ export const Profile = () => {
         [platform]: value
       }
     }));
-  };
-
-  const handleAddCompany = (comp) => {
-    const current = formData.dreamCompany
-      ? formData.dreamCompany.split(',').map(c => c.trim()).filter(Boolean)
-      : [];
-    if (!current.includes(comp)) {
-      const updated = [...current, comp].join(', ');
-      handleChange('dreamCompany', updated);
-    }
-  };
-
-  const handleRemoveCompany = (compToRemove) => {
-    const current = formData.dreamCompany
-      ? formData.dreamCompany.split(',').map(c => c.trim()).filter(Boolean)
-      : [];
-    const updated = current.filter(c => c !== compToRemove).join(', ');
-    handleChange('dreamCompany', updated);
   };
 
   const handleSubmit = async (e) => {
@@ -196,20 +158,16 @@ export const Profile = () => {
   const tierInfo = getReadinessTier(readiness);
   const activeRoleObj = getRoleConfig(formData.targetRole);
 
-  const parsedDreamCompanies = formData.dreamCompany
-    ? formData.dreamCompany.split(',').map(c => c.trim()).filter(Boolean)
-    : [];
-
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-fadeIn pb-24">
+    <div className="max-w-5xl mx-auto space-y-6 animate-fadeIn pb-20 font-sans">
       
-      {/* 1. CANDIDATE PROFILE HEADER (GitHub Primer Header) */}
-      <div className="rounded-lg bg-[#161b22] border border-[#30363d] p-5 md:p-6 shadow-sm relative">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+      {/* 1. CANDIDATE PROFILE OVERVIEW HEADER */}
+      <div className="rounded-lg bg-[#161b22] border border-[#30363d] p-5 md:p-6 shadow-sm">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
           
-          {/* Avatar & Candidate Credentials */}
-          <div className="flex items-start sm:items-center gap-4">
-            <div className="relative shrink-0">
+          {/* Avatar & Candidate Identity */}
+          <div className="flex items-center gap-4">
+            <div className="relative shrink-0 group">
               <UserAvatar
                 avatar={formData.avatar}
                 name={formData.name}
@@ -222,153 +180,103 @@ export const Profile = () => {
 
             <div className="space-y-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-bold text-[#f0f6fc] tracking-tight">
+                <h1 className="text-xl font-bold text-[#f0f6fc] tracking-tight">
                   {formData.name || 'Candidate Profile'}
                 </h1>
-                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${tierInfo.badgeClass}`}>
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${tierInfo.badgeClass}`}>
                   {tierInfo.tier}
                 </span>
                 <button
                   type="button"
                   onClick={() => setIsAvatarModalOpen(true)}
-                  className="text-[10px] px-2.5 py-0.5 rounded-md bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#c9d1d9] hover:text-[#f0f6fc] font-medium transition flex items-center gap-1 cursor-pointer"
-                  title="Change avatar picture"
+                  className="text-[10px] px-2 py-0.5 rounded bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#c9d1d9] font-medium transition flex items-center gap-1"
                 >
-                  <Sparkles className="w-3 h-3 text-[#58a6ff]" />
-                  <span>Edit Picture</span>
+                  <Sparkles className="w-3 h-3 text-[#58a6ff]" /> Edit Photo
                 </button>
               </div>
 
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400">
-                <span className="font-mono text-slate-300 flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
-                  {formData.email}
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#8b949e]">
+                <span className="font-mono text-[#c9d1d9] flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#58a6ff]" /> {formData.email}
                 </span>
                 {formData.college && (
-                  <span className="flex items-center gap-1 text-slate-400">
-                    <GraduationCap className="w-3.5 h-3.5 text-cyan-400" />
+                  <span className="flex items-center gap-1">
+                    <GraduationCap className="w-3.5 h-3.5 text-[#3fb950]" />
                     {formData.college} {formData.gradYear ? `('${formData.gradYear.slice(-2)})` : ''}
                   </span>
                 )}
               </div>
 
-              <div className="flex items-center gap-2 pt-1">
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-indigo-950/80 border border-indigo-800/40 text-[11px] font-bold text-indigo-300">
-                  <Briefcase className="w-3 h-3 text-indigo-400" />
-                  {activeRoleObj.shortLabel} Specialization
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Live Readiness Telemetry Dial & Quick Stats */}
-          <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-center">
-            {/* Readiness Dial Card */}
-            <div className="px-3.5 py-2.5 rounded-lg bg-[#0d1117] border border-[#30363d] flex items-center gap-3">
-              <div className="relative w-11 h-11 flex items-center justify-center">
-                <svg className="w-11 h-11 -rotate-90" viewBox="0 0 36 36">
-                  <path
-                    className="text-[#21262d]"
-                    strokeWidth="3.5"
-                    stroke="currentColor"
-                    fill="none"
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  />
-                  <path
-                    className="text-[#58a6ff] transition-all duration-700"
-                    strokeDasharray={`${readiness}, 100`}
-                    strokeWidth="3.5"
-                    strokeLinecap="round"
-                    stroke="currentColor"
-                    fill="none"
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                  />
-                </svg>
-                <span className="absolute text-xs font-bold text-[#f0f6fc]">{readiness}%</span>
-              </div>
-              <div>
-                <span className="text-[10px] text-[#8b949e] font-semibold uppercase tracking-wider block">
-                  Readiness Index
+              <div className="pt-1">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#388bfd]/15 border border-[#388bfd]/30 text-[11px] font-semibold text-[#58a6ff]">
+                  <Briefcase className="w-3 h-3" /> {activeRoleObj.shortLabel}
                 </span>
-                <span className="text-xs font-semibold text-[#58a6ff]">{tierInfo.label}</span>
               </div>
             </div>
+          </div>
 
-            {/* Streak Counter */}
-            <div className="px-3.5 py-2.5 rounded-lg bg-[#0d1117] border border-[#30363d] text-center min-w-[90px]">
-              <span className="text-[10px] text-[#8b949e] font-semibold uppercase tracking-wider block">
-                Consistency
-              </span>
-              <span className="text-base font-bold text-[#d29922] flex items-center justify-center gap-1">
-                <Flame className="w-4 h-4" /> {streak}d
+          {/* Quick Metrics Chips */}
+          <div className="flex items-center gap-2.5 self-start lg:self-center shrink-0">
+            {/* Readiness */}
+            <div className="px-3 py-2 rounded-md bg-[#0d1117] border border-[#30363d] text-center min-w-[90px]">
+              <span className="text-[10px] text-[#8b949e] font-semibold uppercase block">Readiness</span>
+              <span className="text-base font-bold text-[#58a6ff]">{readiness}%</span>
+            </div>
+
+            {/* Streak */}
+            <div className="px-3 py-2 rounded-md bg-[#0d1117] border border-[#30363d] text-center min-w-[90px]">
+              <span className="text-[10px] text-[#8b949e] font-semibold uppercase block">Streak</span>
+              <span className="text-base font-bold text-[#d29922] flex items-center justify-center gap-0.5">
+                <Flame className="w-3.5 h-3.5" /> {streak}d
               </span>
             </div>
 
-            {/* LeetCode Counter */}
-            <div className="px-3.5 py-2.5 rounded-lg bg-[#0d1117] border border-[#30363d] text-center min-w-[90px]">
-              <span className="text-[10px] text-[#8b949e] font-semibold uppercase tracking-wider block">
-                DSA Solved
-              </span>
-              <span className="text-base font-bold text-[#3fb950]">
-                {lc.totalSolved || 0}
-              </span>
+            {/* LeetCode */}
+            <div className="px-3 py-2 rounded-md bg-[#0d1117] border border-[#30363d] text-center min-w-[90px]">
+              <span className="text-[10px] text-[#8b949e] font-semibold uppercase block">DSA Solved</span>
+              <span className="text-base font-bold text-[#3fb950]">{lc.totalSolved || 0}</span>
             </div>
           </div>
-        </div>
-
-        {/* Dynamic Tier Assessment Callout */}
-        <div className="mt-6 pt-5 border-t border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-400">
-          <div className="flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-full shrink-0 ${tierInfo.dotClass}`} />
-            <span><strong className="text-slate-200">Evaluation Assessment:</strong> {tierInfo.description}</span>
-          </div>
-          <Link
-            to="/analytics"
-            className="text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 shrink-0 transition"
-          >
-            <span>View Full Analytics</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </Link>
         </div>
       </div>
 
       {/* Notifications */}
       {savedMessage && (
-        <div className="p-4 rounded-2xl bg-emerald-950/80 border border-emerald-800 text-emerald-300 text-xs font-semibold flex items-center gap-2.5 shadow-sm animate-fadeIn">
-          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-          <span>Candidate dossier and specialization targets updated successfully! Placement weights recalculated.</span>
+        <div className="p-3 rounded-md bg-[#238636]/15 border border-[#238636]/40 text-[#3fb950] text-xs font-semibold flex items-center gap-2 shadow-sm animate-fadeIn">
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <span>Profile dossier and target specialization saved successfully!</span>
         </div>
       )}
 
       {syncMessage.text && (
-        <div className={`p-4 rounded-2xl border text-xs font-semibold flex items-center gap-2.5 shadow-sm animate-fadeIn ${
+        <div className={`p-3 rounded-md border text-xs font-semibold flex items-center gap-2 shadow-sm animate-fadeIn ${
           syncMessage.type === 'error'
-            ? 'bg-rose-950/80 border-rose-800 text-rose-300'
-            : 'bg-indigo-950/80 border-indigo-800 text-indigo-300'
+            ? 'bg-[#da3633]/15 border-[#da3633]/40 text-[#f85149]'
+            : 'bg-[#388bfd]/15 border-[#388bfd]/40 text-[#58a6ff]'
         }`}>
-          <Sparkles className="w-5 h-5 shrink-0 text-indigo-400" />
+          <Sparkles className="w-4 h-4 shrink-0" />
           <span>{syncMessage.text}</span>
         </div>
       )}
 
-      {/* 2. ROLE SPECIALIZATION & READINESS EVALUATION MATRIX */}
-      <div className="bg-[#161b22] rounded-lg border border-[#30363d] p-5 md:p-6 space-y-5 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#30363d] pb-3">
+      {/* 2. TARGET ENGINEERING SPECIALIZATION SELECTOR */}
+      <div className="bg-[#161b22] rounded-lg border border-[#30363d] p-5 md:p-6 space-y-4 shadow-sm">
+        <div className="flex items-center justify-between border-b border-[#30363d] pb-2.5">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#388bfd]/15 text-[#58a6ff] border border-[#388bfd]/30 text-[10px] font-semibold uppercase tracking-wider mb-1">
-              <Cpu className="w-3 h-3" /> Specialization Matrix
-            </div>
-            <h2 className="text-base font-bold text-[#f0f6fc] flex items-center gap-2">
-              Role-Wise Placement Scoring & Formula Weights
+            <h2 className="text-sm font-bold text-[#f0f6fc] flex items-center gap-2">
+              <Briefcase className="w-4 h-4 text-[#58a6ff]" /> Target Engineering Specialization
             </h2>
             <p className="text-xs text-[#8b949e] mt-0.5">
-              Select your target engineering profile to inspect its exact mathematical formula, prioritized DSA topics, and roadmap tracks.
+              Select your goal engineering discipline to tune preparation weights and syllabus expectations.
             </p>
           </div>
+          <span className="text-xs font-mono text-[#58a6ff] bg-[#388bfd]/10 px-2.5 py-1 rounded border border-[#388bfd]/20 hidden sm:inline-block">
+            {activeRoleObj.shortLabel}
+          </span>
         </div>
 
-        {/* 8-Role Interactive Selector Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+        {/* 8-Role Compact Selector Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {allRoles.map((role) => {
             const isSelected = role.title === formData.targetRole || role.id === activeRoleObj.id;
             return (
@@ -376,507 +284,252 @@ export const Profile = () => {
                 key={role.id}
                 type="button"
                 onClick={() => handleChange('targetRole', role.title)}
-                className={`p-2.5 rounded-md border text-left flex flex-col justify-between gap-1.5 transition-all relative ${
+                className={`p-2.5 rounded-md border text-left flex flex-col justify-between gap-1 transition-all ${
                   isSelected
                     ? 'bg-[#21262d] border-[#58a6ff] text-[#f0f6fc]'
                     : 'bg-[#0d1117] hover:bg-[#21262d]/60 border-[#30363d] text-[#8b949e] hover:text-[#f0f6fc]'
                 }`}
               >
-                {isSelected && (
-                  <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#58a6ff]" />
-                )}
                 <div>
                   <span className="text-[9px] font-medium uppercase tracking-wider block text-[#8b949e]">
-                    {role.category.split(' ')[0]}
+                    {role.category}
                   </span>
-                  <span className={`text-xs font-semibold line-clamp-2 mt-0.5 ${isSelected ? 'text-[#f0f6fc]' : 'text-[#c9d1d9]'}`}>
+                  <span className={`text-xs font-semibold line-clamp-1 mt-0.5 ${isSelected ? 'text-[#f0f6fc]' : 'text-[#c9d1d9]'}`}>
                     {role.shortLabel}
                   </span>
                 </div>
-                <div className="text-[10px] font-mono text-[#58a6ff] font-medium">
-                  {role.weights.dsa ? `${Math.round(role.weights.dsa * 100)}% DSA` : `${Math.round(role.weights.roadmaps * 100)}% Trk`}
+                <div className="text-[10px] font-mono text-[#58a6ff]">
+                  {role.weights.dsa ? `${Math.round(role.weights.dsa * 100)}% DSA` : `${Math.round(role.weights.roadmaps * 100)}% Tracks`}
                 </div>
               </button>
             );
           })}
         </div>
 
-        {/* Selected Role Detailed Deep-Dive Breakdown Panel */}
-        <div className="rounded-2xl bg-slate-950 border border-slate-800 p-5 md:p-6 space-y-5">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+        {/* Active Role Syllabus & Core Competencies Box */}
+        <div className="p-4 rounded-md bg-[#0d1117] border border-[#30363d] space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#30363d] pb-2">
             <div>
-              <div className="flex items-center gap-2">
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${activeRoleObj.bgBadge}`}>
-                  {activeRoleObj.category}
-                </span>
-                <h3 className="text-sm md:text-base font-black text-white">
-                  {activeRoleObj.title}
-                </h3>
-              </div>
-              <p className="text-xs text-slate-400 mt-1">{activeRoleObj.desc}</p>
+              <h3 className="text-xs font-bold text-[#f0f6fc]">
+                {activeRoleObj.fullName || activeRoleObj.title}
+              </h3>
+              <p className="text-[11px] text-[#58a6ff] font-medium mt-0.5">
+                {activeRoleObj.roleFullForm || activeRoleObj.title}
+              </p>
             </div>
-
-            <div className="shrink-0 bg-slate-900 px-3.5 py-2 rounded-xl border border-slate-800 text-center">
-              <span className="text-[9px] uppercase font-bold text-slate-500 block">Target Benchmark</span>
-              <span className="text-xs font-bold text-emerald-400">
-                {activeRoleObj.targetBenchmarks.minSolvedDsa}+ Solved • {activeRoleObj.targetBenchmarks.minProjects} Projects
-              </span>
-            </div>
-          </div>
-
-          {/* Mathematical Formula Callout */}
-          <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider flex items-center gap-1.5">
-                <Target className="w-3.5 h-3.5 text-indigo-400" /> Evaluation Formula
-              </span>
-              <span className="text-[10px] text-indigo-400 font-mono font-bold">100% Total Scale</span>
-            </div>
-            <p className="text-xs font-mono text-cyan-300 font-semibold bg-slate-950 px-3 py-2 rounded-lg border border-slate-800/90 overflow-x-auto">
-              {activeRoleObj.formulaDesc}
-            </p>
-          </div>
-
-          {/* Weights Distribution Bars */}
-          <div className="space-y-3">
-            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
-              Weight Distribution Breakdown
+            <span className="text-[10px] font-mono text-[#3fb950] font-semibold">
+              Benchmark: {activeRoleObj.targetBenchmarks?.minSolvedDsa || 50}+ DSA • {activeRoleObj.targetBenchmarks?.minProjects || 2} Capstones
             </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {activeRoleObj.weightsList.map((item, idx) => (
-                <div key={idx} className="p-3 rounded-xl bg-slate-900 border border-slate-800/80 space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-300 font-medium truncate pr-1">{item.label}</span>
-                    <span className={`font-black ${item.color}`}>{item.weight}%</span>
-                  </div>
-                  <div className="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden">
-                    <div className={`${item.barColor} h-full rounded-full`} style={{ width: `${item.weight * 2}%` }} />
-                  </div>
+          </div>
+
+          {activeRoleObj.knowledgeRequired && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div className="space-y-1.5">
+                <span className="text-[10px] uppercase font-bold text-[#8b949e] tracking-wider block">
+                  Core Topics Required:
+                </span>
+                <ul className="space-y-1 text-[#c9d1d9] text-[11px]">
+                  {activeRoleObj.knowledgeRequired.coreCompetencies.slice(0, 3).map((comp, idx) => (
+                    <li key={idx} className="flex items-start gap-1.5">
+                      <span className="text-[#3fb950] font-bold">✓</span>
+                      <span>{comp}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="space-y-1.5">
+                <span className="text-[10px] uppercase font-bold text-[#8b949e] tracking-wider block">
+                  Recommended Tech Stack:
+                </span>
+                <div className="flex flex-wrap gap-1 pt-0.5">
+                  {activeRoleObj.knowledgeRequired.requiredLanguages.map((lang, idx) => (
+                    <span key={idx} className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#161b22] text-[#58a6ff] border border-[#30363d]">
+                      {lang}
+                    </span>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Recommended DSA Topics & Roadmaps Chips */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-            {/* Priority DSA Topics */}
-            <div className="space-y-2">
-              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
-                Priority DSA Problem Topics
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {activeRoleObj.recommendedDsaTopics.map((topic, i) => (
-                  <Link
-                    key={i}
-                    to="/dsa"
-                    className="text-xs px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-850 text-slate-200 border border-slate-800 hover:border-slate-700 font-medium transition flex items-center gap-1"
-                  >
-                    <Code2 className="w-3 h-3 text-indigo-400" />
-                    <span>{topic}</span>
-                  </Link>
-                ))}
               </div>
             </div>
-
-            {/* Recommended Learning Tracks */}
-            <div className="space-y-2">
-              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
-                Recommended Learning Tracks
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {activeRoleObj.recommendedRoadmapTitles.map((title, i) => (
-                  <Link
-                    key={i}
-                    to="/roadmaps"
-                    className="text-xs px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-850 text-slate-200 border border-slate-800 hover:border-slate-700 font-medium transition flex items-center gap-1"
-                  >
-                    <GitBranch className="w-3 h-3 text-cyan-400" />
-                    <span className="truncate max-w-[200px]">{title}</span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
-      {/* 3. LIVE CODING FOOTPRINT & TELEMETRY */}
-      <div className="bg-[#161b22] rounded-lg border border-[#30363d] p-5 md:p-6 space-y-5 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#30363d] pb-3">
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#d29922]/15 text-[#d29922] border border-[#d29922]/30 text-[10px] font-semibold uppercase tracking-wider mb-1">
-              <Zap className="w-3 h-3" /> Live Telemetry
-            </div>
-            <h2 className="text-base font-bold text-[#f0f6fc] flex items-center gap-2">
-              Public Coding Profiles Telemetry
-            </h2>
-            <p className="text-xs text-[#8b949e] mt-0.5">
-              Synchronized metrics from public LeetCode and GitHub profiles.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleSyncProfiles}
-            disabled={syncing}
-            className="px-3 py-1.5 rounded-md bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#c9d1d9] text-xs font-medium flex items-center gap-2 transition-colors self-start sm:self-auto disabled:opacity-50"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 text-[#58a6ff] ${syncing ? 'animate-spin' : ''}`} />
-            <span>{syncing ? 'Synchronizing...' : 'Sync Live Stats'}</span>
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Card 1: LC Solved */}
-          <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase font-bold text-slate-400">LeetCode Solved</span>
-              <Award className="w-4 h-4 text-emerald-400" />
-            </div>
-            <p className="text-2xl font-black text-white">{lc.totalSolved || 0}</p>
-            <div className="space-y-1.5 pt-1">
-              <div className="flex items-center justify-between text-[10px] font-bold">
-                <span className="text-emerald-400">{lc.easySolved || 0} Easy</span>
-                <span className="text-amber-400">{lc.mediumSolved || 0} Med</span>
-                <span className="text-rose-400">{lc.hardSolved || 0} Hard</span>
-              </div>
-              <div className="w-full bg-slate-900 h-2 rounded-full overflow-hidden flex">
-                <div
-                  style={{ width: `${Math.min(100, ((lc.easySolved || 0) / Math.max(1, lc.totalSolved || 1)) * 100)}%` }}
-                  className="bg-emerald-500 h-full"
-                  title={`Easy: ${lc.easySolved || 0}`}
-                />
-                <div
-                  style={{ width: `${Math.min(100, ((lc.mediumSolved || 0) / Math.max(1, lc.totalSolved || 1)) * 100)}%` }}
-                  className="bg-amber-500 h-full"
-                  title={`Medium: ${lc.mediumSolved || 0}`}
-                />
-                <div
-                  style={{ width: `${Math.min(100, ((lc.hardSolved || 0) / Math.max(1, lc.totalSolved || 1)) * 100)}%` }}
-                  className="bg-rose-500 h-full"
-                  title={`Hard: ${lc.hardSolved || 0}`}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Card 2: LC Global Rank */}
-          <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase font-bold text-slate-400">Global Ranking</span>
-              <Target className="w-4 h-4 text-amber-400" />
-            </div>
-            <p className="text-2xl font-black text-amber-300">
-              {lc.ranking ? `#${lc.ranking.toLocaleString()}` : 'Unranked'}
-            </p>
-            <p className="text-[10px] text-slate-400">
-              {lc.acceptanceRate ? `${lc.acceptanceRate}% Acceptance Rate` : 'Worldwide competitive percentile'}
-            </p>
-          </div>
-
-          {/* Card 3: GitHub Repos */}
-          <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase font-bold text-slate-400">Public Repos</span>
-              <GitBranch className="w-4 h-4 text-cyan-400" />
-            </div>
-            <p className="text-2xl font-black text-cyan-300">{gh.publicRepos || 0}</p>
-            <p className="text-[10px] text-slate-400">Open source repositories on GitHub</p>
-          </div>
-
-          {/* Card 4: GitHub Followers */}
-          <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase font-bold text-slate-400">Developer Network</span>
-              <Globe className="w-4 h-4 text-indigo-400" />
-            </div>
-            <p className="text-2xl font-black text-indigo-300">{gh.followers || 0}</p>
-            <p className="text-[10px] text-slate-400">GitHub Followers & Reach</p>
-          </div>
-        </div>
-      </div>
-
-      {/* 4. CANDIDATE PROFILE & ACADEMIC DOSSIER FORM */}
-      <form onSubmit={handleSubmit} className="space-y-8">
+      {/* 3. MAIN FORM: DOSSIER & CODING PROFILES */}
+      <form onSubmit={handleSubmit} className="space-y-6">
         
-        {/* Section 1: Candidate Identity & Target Companies */}
-        <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6 md:p-8 space-y-6 shadow-sm">
-          <div className="border-b border-slate-800/80 pb-4">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-950 text-indigo-400 border border-indigo-800/50 text-[10px] font-bold uppercase tracking-wider mb-1">
-              <Building className="w-3 h-3" /> Career Objectives
-            </div>
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              Candidate Dossier & Target Organizations
+        {/* Academic & Target Organizations */}
+        <div className="bg-[#161b22] rounded-lg border border-[#30363d] p-5 md:p-6 space-y-4 shadow-sm">
+          <div className="border-b border-[#30363d] pb-2.5">
+            <h2 className="text-sm font-bold text-[#f0f6fc] flex items-center gap-2">
+              <Building className="w-4 h-4 text-[#58a6ff]" /> Candidate Dossier & Academic Info
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Personal identity details and priority hiring firms.
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Full Name */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">Candidate Full Name</label>
+              <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Candidate Full Name</label>
               <div className="relative">
-                <UserIcon className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <UserIcon className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => handleChange('name', e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-                  placeholder="Full Name (e.g. Alex Chen)"
+                  className="w-full bg-[#0d1117] border border-[#30363d] rounded-md pl-9 pr-3 py-2 text-xs text-[#f0f6fc] focus:outline-none focus:border-[#58a6ff]"
+                  placeholder="Full Name"
                 />
               </div>
             </div>
 
-            {/* Email */}
+            {/* Target Dream Companies */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">Registered Email (Immutable)</label>
+              <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Target Companies</label>
               <div className="relative">
-                <ShieldCheck className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="email"
-                  disabled
-                  value={formData.email}
-                  className="w-full bg-slate-950/60 border border-slate-800/60 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-500 cursor-not-allowed font-mono"
-                />
-              </div>
-            </div>
-
-            {/* Dream Companies with Quick-Add Pills */}
-            <div className="md:col-span-2 space-y-3">
-              <label className="block text-xs font-semibold text-slate-300">Target Dream Tech Companies</label>
-              
-              <div className="relative">
-                <Building className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Building className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={formData.dreamCompany}
                   onChange={(e) => handleChange('dreamCompany', e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-                  placeholder="Comma-separated targets: Google, Microsoft, Uber, Stripe..."
+                  className="w-full bg-[#0d1117] border border-[#30363d] rounded-md pl-9 pr-3 py-2 text-xs text-[#f0f6fc] focus:outline-none focus:border-[#58a6ff]"
+                  placeholder="Google, Microsoft, Amazon, Uber..."
                 />
               </div>
+            </div>
 
-              {/* Selected Company Tags */}
-              {parsedDreamCompanies.length > 0 && (
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-[10px] text-slate-500 font-semibold mr-1">Active Targets:</span>
-                  {parsedDreamCompanies.map((comp) => (
-                    <span
-                      key={comp}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-950 text-indigo-300 border border-indigo-800/60 text-xs font-semibold"
-                    >
-                      <span>{comp}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveCompany(comp)}
-                        className="text-indigo-400 hover:text-white transition-colors"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
+            {/* College */}
+            <div>
+              <label className="block text-xs font-medium text-[#c9d1d9] mb-1">College / University</label>
+              <div className="relative">
+                <GraduationCap className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={formData.college}
+                  onChange={(e) => handleChange('college', e.target.value)}
+                  className="w-full bg-[#0d1117] border border-[#30363d] rounded-md pl-9 pr-3 py-2 text-xs text-[#f0f6fc] focus:outline-none focus:border-[#58a6ff]"
+                  placeholder="College Name"
+                />
+              </div>
+            </div>
 
-              {/* Quick Add Pills */}
-              <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                <span className="text-[10px] text-slate-500 font-semibold mr-1">1-Click Quick Add:</span>
-                {popularCompanies.map((c) => {
-                  const isAdded = parsedDreamCompanies.includes(c);
-                  return (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => (isAdded ? handleRemoveCompany(c) : handleAddCompany(c))}
-                      className={`text-[10px] px-2.5 py-1 rounded-lg border font-semibold transition ${
-                        isAdded
-                          ? 'bg-indigo-950 text-indigo-300 border-indigo-700'
-                          : 'bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border-slate-800'
-                      }`}
-                    >
-                      {isAdded ? `✓ ${c}` : `+ ${c}`}
-                    </button>
-                  );
-                })}
+            {/* Degree & Grad Year */}
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Degree / Branch</label>
+                <input
+                  type="text"
+                  value={formData.branch}
+                  onChange={(e) => handleChange('branch', e.target.value)}
+                  className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-2 text-xs text-[#f0f6fc] focus:outline-none focus:border-[#58a6ff]"
+                  placeholder="B.Tech CS"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Grad Year</label>
+                <input
+                  type="text"
+                  value={formData.gradYear}
+                  onChange={(e) => handleChange('gradYear', e.target.value)}
+                  className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-2 text-xs text-[#f0f6fc] font-mono focus:outline-none focus:border-[#58a6ff]"
+                  placeholder="2026"
+                />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Section 2: Academic Background */}
-        <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6 md:p-8 space-y-6 shadow-sm">
-          <div className="border-b border-slate-800/80 pb-4">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800/50 text-[10px] font-bold uppercase tracking-wider mb-1">
-              <GraduationCap className="w-3 h-3" /> Academic Milestones
+        {/* Public Handles & Coding Telemetry */}
+        <div className="bg-[#161b22] rounded-lg border border-[#30363d] p-5 md:p-6 space-y-4 shadow-sm">
+          <div className="flex items-center justify-between border-b border-[#30363d] pb-2.5">
+            <div>
+              <h2 className="text-sm font-bold text-[#f0f6fc] flex items-center gap-2">
+                <Globe className="w-4 h-4 text-[#58a6ff]" /> Coding Profiles & Telemetry
+              </h2>
+              <p className="text-xs text-[#8b949e]">Handles used to synchronize external LeetCode & GitHub stats.</p>
             </div>
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              University & Degree Background
-            </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Academic institution, department stream, and expected graduation cohort.
-            </p>
+
+            <button
+              type="button"
+              onClick={handleSyncProfiles}
+              disabled={syncing}
+              className="px-3 py-1 rounded-md bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#c9d1d9] text-xs font-medium flex items-center gap-1.5 transition disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-[#58a6ff] ${syncing ? 'animate-spin' : ''}`} />
+              <span>{syncing ? 'Syncing...' : 'Sync Live Stats'}</span>
+            </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* LeetCode */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">College / University</label>
-              <input
-                type="text"
-                value={formData.college}
-                onChange={(e) => handleChange('college', e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-                placeholder="e.g. Stanford University / IIT Delhi"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">Degree & Specialization</label>
-              <input
-                type="text"
-                value={formData.branch}
-                onChange={(e) => handleChange('branch', e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-                placeholder="e.g. B.Tech Computer Science & Eng"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">Graduation Cohort Year</label>
-              <input
-                type="text"
-                value={formData.gradYear}
-                onChange={(e) => handleChange('gradYear', e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
-                placeholder="2026"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Section 3: Coding Profiles & Social Coordinates */}
-        <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6 md:p-8 space-y-6 shadow-sm">
-          <div className="border-b border-slate-800/80 pb-4">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800/50 text-[10px] font-bold uppercase tracking-wider mb-1">
-              <Globe className="w-3 h-3" /> Public Handles
-            </div>
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              Coding Profiles & Online Handles
-            </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Handles used for telemetry tracking and technical dossier sharing.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">LeetCode Username</label>
+              <label className="block text-xs font-medium text-[#c9d1d9] mb-1">LeetCode Username</label>
               <div className="relative">
-                <Code2 className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Code2 className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={formData.socialLinks.leetcode}
                   onChange={(e) => handleSocialChange('leetcode', e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-                  placeholder="e.g. tour_de_code"
+                  className="w-full bg-[#0d1117] border border-[#30363d] rounded-md pl-9 pr-3 py-2 text-xs text-[#f0f6fc] focus:outline-none focus:border-[#58a6ff]"
+                  placeholder="leetcode_handle"
                 />
               </div>
+              {lc.totalSolved > 0 && (
+                <span className="text-[10px] text-[#3fb950] font-mono mt-1 block">
+                  ✓ {lc.totalSolved} Solved ({lc.easySolved || 0}E • {lc.mediumSolved || 0}M • {lc.hardSolved || 0}H)
+                </span>
+              )}
             </div>
 
+            {/* GitHub */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">GitHub Username</label>
+              <label className="block text-xs font-medium text-[#c9d1d9] mb-1">GitHub Username</label>
               <div className="relative">
-                <GitBranch className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <GitBranch className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={formData.socialLinks.github}
                   onChange={(e) => handleSocialChange('github', e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-                  placeholder="e.g. octocat"
+                  className="w-full bg-[#0d1117] border border-[#30363d] rounded-md pl-9 pr-3 py-2 text-xs text-[#f0f6fc] focus:outline-none focus:border-[#58a6ff]"
+                  placeholder="github_username"
                 />
               </div>
+              {gh.publicRepos > 0 && (
+                <span className="text-[10px] text-[#58a6ff] font-mono mt-1 block">
+                  ✓ {gh.publicRepos} Public Repositories
+                </span>
+              )}
             </div>
 
+            {/* LinkedIn */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">LinkedIn Profile URL</label>
+              <label className="block text-xs font-medium text-[#c9d1d9] mb-1">LinkedIn Profile URL</label>
               <div className="relative">
-                <Globe className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Globe className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={formData.socialLinks.linkedin}
                   onChange={(e) => handleSocialChange('linkedin', e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-                  placeholder="https://linkedin.com/in/username"
+                  className="w-full bg-[#0d1117] border border-[#30363d] rounded-md pl-9 pr-3 py-2 text-xs text-[#f0f6fc] focus:outline-none focus:border-[#58a6ff]"
+                  placeholder="linkedin.com/in/username"
                 />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Section 4: Actionable Milestones Checklist */}
-        <div className="bg-slate-900 rounded-3xl border border-slate-800 p-6 md:p-8 space-y-4 shadow-sm">
-          <div className="border-b border-slate-800/80 pb-3 flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-bold text-white flex items-center gap-2">
-                <Zap className="w-4 h-4 text-amber-400" />
-                Specialization Action Milestones ({activeRoleObj.shortLabel})
-              </h2>
-              <p className="text-[11px] text-slate-400">
-                Action items calibrated to increase your readiness index for this specialization.
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-2.5 pt-1">
-            {metrics?.nextActionItems?.map((item, idx) => (
-              <div
-                key={idx}
-                className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 text-xs transition-all ${
-                  item.done
-                    ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-300'
-                    : 'bg-slate-950 border-slate-800 text-slate-300'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
-                    item.done ? 'bg-emerald-500 text-slate-950 font-black' : 'bg-slate-800 text-slate-400'
-                  }`}>
-                    {item.done ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : <span className="text-[10px] font-bold">{idx + 1}</span>}
-                  </div>
-                  <span className={item.done ? 'line-through opacity-80' : 'font-medium'}>{item.action}</span>
-                </div>
-
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border shrink-0 ${
-                  item.done
-                    ? 'bg-emerald-950 text-emerald-300 border-emerald-800'
-                    : 'bg-indigo-950 text-indigo-300 border-indigo-800'
-                }`}>
-                  {item.done ? 'Completed' : item.boost}
-                </span>
-              </div>
-            )) || (
-              <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 text-slate-400 text-xs text-center">
-                Solve DSA problems and start roadmaps to generate customized actionable milestones.
-              </div>
-            )}
-          </div>
-        </div>
-
         {/* Submit Actions Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
-          <div className="flex items-center gap-2 text-xs text-slate-400">
-            <Info className="w-4 h-4 text-indigo-400 shrink-0" />
-            <span>Updates dynamically synchronize across Dashboard and Analytics telemetry.</span>
-          </div>
+        <div className="flex items-center justify-between pt-2">
+          <span className="text-xs text-[#8b949e] flex items-center gap-1">
+            <Info className="w-3.5 h-3.5 text-[#58a6ff]" /> Updates reflect instantly on Dashboard & Analytics
+          </span>
 
           <button
             type="submit"
             disabled={loading}
-            className="px-5 py-2 rounded-md bg-[#238636] hover:bg-[#2ea043] border border-[#2ea043]/30 text-white text-xs font-medium shadow-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+            className="px-5 py-2 rounded-md bg-[#238636] hover:bg-[#2ea043] border border-[#2ea043]/30 text-white text-xs font-semibold shadow-sm transition flex items-center gap-2 disabled:opacity-50"
           >
             {loading ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               <Save className="w-3.5 h-3.5" />
             )}
