@@ -52,6 +52,10 @@ const userSchema = new mongoose.Schema({
   completedTopics: [{
     type: String
   }],
+  customDsaTopics: [{
+    type: String,
+    trim: true
+  }],
   enrolledRoadmaps: [{
     type: String
   }],

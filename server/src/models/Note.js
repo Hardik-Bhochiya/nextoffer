@@ -16,10 +16,20 @@ const noteSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  topic: {
+    type: String,
+    trim: true,
+    default: 'General'
+  },
   tags: [{
     type: String,
     trim: true
   }],
+  importance: {
+    type: String,
+    enum: ['High', 'Medium', 'Low'],
+    default: 'Medium'
+  },
   pinned: {
     type: Boolean,
     default: false

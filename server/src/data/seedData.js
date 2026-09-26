@@ -428,35 +428,82 @@ export const defaultNotes = [
   {
     id: 'note-1',
     title: 'Core Java & OOPs 4 Pillars Cheatsheet',
-    tags: ['OOPs', 'Java', 'InterviewPrep'],
+    topic: 'OOPs',
+    tags: ['OOPs'],
+    importance: 'High',
     content: `# Object Oriented Programming (OOP) Pillars
-1. Encapsulation: Bundling data and methods that operate on that data within a single unit (class).
-2. Abstraction: Hiding implementation details and showing only functionality to the user.
-3. Inheritance: Mechanism where a new class inherits properties from an existing class.
-4. Polymorphism: Ability of a message or method to be displayed in more than one form (Overloading & Overriding).`
+1. **Encapsulation**: Bundling data and methods that operate on that data within a single unit (class).
+2. **Abstraction**: Hiding implementation details and showing only essential functionality to the user.
+3. **Inheritance**: Mechanism where a new class inherits properties and behaviors from an existing class.
+4. **Polymorphism**: Ability of a method or message to be displayed in multiple forms (Compile-time Overloading & Runtime Overriding).`
   },
   {
     id: 'note-2',
     title: 'DBMS ACID Properties & Normalization',
-    tags: ['DBMS', 'SQL', 'Database'],
+    topic: 'DBMS',
+    tags: ['DBMS'],
+    importance: 'High',
     content: `# ACID Properties in DBMS
 - **Atomicity**: Entire transaction completes or none of it takes effect.
-- **Consistency**: Database must remain in a consistent state before and after the transaction.
+- **Consistency**: Database must remain in a valid consistent state.
 - **Isolation**: Concurrent transactions execute independently without interference.
 - **Durability**: Changes made by committed transactions are permanently stored.`
   },
   {
     id: 'note-3',
     title: 'Operating Systems - Deadlocks & Memory Management',
-    tags: ['OS', 'Concurrency', 'InterviewPrep'],
+    topic: 'Operating Systems',
+    tags: ['Operating Systems'],
+    importance: 'High',
     content: `# Deadlock 4 Coffman Conditions
-1. Mutual Exclusion
-2. Hold and Wait
-3. No Preemption
-4. Circular Wait
+1. **Mutual Exclusion**: Non-shareable resource holding.
+2. **Hold and Wait**: Process holding resource while requesting another.
+3. **No Preemption**: Resources cannot be forcibly seized.
+4. **Circular Wait**: Closed chain of processes each waiting for resource held by next.
 
-# Virtual Memory
-Paging solves external fragmentation by dividing physical memory into fixed-size frames and virtual memory into pages.`
+## Virtual Memory
+Paging eliminates external fragmentation by dividing physical memory into fixed-size frames.`
+  },
+  {
+    id: 'note-4',
+    title: 'Computer Networks - TCP vs UDP & OSI 7 Layer Model',
+    topic: 'Computer Networks',
+    tags: ['Computer Networks'],
+    importance: 'High',
+    content: `# Computer Networks - OSI Model & Transport Layer
+## 1. The 7 OSI Layers
+1. Physical, 2. Data Link, 3. Network, 4. Transport, 5. Session, 6. Presentation, 7. Application.
+
+## 2. TCP vs UDP
+- **TCP**: 3-way handshake, connection-oriented, reliable, ordered.
+- **UDP**: Connectionless, low latency, no handshake, best-effort delivery.`
+  },
+  {
+    id: 'note-5',
+    title: 'System Design - Horizontal vs Vertical Scaling & CAP Theorem',
+    topic: 'System Design',
+    tags: ['System Design'],
+    importance: 'High',
+    content: `# System Design Fundamentals
+## 1. Scaling Strategies
+- **Vertical**: Upgrading server hardware (CPU/RAM).
+- **Horizontal**: Adding commodity server nodes behind a load balancer.
+
+## 2. CAP Theorem
+Guarantees at most 2 of 3: Consistency, Availability, Partition Tolerance.`
+  },
+  {
+    id: 'note-6',
+    title: 'DSA Interview - Two Pointers & Sliding Window Patterns',
+    topic: 'DSA: Coding Interview',
+    tags: ['DSA', 'Coding Interview'],
+    importance: 'High',
+    content: `# Core Algorithmic Patterns
+## 1. Two Pointers Pattern
+Used on sorted arrays or strings for search in O(n) time and O(1) space.
+
+## 2. Sliding Window Pattern
+Used for contiguous subarray problems (maximum sum subarray, longest substring).`
   }
 ];
 

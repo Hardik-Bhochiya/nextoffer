@@ -8,6 +8,26 @@ export const DataProvider = ({ children }) => {
   const { isAuthenticated, logout } = useAuth();
 
   const [dsaProblems, setDsaProblems] = useState([]);
+  const [topics, setTopics] = useState([
+    'Arrays & Hashing',
+    'Two Pointers',
+    'Sliding Window',
+    'Stack & Queue',
+    'Linked List',
+    'Binary Search',
+    'Trees & BST',
+    'Heap & Priority Queue',
+    'Backtracking & Recursion',
+    'Graphs & BFS/DFS',
+    'Dynamic Programming',
+    'Greedy Algorithms',
+    'Bit Manipulation',
+    'Trie',
+    'Math & Geometry',
+    'Strings & Pattern Matching',
+    'Intervals',
+    'Matrix & 2D Grid'
+  ]);
   const [roadmaps, setRoadmaps] = useState([]);
   const [projects, setProjects] = useState([]);
   const [notes, setNotes] = useState([]);
@@ -27,8 +47,9 @@ export const DataProvider = ({ children }) => {
     if (!isAuthenticated) return;
     try {
       setLoading(true);
-      const [dsaRes, roadmapsRes, projectsRes, notesRes, revRes, plannerRes, analyticsRes] = await Promise.allSettled([
+      const [dsaRes, topicsRes, roadmapsRes, projectsRes, notesRes, revRes, plannerRes, analyticsRes] = await Promise.allSettled([
         api.get('/dsa'),
+        api.get('/dsa/topics'),
         api.get('/roadmap'),
         api.get('/projects'),
         api.get('/notes'),
@@ -38,6 +59,9 @@ export const DataProvider = ({ children }) => {
       ]);
 
       if (dsaRes.status === 'fulfilled' && dsaRes.value?.data) setDsaProblems(dsaRes.value.data);
+      if (topicsRes.status === 'fulfilled' && topicsRes.value?.data) {
+        setTopics(prev => Array.from(new Set([...prev, ...(topicsRes.value.data || [])])));
+      }
       if (roadmapsRes.status === 'fulfilled' && roadmapsRes.value?.data) setRoadmaps(roadmapsRes.value.data);
       if (projectsRes.status === 'fulfilled' && projectsRes.value?.data) setProjects(projectsRes.value.data);
       if (notesRes.status === 'fulfilled' && notesRes.value?.data) setNotes(notesRes.value.data);
@@ -71,8 +95,34 @@ export const DataProvider = ({ children }) => {
   }, [isAuthenticated]);
 
   // ---- DSA Actions ----
+  const matchDsaId = (problem, targetId) => {
+    if (!problem || !targetId) return false;
+    return (
+      problem.id === targetId ||
+      problem._id === targetId ||
+      problem.id?.toString() === targetId?.toString() ||
+      problem._id?.toString() === targetId?.toString()
+    );
+  };
+
+  const addTopic = async (topicName) => {
+    if (!topicName || !topicName.trim()) return;
+    const cleanTopic = topicName.trim();
+    setTopics(prev => Array.from(new Set([...prev, cleanTopic])));
+    try {
+      const res = await api.post('/dsa/topics', { topic: cleanTopic });
+      if (res?.data) {
+        setTopics(Array.from(new Set(res.data)));
+      }
+      return cleanTopic;
+    } catch (err) {
+      handleApiError(err);
+      return cleanTopic;
+    }
+  };
+
   const updateDsaStatus = async (id, status, notes = '') => {
-    setDsaProblems(prev => prev.map(p => (p.id === id || p._id === id) ? { ...p, status, notes: notes || p.notes } : p));
+    setDsaProblems(prev => prev.map(p => matchDsaId(p, id) ? { ...p, status, notes: notes || p.notes } : p));
     try {
       await api.put(`/dsa/${id}`, { status, notes });
       const anRes = await api.get('/analytics/dashboard').catch(() => null);
@@ -80,19 +130,58 @@ export const DataProvider = ({ children }) => {
     } catch (err) { handleApiError(err); }
   };
 
+  const updateDsaProblem = async (id, updates) => {
+    setDsaProblems(prev => prev.map(p => matchDsaId(p, id) ? { ...p, ...updates } : p));
+    if (updates.topic) {
+      setTopics(prev => Array.from(new Set([...prev, updates.topic.trim()])));
+    }
+    if (Array.isArray(updates.topics)) {
+      setTopics(prev => Array.from(new Set([...prev, ...updates.topics.map(t => t.trim()).filter(Boolean)])));
+    }
+    try {
+      const res = await api.put(`/dsa/${id}`, updates);
+      if (res?.data) {
+        setDsaProblems(prev => prev.map(p => matchDsaId(p, id) ? { ...p, ...res.data } : p));
+      }
+      const anRes = await api.get('/analytics/dashboard').catch(() => null);
+      if (anRes?.data) setMetrics(anRes.data);
+      return res?.data;
+    } catch (err) {
+      handleApiError(err);
+      throw err;
+    }
+  };
+
+  const incrementRevision = async (id) => {
+    const target = dsaProblems.find(p => matchDsaId(p, id));
+    const newCount = (target?.revisionsCount || 0) + 1;
+    return updateDsaProblem(id, { revisionsCount: newCount });
+  };
+
   const addDsaProblem = async (newProb) => {
     try {
+      if (newProb.topic) {
+        setTopics(prev => Array.from(new Set([...prev, newProb.topic.trim()])));
+      }
+      if (Array.isArray(newProb.topics)) {
+        setTopics(prev => Array.from(new Set([...prev, ...newProb.topics.map(t => t.trim()).filter(Boolean)])));
+      }
       const res = await api.post('/dsa', newProb);
       if (res?.data) {
         setDsaProblems(prev => [res.data, ...prev]);
         const anRes = await api.get('/analytics/dashboard').catch(() => null);
         if (anRes?.data) setMetrics(anRes.data);
+        return res.data;
       }
-    } catch (err) { handleApiError(err); }
+      return res;
+    } catch (err) {
+      handleApiError(err);
+      throw err;
+    }
   };
 
   const deleteDsaProblem = async (id) => {
-    setDsaProblems(prev => prev.filter(p => p.id !== id && p._id !== id));
+    setDsaProblems(prev => prev.filter(p => !matchDsaId(p, id)));
     try {
       await api.delete(`/dsa/${id}`);
       const anRes = await api.get('/analytics/dashboard').catch(() => null);
@@ -159,19 +248,33 @@ export const DataProvider = ({ children }) => {
   const addNote = async (noteData) => {
     try {
       const res = await api.post('/notes', noteData);
-      if (res?.data) setNotes(prev => [res.data, ...prev]);
-    } catch (err) { handleApiError(err); }
+      if (res?.data) {
+        setNotes(prev => [res.data, ...prev]);
+        return res.data;
+      }
+      return res;
+    } catch (err) {
+      handleApiError(err);
+      throw err;
+    }
   };
 
   const updateNote = async (id, updates) => {
-    setNotes(prev => prev.map(n => (n.id === id || n._id === id) ? { ...n, ...updates } : n));
+    setNotes(prev => prev.map(n => matchDsaId(n, id) ? { ...n, ...updates } : n));
     try {
-      await api.put(`/notes/${id}`, updates);
-    } catch (err) { handleApiError(err); }
+      const res = await api.put(`/notes/${id}`, updates);
+      if (res?.data) {
+        setNotes(prev => prev.map(n => matchDsaId(n, id) ? { ...n, ...res.data } : n));
+      }
+      return res?.data;
+    } catch (err) {
+      handleApiError(err);
+      throw err;
+    }
   };
 
   const deleteNote = async (id) => {
-    setNotes(prev => prev.filter(n => n.id !== id && n._id !== id));
+    setNotes(prev => prev.filter(n => !matchDsaId(n, id)));
     try {
       await api.delete(`/notes/${id}`);
     } catch (err) { handleApiError(err); }
@@ -244,10 +347,11 @@ export const DataProvider = ({ children }) => {
 
   return (
     <DataContext.Provider value={{
-      dsaProblems, roadmaps, projects, notes, revisions,
+      dsaProblems, topics, roadmaps, projects, notes, revisions,
       studyGoals, dailyTasks, metrics, loading,
       refreshData,
-      updateDsaStatus, addDsaProblem, deleteDsaProblem,
+      updateDsaStatus, updateDsaProblem, addDsaProblem, deleteDsaProblem, incrementRevision,
+      addTopic,
       toggleEnrollRoadmap, toggleRoadmapTopic,
       addProject, updateProject, deleteProject,
       addNote, updateNote, deleteNote,

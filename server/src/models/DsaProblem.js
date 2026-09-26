@@ -14,22 +14,30 @@ const dsaProblemSchema = new mongoose.Schema({
   },
   topic: {
     type: String,
-    required: [true, 'Topic is required'],
-    trim: true
+    trim: true,
+    default: 'General'
   },
+  topics: [{
+    type: String,
+    trim: true
+  }],
   difficulty: {
     type: String,
     enum: ['Easy', 'Medium', 'Hard'],
     default: 'Medium'
   },
+  platform: {
+    type: String,
+    default: 'LeetCode'
+  },
   url: {
     type: String,
-    default: 'https://leetcode.com'
+    default: ''
   },
   status: {
     type: String,
-    enum: ['Solved', 'Attempted', 'Needs Revision', 'Unsolved'],
-    default: 'Unsolved'
+    enum: ['Completed', 'Solved', 'Attended', 'Attempted', 'Needs Revision', 'Revising', 'Unsolved'],
+    default: 'Completed'
   },
   timeComplexity: {
     type: String,
@@ -39,6 +47,10 @@ const dsaProblemSchema = new mongoose.Schema({
     type: String,
     default: 'O(1)'
   },
+  companies: [{
+    type: String,
+    trim: true
+  }],
   notes: {
     type: String,
     default: ''
