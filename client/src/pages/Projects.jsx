@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 import {
   FolderGit2,
   Plus,
   ExternalLink,
   GitBranch,
   CheckCircle2,
-  Circle,
   Trash2,
   Edit3,
   Lock,
@@ -17,34 +17,26 @@ import {
   X,
   Check,
   AlertCircle,
-  Code2,
   Rocket,
-  ShieldAlert,
-  ArrowRight,
-  Filter
+  Server,
+  Layout,
+  Cpu,
+  Workflow,
+  Smartphone,
+  Boxes,
+  ShieldCheck,
+  Sparkles,
+  Target,
+  RefreshCw,
+  Sliders,
+  ChevronDown
 } from 'lucide-react';
-
-// Industry-Standard Software Engineering Project Lifecycle Milestones (Hierarchy from Planning to Deployment)
-const DEFAULT_LIFECYCLE_MILESTONES = [
-  { title: '1. Architecture & System Requirements (PRD, Tech Stack, Scope)', phase: 'Planning', completed: true },
-  { title: '2. Database Modeling & Schema Relationships (ERD, Migrations)', phase: 'Architecture', completed: false },
-  { title: '3. Core Backend Services & REST/GraphQL API Endpoints', phase: 'Backend', completed: false },
-  { title: '4. Frontend Client Architecture & Responsive UI Components', phase: 'Frontend', completed: false },
-  { title: '5. End-to-End API Integration & State Management', phase: 'Integration', completed: false },
-  { title: '6. Unit/Integration Testing & Edge Case Hardening', phase: 'Testing', completed: false },
-  { title: '7. Cloud Deployment, CI/CD Pipeline & Live Hosting', phase: 'Hosting', completed: false },
-  { title: '8. Technical Documentation, Architecture Diagram & Showcase', phase: 'Showcase', completed: false }
-];
-
-const PROJECT_CATEGORIES = [
-  'Full Stack',
-  'Frontend Application',
-  'Backend & Distributed System',
-  'System Design & Microservices',
-  'Mobile Application',
-  'AI / Machine Learning',
-  'Cloud & DevOps'
-];
+import {
+  PROJECT_ARCHETYPES,
+  ALL_ALLOCATED_ROLES,
+  getProjectTypeConfig,
+  getRecommendedProjectTypeForRole
+} from '../data/projectTypesData';
 
 const formatExternalUrl = (rawUrl) => {
   if (!rawUrl) return '';
@@ -54,13 +46,37 @@ const formatExternalUrl = (rawUrl) => {
   return `https://${trimmed}`;
 };
 
+const renderTypeIcon = (iconName, className = 'w-3.5 h-3.5') => {
+  switch (iconName) {
+    case 'Server':
+      return <Server className={className} />;
+    case 'Layout':
+      return <Layout className={className} />;
+    case 'Cpu':
+      return <Cpu className={className} />;
+    case 'Workflow':
+      return <Workflow className={className} />;
+    case 'Smartphone':
+      return <Smartphone className={className} />;
+    case 'Boxes':
+      return <Boxes className={className} />;
+    case 'ShieldCheck':
+      return <ShieldCheck className={className} />;
+    case 'Globe':
+    default:
+      return <Globe className={className} />;
+  }
+};
+
 export const Projects = () => {
+  const { user } = useAuth();
   const { projects = [], addProject, updateProject, deleteProject } = useData();
 
   // Search & Filter state
   const [search, setSearch] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('All');
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedType, setSelectedType] = useState('All');
+  const [selectedRole, setSelectedRole] = useState('All');
 
   // Modal States
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -70,18 +86,20 @@ export const Projects = () => {
   // Add Form State
   const [newTitle, setNewTitle] = useState('');
   const [newDesc, setNewDesc] = useState('');
-  const [newCategory, setNewCategory] = useState('Full Stack');
-  const [newTech, setNewTech] = useState('React, Node.js, Express, MongoDB, Tailwind CSS');
+  const [newProjectType, setNewProjectType] = useState(PROJECT_ARCHETYPES[0].title);
+  const [newAllocatedRole, setNewAllocatedRole] = useState(PROJECT_ARCHETYPES[0].allocatedRole);
+  const [newTech, setNewTech] = useState(PROJECT_ARCHETYPES[0].defaultTech);
   const [newGithub, setNewGithub] = useState('');
   const [newLive, setNewLive] = useState('');
   const [newStatus, setNewStatus] = useState('In Progress');
-  const [newMilestones, setNewMilestones] = useState(DEFAULT_LIFECYCLE_MILESTONES);
+  const [newMilestones, setNewMilestones] = useState(PROJECT_ARCHETYPES[0].milestones);
   const [newMilestoneInput, setNewMilestoneInput] = useState('');
 
   // Edit Form State
   const [editTitle, setEditTitle] = useState('');
   const [editDesc, setEditDesc] = useState('');
-  const [editCategory, setEditCategory] = useState('Full Stack');
+  const [editProjectType, setEditProjectType] = useState(PROJECT_ARCHETYPES[0].title);
+  const [editAllocatedRole, setEditAllocatedRole] = useState(PROJECT_ARCHETYPES[0].allocatedRole);
   const [editTech, setEditTech] = useState('');
   const [editGithub, setEditGithub] = useState('');
   const [editLive, setEditLive] = useState('');
@@ -97,18 +115,30 @@ export const Projects = () => {
     setTimeout(() => setToastMessage(null), 4000);
   };
 
-  // Open Add Modal with fresh defaults
+  // Open Add Modal with recommendations based on user target role
   const handleOpenAddModal = () => {
+    const recommended = getRecommendedProjectTypeForRole(user?.targetRole);
     setNewTitle('');
     setNewDesc('');
-    setNewCategory('Full Stack');
-    setNewTech('React, Node.js, Express, MongoDB, Tailwind CSS');
+    setNewProjectType(recommended.title);
+    setNewAllocatedRole(recommended.allocatedRole);
+    setNewTech(recommended.defaultTech);
     setNewGithub('');
     setNewLive('');
     setNewStatus('In Progress');
-    setNewMilestones(DEFAULT_LIFECYCLE_MILESTONES.map(m => ({ ...m, completed: false })));
+    setNewMilestones(recommended.milestones.map(m => ({ ...m, completed: false })));
     setNewMilestoneInput('');
     setIsAddModalOpen(true);
+  };
+
+  // Handle switching Project Type in Add Form
+  const handleSelectAddProjectType = (typeTitle) => {
+    const config = getProjectTypeConfig(typeTitle);
+    setNewProjectType(config.title);
+    setNewAllocatedRole(config.allocatedRole);
+    setNewTech(config.defaultTech);
+    setNewMilestones(config.milestones.map(m => ({ ...m, completed: false })));
+    showToast(`Loaded ${config.shortLabel} milestones for ${config.allocatedRole}`);
   };
 
   // Submit Add Project
@@ -120,7 +150,9 @@ export const Projects = () => {
       await addProject({
         title: newTitle.trim(),
         description: newDesc.trim(),
-        category: newCategory,
+        category: newProjectType,
+        projectType: newProjectType,
+        allocatedRole: newAllocatedRole,
         techStack: newTech.split(',').map(s => s.trim()).filter(Boolean),
         githubUrl: formatExternalUrl(newGithub),
         liveUrl: formatExternalUrl(newLive),
@@ -128,7 +160,7 @@ export const Projects = () => {
         milestones: newMilestones
       });
 
-      showToast(`Project "${newTitle.trim()}" created successfully!`);
+      showToast(`Created ${newProjectType} project "${newTitle.trim()}"!`);
       setIsAddModalOpen(false);
     } catch (err) {
       showToast('Failed to create project', true);
@@ -137,10 +169,12 @@ export const Projects = () => {
 
   // Open Edit Modal prefilled with project data
   const handleOpenEditModal = (project) => {
+    const currentTypeConfig = getProjectTypeConfig(project.projectType || project.category);
     setEditingProject(project);
     setEditTitle(project.title || '');
     setEditDesc(project.description || '');
-    setEditCategory(project.category || 'Full Stack');
+    setEditProjectType(project.projectType || currentTypeConfig.title);
+    setEditAllocatedRole(project.allocatedRole || currentTypeConfig.allocatedRole);
     setEditTech(Array.isArray(project.techStack) ? project.techStack.join(', ') : '');
     setEditGithub(project.githubUrl || '');
     setEditLive(project.liveUrl || '');
@@ -148,9 +182,28 @@ export const Projects = () => {
     setEditMilestones(
       Array.isArray(project.milestones) && project.milestones.length > 0
         ? project.milestones.map(m => ({ ...m }))
-        : DEFAULT_LIFECYCLE_MILESTONES.map(m => ({ ...m, completed: false }))
+        : currentTypeConfig.milestones.map(m => ({ ...m, completed: false }))
     );
     setEditMilestoneInput('');
+  };
+
+  // Handle switching Project Type in Edit Form
+  const handleSelectEditProjectType = (typeTitle, reloadMilestones = false) => {
+    const config = getProjectTypeConfig(typeTitle);
+    setEditProjectType(config.title);
+    setEditAllocatedRole(config.allocatedRole);
+    if (!editTech) setEditTech(config.defaultTech);
+    if (reloadMilestones) {
+      setEditMilestones(config.milestones.map(m => ({ ...m, completed: false })));
+      showToast(`Loaded ${config.shortLabel} lifecycle template`);
+    }
+  };
+
+  // Reload template milestones in Edit Form
+  const handleReloadEditMilestonesTemplate = () => {
+    const config = getProjectTypeConfig(editProjectType);
+    setEditMilestones(config.milestones.map(m => ({ ...m, completed: false })));
+    showToast(`Reset to ${config.shortLabel} 8-phase lifecycle`);
   };
 
   // Submit Edit Project
@@ -166,7 +219,9 @@ export const Projects = () => {
       await updateProject(projId, {
         title: editTitle.trim(),
         description: editDesc.trim(),
-        category: editCategory,
+        category: editProjectType,
+        projectType: editProjectType,
+        allocatedRole: editAllocatedRole,
         techStack: editTech.split(',').map(s => s.trim()).filter(Boolean),
         githubUrl: formatExternalUrl(editGithub),
         liveUrl: formatExternalUrl(editLive),
@@ -252,33 +307,50 @@ export const Projects = () => {
     setEditMilestones(editMilestones.filter((_, i) => i !== index));
   };
 
-  // Reset to full 8-phase preset
-  const handleResetToPresetMilestones = (isEdit = false) => {
-    if (isEdit) {
-      setEditMilestones(DEFAULT_LIFECYCLE_MILESTONES.map(m => ({ ...m, completed: false })));
-    } else {
-      setNewMilestones(DEFAULT_LIFECYCLE_MILESTONES.map(m => ({ ...m, completed: false })));
-    }
+  // Check if project allocated role matches user's target role
+  const isProjectRoleAligned = (project) => {
+    if (!user?.targetRole) return false;
+    const userRoleLower = user.targetRole.toLowerCase();
+    const projRoleLower = (project.allocatedRole || '').toLowerCase();
+    const projTypeLower = (project.projectType || project.category || '').toLowerCase();
+
+    return (
+      projRoleLower.includes(userRoleLower) ||
+      userRoleLower.includes(projRoleLower) ||
+      (userRoleLower.includes('backend') && (projRoleLower.includes('backend') || projTypeLower.includes('backend'))) ||
+      (userRoleLower.includes('frontend') && (projRoleLower.includes('frontend') || projTypeLower.includes('frontend'))) ||
+      (userRoleLower.includes('full') && (projRoleLower.includes('full') || projTypeLower.includes('full'))) ||
+      (userRoleLower.includes('ai') && (projRoleLower.includes('ai') || projTypeLower.includes('ai'))) ||
+      (userRoleLower.includes('devops') && (projRoleLower.includes('devops') || projTypeLower.includes('devops'))) ||
+      (userRoleLower.includes('mobile') && (projRoleLower.includes('mobile') || projTypeLower.includes('mobile'))) ||
+      (userRoleLower.includes('sde') && (projRoleLower.includes('sde') || projTypeLower.includes('system'))) ||
+      (userRoleLower.includes('sdet') && (projRoleLower.includes('sdet') || projTypeLower.includes('test')))
+    );
   };
 
   // Filtered Projects List
   const filteredProjects = useMemo(() => {
     return projects.filter((proj) => {
       const q = search.toLowerCase().trim();
+      const projType = proj.projectType || proj.category || 'Full Stack Web Application';
+      const projRole = proj.allocatedRole || 'Full Stack Engineer';
+
       const matchSearch =
         !q ||
         proj.title?.toLowerCase().includes(q) ||
         proj.description?.toLowerCase().includes(q) ||
-        proj.category?.toLowerCase().includes(q) ||
+        projType.toLowerCase().includes(q) ||
+        projRole.toLowerCase().includes(q) ||
         (Array.isArray(proj.techStack) && proj.techStack.some(t => t.toLowerCase().includes(q))) ||
         (Array.isArray(proj.milestones) && proj.milestones.some(m => m.title?.toLowerCase().includes(q)));
 
       const matchStatus = selectedStatus === 'All' || proj.status === selectedStatus;
-      const matchCategory = selectedCategory === 'All' || proj.category === selectedCategory;
+      const matchType = selectedType === 'All' || projType === selectedType;
+      const matchRole = selectedRole === 'All' || projRole === selectedRole;
 
-      return matchSearch && matchStatus && matchCategory;
+      return matchSearch && matchStatus && matchType && matchRole;
     });
-  }, [projects, search, selectedStatus, selectedCategory]);
+  }, [projects, search, selectedStatus, selectedType, selectedRole]);
 
   // Telemetry Stats
   const stats = useMemo(() => {
@@ -288,11 +360,13 @@ export const Projects = () => {
     let totalMilestones = 0;
     let completedMilestones = 0;
     let deployed = 0;
+    let roleAlignedCount = 0;
 
     projects.forEach(p => {
       if (p.status === 'Completed') completed++;
       if (p.status === 'In Progress') inProgress++;
       if (p.liveUrl) deployed++;
+      if (isProjectRoleAligned(p)) roleAlignedCount++;
       if (Array.isArray(p.milestones)) {
         totalMilestones += p.milestones.length;
         completedMilestones += p.milestones.filter(m => m.completed).length;
@@ -301,8 +375,8 @@ export const Projects = () => {
 
     const completionRate = totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 0;
 
-    return { total, completed, inProgress, deployed, completionRate };
-  }, [projects]);
+    return { total, completed, inProgress, deployed, roleAlignedCount, completionRate };
+  }, [projects, user?.targetRole]);
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-16 animate-fadeIn">
@@ -324,13 +398,13 @@ export const Projects = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#30363d] pb-5">
         <div>
           <h1 className="text-xl font-bold text-[#e6edf3] flex items-center gap-2">
-            <FolderGit2 className="w-5 h-5 text-[#58a6ff]" /> Projects
+            <FolderGit2 className="w-5 h-5 text-[#58a6ff]" /> Projects & Engineering Archetypes
             <span className="text-xs font-normal text-[#8b949e] px-2 py-0.5 rounded-full bg-[#161b22] border border-[#30363d] font-mono">
               {projects.length} Total
             </span>
           </h1>
           <p className="text-xs text-[#8b949e] mt-1">
-            Build resume-worthy, industry-standard systems with sequential lifecycle milestones from planning to cloud deployment.
+            Build domain-typed software systems with role allocations and sequential engineering lifecycles tailored for each CS discipline.
           </p>
         </div>
 
@@ -338,14 +412,14 @@ export const Projects = () => {
           onClick={handleOpenAddModal}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#238636] hover:bg-[#2ea043] border border-[#2ea043]/30 text-white text-xs font-medium shadow-sm transition-colors cursor-pointer self-start sm:self-auto"
         >
-          <Plus className="w-3.5 h-3.5" /> Add Project
+          <Plus className="w-3.5 h-3.5" /> Add Typed Project
         </button>
       </div>
 
       {/* Stats Telemetry Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
         <div className="p-3 rounded-lg bg-[#161b22] border border-[#30363d]">
-          <span className="text-[11px] text-[#8b949e] block">Total Projects</span>
+          <span className="text-[11px] text-[#8b949e] block">Total Systems</span>
           <span className="text-lg font-bold text-[#e6edf3] font-mono">{stats.total}</span>
         </div>
 
@@ -357,14 +431,55 @@ export const Projects = () => {
         </div>
 
         <div className="p-3 rounded-lg bg-[#161b22] border border-[#30363d]">
-          <span className="text-[11px] text-[#8b949e] block">Completed Systems</span>
+          <span className="text-[11px] text-[#8b949e] block">Completed Lifecycle</span>
           <span className="text-lg font-bold text-[#58a6ff] font-mono">{stats.completed}</span>
         </div>
 
         <div className="p-3 rounded-lg bg-[#161b22] border border-[#30363d]">
-          <span className="text-[11px] text-[#8b949e] block">Overall Milestones Rate</span>
+          <span className="text-[11px] text-[#8b949e] block">Target Role Aligned</span>
+          <span className="text-lg font-bold text-[#bc8cff] font-mono flex items-center gap-1">
+            {stats.roleAlignedCount} <Target className="w-3.5 h-3.5 text-[#bc8cff]" />
+          </span>
+        </div>
+
+        <div className="p-3 rounded-lg bg-[#161b22] border border-[#30363d]">
+          <span className="text-[11px] text-[#8b949e] block">Milestone Completion</span>
           <span className="text-lg font-bold text-[#d29922] font-mono">{stats.completionRate}%</span>
         </div>
+      </div>
+
+      {/* Domain Archetypes Quick Filter / Showcase Bar */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <span className="text-[11px] font-semibold text-[#8b949e] uppercase tracking-wider shrink-0 flex items-center gap-1">
+          <Sliders className="w-3 h-3 text-[#58a6ff]" /> Domains:
+        </span>
+        <button
+          onClick={() => setSelectedType('All')}
+          className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-all shrink-0 cursor-pointer ${
+            selectedType === 'All'
+              ? 'bg-[#58a6ff] text-white shadow-sm'
+              : 'bg-[#161b22] text-[#8b949e] hover:text-[#c9d1d9] border border-[#30363d]'
+          }`}
+        >
+          All Archetypes
+        </button>
+        {PROJECT_ARCHETYPES.map((arch) => {
+          const isSelected = selectedType === arch.title;
+          return (
+            <button
+              key={arch.id}
+              onClick={() => setSelectedType(isSelected ? 'All' : arch.title)}
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all shrink-0 cursor-pointer border ${
+                isSelected
+                  ? 'bg-[#1f6feb]/20 text-[#58a6ff] border-[#388bfd]'
+                  : 'bg-[#161b22] text-[#8b949e] hover:text-[#c9d1d9] border-[#30363d]'
+              }`}
+            >
+              {renderTypeIcon(arch.iconName, 'w-3 h-3')}
+              <span>{arch.shortLabel}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Filter & Search Bar */}
@@ -374,7 +489,7 @@ export const Projects = () => {
           <Search className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search projects, technologies, or milestone stages..."
+            placeholder="Search projects, domain archetypes, allocated roles, tech stacks..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-[#0d1117] border border-[#30363d] rounded-md pl-8 pr-3 py-1.5 text-xs text-[#e6edf3] placeholder-[#6e7681] focus:outline-none focus:border-[#58a6ff]"
@@ -382,7 +497,7 @@ export const Projects = () => {
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Status Filter */}
           <select
             value={selectedStatus}
@@ -396,21 +511,21 @@ export const Projects = () => {
             <option value="On Hold">On Hold</option>
           </select>
 
-          {/* Category Filter */}
+          {/* Allocated Role Filter */}
           <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="bg-[#0d1117] border border-[#30363d] rounded-md px-2.5 py-1.5 text-xs text-[#c9d1d9] focus:outline-none cursor-pointer max-w-[160px] truncate"
+            value={selectedRole}
+            onChange={(e) => setSelectedRole(e.target.value)}
+            className="bg-[#0d1117] border border-[#30363d] rounded-md px-2.5 py-1.5 text-xs text-[#c9d1d9] focus:outline-none cursor-pointer max-w-[170px] truncate"
           >
-            <option value="All">All Categories</option>
-            {PROJECT_CATEGORIES.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
+            <option value="All">All Allocated Roles</option>
+            {ALL_ALLOCATED_ROLES.map((role) => (
+              <option key={role} value={role}>{role}</option>
             ))}
           </select>
 
-          {(search || selectedStatus !== 'All' || selectedCategory !== 'All') && (
+          {(search || selectedStatus !== 'All' || selectedType !== 'All' || selectedRole !== 'All') && (
             <button
-              onClick={() => { setSearch(''); setSelectedStatus('All'); setSelectedCategory('All'); }}
+              onClick={() => { setSearch(''); setSelectedStatus('All'); setSelectedType('All'); setSelectedRole('All'); }}
               className="text-[#8b949e] hover:text-[#f85149] hover:underline text-xs cursor-pointer whitespace-nowrap px-1"
             >
               Reset
@@ -431,8 +546,8 @@ export const Projects = () => {
             </h3>
             <p className="text-xs text-[#8b949e] max-w-md mx-auto mt-1">
               {projects.length === 0
-                ? 'Add your fullstack or system design projects with tech stacks, repositories, and sequential milestone trackers to showcase your engineering capabilities.'
-                : 'Try adjusting your search query or reset status/category filters.'}
+                ? 'Create typed software engineering projects with domain-specific sequential milestones (Full Stack, Backend, AI/ML, DevOps, Mobile, System Design LLD, or SDET).'
+                : 'Try adjusting your search query or reset status, domain archetype, and role filters.'}
             </p>
           </div>
           {projects.length === 0 ? (
@@ -440,11 +555,11 @@ export const Projects = () => {
               onClick={handleOpenAddModal}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#238636] hover:bg-[#2ea043] border border-[#2ea043]/30 text-white text-xs font-medium shadow-sm transition-colors cursor-pointer"
             >
-              <Plus className="w-3.5 h-3.5" /> Add First Project
+              <Plus className="w-3.5 h-3.5" /> Add First Typed Project
             </button>
           ) : (
             <button
-              onClick={() => { setSearch(''); setSelectedStatus('All'); setSelectedCategory('All'); }}
+              onClick={() => { setSearch(''); setSelectedStatus('All'); setSelectedType('All'); setSelectedRole('All'); }}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#c9d1d9] text-xs font-medium transition-colors cursor-pointer"
             >
               Clear Filters
@@ -455,6 +570,11 @@ export const Projects = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {filteredProjects.map((proj) => {
             const projId = proj.id || proj._id;
+            const projTypeTitle = proj.projectType || proj.category || 'Full Stack Web Application';
+            const typeConfig = getProjectTypeConfig(projTypeTitle);
+            const allocatedRoleTitle = proj.allocatedRole || typeConfig.allocatedRole;
+            const isAlignedWithTarget = isProjectRoleAligned(proj);
+
             const milestones = Array.isArray(proj.milestones) ? proj.milestones : [];
             const completedCount = milestones.filter(m => m.completed).length;
             const totalCount = milestones.length;
@@ -468,12 +588,28 @@ export const Projects = () => {
                 className="rounded-lg bg-[#161b22] border border-[#30363d] p-5 flex flex-col justify-between space-y-4 hover:border-[#58a6ff]/40 transition-colors shadow-sm"
               >
                 <div>
-                  {/* Top Bar: Category, Status & Action Icons (Edit / Delete) */}
-                  <div className="flex items-center justify-between gap-2 mb-2.5">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#0d1117] text-[#58a6ff] border border-[#30363d] font-semibold truncate">
-                        {proj.category || 'Full Stack'}
+                  {/* Top Bar: Domain Archetype Badge, Role Allocation & Edit/Delete Icons */}
+                  <div className="flex items-start justify-between gap-2 mb-2.5">
+                    <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                      {/* Project Type Badge */}
+                      <span className={`inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded border font-semibold ${typeConfig.badgeColor}`}>
+                        {renderTypeIcon(typeConfig.iconName, 'w-3 h-3')}
+                        <span>{typeConfig.shortLabel}</span>
                       </span>
+
+                      {/* Allocated Role Badge */}
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#0d1117] text-[#c9d1d9] border border-[#30363d] truncate max-w-[200px]" title={allocatedRoleTitle}>
+                        Role: {allocatedRoleTitle.split('(')[0].trim()}
+                      </span>
+
+                      {/* Target Role Alignment Indicator */}
+                      {isAlignedWithTarget && (
+                        <span className="inline-flex items-center gap-0.5 text-[9px] font-semibold px-1.5 py-0.2 rounded bg-[#bc8cff]/15 text-[#d2a8ff] border border-[#bc8cff]/30">
+                          <Target className="w-2.5 h-2.5" /> Target Match
+                        </span>
+                      )}
+
+                      {/* Status Badge */}
                       <span
                         className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${
                           proj.status === 'Completed'
@@ -488,12 +624,12 @@ export const Projects = () => {
                     </div>
 
                     {/* Edit & Delete Buttons */}
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 shrink-0">
                       <button
                         type="button"
                         onClick={() => handleOpenEditModal(proj)}
                         className="p-1 rounded text-[#8b949e] hover:text-[#58a6ff] hover:bg-[#21262d] transition-colors cursor-pointer"
-                        title="Edit Project & Milestones"
+                        title="Edit Project Archetype & Milestones"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
                       </button>
@@ -535,7 +671,7 @@ export const Projects = () => {
                     <div className="flex items-center justify-between text-[11px] pb-1.5 border-b border-[#21262d]">
                       <span className="font-semibold text-[#c9d1d9] flex items-center gap-1.5">
                         <Layers className="w-3.5 h-3.5 text-[#58a6ff]" />
-                        Sequential Lifecycle ({completedCount}/{totalCount})
+                        {typeConfig.shortLabel} Lifecycle ({completedCount}/{totalCount})
                       </span>
                       <span className="font-mono font-bold text-xs text-[#58a6ff]">{pct}% Done</span>
                     </div>
@@ -553,7 +689,6 @@ export const Projects = () => {
                     {/* Sequential Milestones Checklist */}
                     <div className="space-y-1">
                       {milestones.map((m, mIdx) => {
-                        // Check if previous milestone is completed
                         const isPrevDone = mIdx === 0 || milestones[mIdx - 1]?.completed;
                         const isLocked = !m.completed && !isPrevDone;
                         const isCurrentActive = !m.completed && isPrevDone;
@@ -689,14 +824,19 @@ export const Projects = () => {
         </div>
       )}
 
-      {/* ADD PROJECT MODAL */}
+      {/* ADD TYPED PROJECT MODAL */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-[#161b22] border border-[#30363d] rounded-lg max-w-2xl w-full p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
-              <h2 className="text-sm font-bold text-[#e6edf3] flex items-center gap-2">
-                <Plus className="w-4 h-4 text-[#58a6ff]" /> Add Project with Sequential Milestones
-              </h2>
+              <div>
+                <h2 className="text-sm font-bold text-[#e6edf3] flex items-center gap-2">
+                  <Plus className="w-4 h-4 text-[#58a6ff]" /> Add Typed Project & Allocate Role
+                </h2>
+                <p className="text-[11px] text-[#8b949e] mt-0.5">
+                  Milestones automatically adapt to the specific engineering requirements of this CS discipline.
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
@@ -707,38 +847,65 @@ export const Projects = () => {
             </div>
 
             <form onSubmit={handleCreateSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Project Type & Role Allocation */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-[#0d1117] rounded-md border border-[#30363d]">
                 <div>
-                  <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Project Title *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. NextOffer - Placement Readiness Platform"
-                    value={newTitle}
-                    onChange={(e) => setNewTitle(e.target.value)}
-                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-1.5 text-xs text-[#e6edf3] focus:outline-none focus:border-[#58a6ff]"
-                  />
+                  <label className="block text-xs font-semibold text-[#58a6ff] mb-1 flex items-center gap-1.5">
+                    <Sliders className="w-3.5 h-3.5" /> Project Archetype (Domain) *
+                  </label>
+                  <select
+                    value={newProjectType}
+                    onChange={(e) => handleSelectAddProjectType(e.target.value)}
+                    className="w-full bg-[#161b22] border border-[#30363d] rounded-md px-3 py-1.5 text-xs text-[#e6edf3] focus:outline-none focus:border-[#58a6ff] cursor-pointer"
+                  >
+                    {PROJECT_ARCHETYPES.map(arch => (
+                      <option key={arch.id} value={arch.title}>{arch.title}</option>
+                    ))}
+                  </select>
+                  <p className="text-[10px] text-[#8b949e] mt-1">
+                    {getProjectTypeConfig(newProjectType).summary}
+                  </p>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Engineering Category</label>
+                  <label className="block text-xs font-semibold text-[#bc8cff] mb-1 flex items-center gap-1.5">
+                    <Target className="w-3.5 h-3.5" /> Allocated Target Role *
+                  </label>
                   <select
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-1.5 text-xs text-[#e6edf3] focus:outline-none focus:border-[#58a6ff] cursor-pointer"
+                    value={newAllocatedRole}
+                    onChange={(e) => setNewAllocatedRole(e.target.value)}
+                    className="w-full bg-[#161b22] border border-[#30363d] rounded-md px-3 py-1.5 text-xs text-[#e6edf3] focus:outline-none focus:border-[#bc8cff] cursor-pointer"
                   >
-                    {PROJECT_CATEGORIES.map(c => (
-                      <option key={c} value={c}>{c}</option>
+                    {ALL_ALLOCATED_ROLES.map(role => (
+                      <option key={role} value={role}>{role}</option>
                     ))}
                   </select>
+                  {user?.targetRole && (
+                    <p className="text-[10px] text-[#3fb950] mt-1 flex items-center gap-1">
+                      <Sparkles className="w-2.5 h-2.5" /> Your Active Target: {user.targetRole}
+                    </p>
+                  )}
                 </div>
+              </div>
+
+              {/* Title & Tech Stack */}
+              <div>
+                <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Project Title *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Distributed Event-Driven Message Broker"
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-1.5 text-xs text-[#e6edf3] focus:outline-none focus:border-[#58a6ff]"
+                />
               </div>
 
               <div>
                 <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Architecture & System Description</label>
                 <textarea
                   rows="2"
-                  placeholder="Key features, scalability choices, database design, and problem solved..."
+                  placeholder="High-level architecture, design patterns, bottlenecks handled, and problem solved..."
                   value={newDesc}
                   onChange={(e) => setNewDesc(e.target.value)}
                   className="w-full bg-[#0d1117] border border-[#30363d] rounded-md p-2.5 text-xs text-[#e6edf3] focus:outline-none focus:border-[#58a6ff]"
@@ -749,13 +916,13 @@ export const Projects = () => {
                 <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Tech Stack (comma-separated)</label>
                 <input
                   type="text"
-                  placeholder="React, Node.js, Express, MongoDB, Tailwind CSS, Redis"
                   value={newTech}
                   onChange={(e) => setNewTech(e.target.value)}
                   className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-1.5 text-xs text-[#e6edf3] focus:outline-none focus:border-[#58a6ff]"
                 />
               </div>
 
+              {/* Repo and Live links */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-[#c9d1d9] mb-1">GitHub / Repository Link</label>
@@ -785,18 +952,18 @@ export const Projects = () => {
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-semibold text-[#e6edf3] flex items-center gap-1.5">
                     <Layers className="w-3.5 h-3.5 text-[#58a6ff]" />
-                    Project Lifecycle Milestones ({newMilestones.length} Stages)
+                    {getProjectTypeConfig(newProjectType).shortLabel} Lifecycle Milestones ({newMilestones.length} Stages)
                   </label>
                   <button
                     type="button"
-                    onClick={() => handleResetToPresetMilestones(false)}
-                    className="text-[11px] text-[#58a6ff] hover:underline cursor-pointer"
+                    onClick={() => handleSelectAddProjectType(newProjectType)}
+                    className="text-[11px] text-[#58a6ff] hover:underline cursor-pointer flex items-center gap-1"
                   >
-                    Reset to 8-Phase Lifecycle
+                    <RefreshCw className="w-3 h-3" /> Reload {getProjectTypeConfig(newProjectType).shortLabel} Preset
                   </button>
                 </div>
                 <p className="text-[11px] text-[#8b949e]">
-                  Milestones are sequentially locked: developers cannot progress to Testing or Hosting without completing previous coding stages.
+                  Milestones are sequentially locked: you must complete prerequisite stages before unlocking downstream steps.
                 </p>
 
                 {/* Milestone list */}
@@ -832,7 +999,7 @@ export const Projects = () => {
                 <div className="flex items-center gap-2 pt-1">
                   <input
                     type="text"
-                    placeholder="Add custom milestone (e.g. 9. Performance Stress Testing)..."
+                    placeholder="Add custom stage (e.g. 9. Chaos Engineering & Canary Deployments)..."
                     value={newMilestoneInput}
                     onChange={(e) => setNewMilestoneInput(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddMilestoneToAddForm(); } }}
@@ -861,7 +1028,7 @@ export const Projects = () => {
                   type="submit"
                   className="px-3.5 py-1.5 rounded-md bg-[#238636] hover:bg-[#2ea043] border border-[#2ea043]/30 text-white text-xs font-medium shadow-sm transition-colors cursor-pointer"
                 >
-                  Save Project
+                  Save Typed Project
                 </button>
               </div>
             </form>
@@ -874,9 +1041,14 @@ export const Projects = () => {
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-[#161b22] border border-[#30363d] rounded-lg max-w-2xl w-full p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
-              <h2 className="text-sm font-bold text-[#e6edf3] flex items-center gap-2">
-                <Edit3 className="w-4 h-4 text-[#58a6ff]" /> Edit Project & Milestones
-              </h2>
+              <div>
+                <h2 className="text-sm font-bold text-[#e6edf3] flex items-center gap-2">
+                  <Edit3 className="w-4 h-4 text-[#58a6ff]" /> Edit Project Archetype & Milestones
+                </h2>
+                <p className="text-[11px] text-[#8b949e] mt-0.5">
+                  Update domain type, role allocation, tech stack, and sequential lifecycle steps.
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={() => setEditingProject(null)}
@@ -887,6 +1059,40 @@ export const Projects = () => {
             </div>
 
             <form onSubmit={handleEditSubmit} className="space-y-4">
+              {/* Project Type & Role Allocation */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-[#0d1117] rounded-md border border-[#30363d]">
+                <div>
+                  <label className="block text-xs font-semibold text-[#58a6ff] mb-1 flex items-center gap-1.5">
+                    <Sliders className="w-3.5 h-3.5" /> Project Archetype (Domain) *
+                  </label>
+                  <select
+                    value={editProjectType}
+                    onChange={(e) => handleSelectEditProjectType(e.target.value, false)}
+                    className="w-full bg-[#161b22] border border-[#30363d] rounded-md px-3 py-1.5 text-xs text-[#e6edf3] focus:outline-none focus:border-[#58a6ff] cursor-pointer"
+                  >
+                    {PROJECT_ARCHETYPES.map(arch => (
+                      <option key={arch.id} value={arch.title}>{arch.title}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#bc8cff] mb-1 flex items-center gap-1.5">
+                    <Target className="w-3.5 h-3.5" /> Allocated Target Role *
+                  </label>
+                  <select
+                    value={editAllocatedRole}
+                    onChange={(e) => setEditAllocatedRole(e.target.value)}
+                    className="w-full bg-[#161b22] border border-[#30363d] rounded-md px-3 py-1.5 text-xs text-[#e6edf3] focus:outline-none focus:border-[#bc8cff] cursor-pointer"
+                  >
+                    {ALL_ALLOCATED_ROLES.map(role => (
+                      <option key={role} value={role}>{role}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Title & Status */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Project Title *</label>
@@ -900,15 +1106,16 @@ export const Projects = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Engineering Category</label>
+                  <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Status</label>
                   <select
-                    value={editCategory}
-                    onChange={(e) => setEditCategory(e.target.value)}
+                    value={editStatus}
+                    onChange={(e) => setEditStatus(e.target.value)}
                     className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-1.5 text-xs text-[#e6edf3] focus:outline-none focus:border-[#58a6ff] cursor-pointer"
                   >
-                    {PROJECT_CATEGORIES.map(c => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Planning">Planning</option>
+                    <option value="On Hold">On Hold</option>
                   </select>
                 </div>
               </div>
@@ -923,30 +1130,14 @@ export const Projects = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Status</label>
-                  <select
-                    value={editStatus}
-                    onChange={(e) => setEditStatus(e.target.value)}
-                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-1.5 text-xs text-[#e6edf3] focus:outline-none focus:border-[#58a6ff] cursor-pointer"
-                  >
-                    <option value="In Progress">In Progress</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Planning">Planning</option>
-                    <option value="On Hold">On Hold</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Tech Stack (comma-separated)</label>
-                  <input
-                    type="text"
-                    value={editTech}
-                    onChange={(e) => setEditTech(e.target.value)}
-                    className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-1.5 text-xs text-[#e6edf3] focus:outline-none focus:border-[#58a6ff]"
-                  />
-                </div>
+              <div>
+                <label className="block text-xs font-medium text-[#c9d1d9] mb-1">Tech Stack (comma-separated)</label>
+                <input
+                  type="text"
+                  value={editTech}
+                  onChange={(e) => setEditTech(e.target.value)}
+                  className="w-full bg-[#0d1117] border border-[#30363d] rounded-md px-3 py-1.5 text-xs text-[#e6edf3] focus:outline-none focus:border-[#58a6ff]"
+                />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -978,14 +1169,14 @@ export const Projects = () => {
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-semibold text-[#e6edf3] flex items-center gap-1.5">
                     <Layers className="w-3.5 h-3.5 text-[#58a6ff]" />
-                    Edit Lifecycle Milestones ({editMilestones.length} Stages)
+                    {getProjectTypeConfig(editProjectType).shortLabel} Milestones ({editMilestones.length} Stages)
                   </label>
                   <button
                     type="button"
-                    onClick={() => handleResetToPresetMilestones(true)}
-                    className="text-[11px] text-[#58a6ff] hover:underline cursor-pointer"
+                    onClick={handleReloadEditMilestonesTemplate}
+                    className="text-[11px] text-[#58a6ff] hover:underline cursor-pointer flex items-center gap-1"
                   >
-                    Reset to 8-Phase Lifecycle
+                    <RefreshCw className="w-3 h-3" /> Load {getProjectTypeConfig(editProjectType).shortLabel} Template
                   </button>
                 </div>
 
@@ -1050,7 +1241,7 @@ export const Projects = () => {
                   type="submit"
                   className="px-3.5 py-1.5 rounded-md bg-[#238636] hover:bg-[#2ea043] border border-[#2ea043]/30 text-white text-xs font-medium shadow-sm transition-colors cursor-pointer"
                 >
-                  Update Project
+                  Update Typed Project
                 </button>
               </div>
             </form>

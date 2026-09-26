@@ -20,7 +20,7 @@ export const getProjects = async (req, res) => {
 export const createProject = async (req, res) => {
   try {
     const userId = req.user?.id;
-    const { title, description, category, techStack, githubUrl, liveUrl, status, milestones } = req.body;
+    const { title, description, category, projectType, allocatedRole, techStack, githubUrl, liveUrl, status, milestones } = req.body;
     if (!title) {
       return res.status(400).json({ success: false, message: 'Project title is required' });
     }
@@ -28,7 +28,9 @@ export const createProject = async (req, res) => {
       userId,
       title: title.trim(),
       description: description || '',
-      category: category || 'Full Stack',
+      category: category || projectType || 'Full Stack',
+      projectType: projectType || category || 'Full Stack Web Application',
+      allocatedRole: allocatedRole || 'Full Stack Engineer',
       techStack: Array.isArray(techStack) ? techStack : (techStack ? techStack.split(',').map(s => s.trim()).filter(Boolean) : []),
       githubUrl: githubUrl || '',
       liveUrl: liveUrl || '',
