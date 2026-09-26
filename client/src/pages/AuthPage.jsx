@@ -68,9 +68,7 @@ export const AuthPage = () => {
       });
       setLoading(false);
       if (res?.success) {
-        setSuccessMessage('Account created successfully! Please sign in with your credentials.');
-        setIsLogin(true);
-        setPassword('');
+        navigate('/');
       } else {
         setError(res?.message || 'Registration failed. Please try again.');
       }
@@ -270,20 +268,9 @@ export const AuthPage = () => {
 
             {/* Password Field */}
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold text-slate-700" htmlFor="password">
-                  Password
-                </label>
-                {isLogin && (
-                  <button
-                    type="button"
-                    onClick={() => setShowHelpModal(true)}
-                    className="text-xs text-slate-500 hover:text-slate-900 hover:underline transition-colors"
-                  >
-                    Forgot password?
-                  </button>
-                )}
-              </div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5" htmlFor="password">
+                Password
+              </label>
 
               <div className="relative">
                 <input

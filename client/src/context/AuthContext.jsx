@@ -56,8 +56,14 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       const res = await api.post('/auth/register', userData);
+      if (res?.token) {
+        localStorage.setItem('nextoffer_token', res.token);
+        setToken(res.token);
+        setUser(res.user);
+        return { success: true, user: res.user };
+      }
       if (res?.success) {
-        return { success: true, message: res.message || 'Registration successful! Please sign in.' };
+        return { success: true, message: res.message || 'Registration successful!' };
       }
       return { success: false, message: res?.message || 'Registration failed. Please try again.' };
     } catch (err) {
