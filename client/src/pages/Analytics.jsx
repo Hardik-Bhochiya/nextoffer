@@ -6,10 +6,19 @@ import {
   Target,
   Code2,
   GitBranch,
+  CheckCircle2,
   BookOpen,
   Rocket,
+  ChevronRight,
   AlertCircle,
-  Layers
+  Sparkles,
+  Layers,
+  ArrowUpRight,
+  TrendingUp,
+  Activity,
+  ShieldCheck,
+  Award,
+  Check
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -17,7 +26,8 @@ import {
   Bar,
   XAxis,
   YAxis,
-  Tooltip
+  Tooltip,
+  Legend
 } from 'recharts';
 
 import {

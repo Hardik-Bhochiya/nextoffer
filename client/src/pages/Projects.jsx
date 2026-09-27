@@ -4,9 +4,12 @@ import {
   FolderGit2,
   Plus,
   ExternalLink,
+  GitBranch,
   CheckCircle2,
   Trash2,
   Edit3,
+  Lock,
+  PlayCircle,
   Globe,
   Search,
   Layers,
@@ -19,7 +22,15 @@ import {
   Workflow,
   Smartphone,
   Boxes,
-  ShieldCheck
+  ShieldCheck,
+  RefreshCw,
+  Sliders,
+  BookOpen,
+  HelpCircle,
+  Lightbulb,
+  CheckSquare,
+  Wrench,
+  Copy
 } from 'lucide-react';
 import {
   ARCHITECTURE_TYPES,

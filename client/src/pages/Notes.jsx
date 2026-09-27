@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useData } from '../context/DataContext';
 import {
   BookOpen,
@@ -6,11 +6,17 @@ import {
   Search,
   Pin,
   Trash2,
+  Edit3,
   X,
+  FileCode,
   Download,
   Check,
+  Eye,
+  ArrowUpDown,
   FileText,
+  Code2,
   ChevronDown,
+  ChevronUp,
   Filter
 } from 'lucide-react';
 import { MarkdownViewer } from '../components/notes/MarkdownViewer';

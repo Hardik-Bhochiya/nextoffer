@@ -5,14 +5,20 @@ import {
   Search,
   Plus,
   ExternalLink,
+  RotateCcw,
   X,
   FileText,
   Trash2,
+  Building2,
+  Globe,
   Tag,
+  Edit3,
   Layers,
   Check,
   ChevronDown,
+  ChevronUp,
   Filter,
+  Target,
   Sparkles
 } from 'lucide-react';
 import { LeetCodeProgressRing } from '../components/dsa/LeetCodeProgressRing';

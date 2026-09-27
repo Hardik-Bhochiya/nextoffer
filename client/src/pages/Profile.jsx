@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import api from '../services/api';
 import {
+  User as UserIcon,
   Briefcase,
   Building,
   GraduationCap,
@@ -12,7 +13,15 @@ import {
   Save,
   CheckCircle2,
   RefreshCw,
-  ChevronRight
+  Flame,
+  Target,
+  GitBranch,
+  Award,
+  ChevronRight,
+  ShieldCheck,
+  Zap,
+  BookOpen,
+  Info
 } from 'lucide-react';
 
 import { allRoles, getRoleConfig, getReadinessTier } from '../data/rolesData';
