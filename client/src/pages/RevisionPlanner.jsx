@@ -22,7 +22,6 @@ import {
   ChevronDown,
   ChevronRight,
   AlertTriangle,
-  SlidersHorizontal,
   ListPlus,
   ArrowRight,
   Sparkles
@@ -574,9 +573,15 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
             <div className="relative flex-1 w-full">
               <input
                 type="text"
-                placeholder="Quick-add a daily task (e.g. Solve 3 Binary Search Mediums, Revise DBMS Indexing)..."
+                placeholder="Quick-add a daily task (e.g. Solve 3 Binary Search Mediums, Revise DBMS Indexing) — Press Enter to add..."
                 value={quickTaskTitle}
                 onChange={(e) => setQuickTaskTitle(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleQuickAddTask(e);
+                  }
+                }}
                 className="w-full bg-[#0d1117] border border-[#30363d] text-[#e6edf3] text-xs rounded-md pl-3 pr-8 py-2 focus:outline-none focus:border-[#58a6ff] transition-all"
               />
               {quickTaskTitle && (
@@ -615,24 +620,8 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
                 <option value="Low">Low</option>
               </select>
 
-              <button
-                type="submit"
-                disabled={!quickTaskTitle.trim()}
-                className="px-4 py-2 rounded-md bg-[#238636] hover:bg-[#2ea043] disabled:opacity-40 text-white text-xs font-semibold shadow transition-all flex items-center gap-1.5 shrink-0 cursor-pointer disabled:cursor-not-allowed"
-                title="Quick Add Task (Press Enter)"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add Task</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => openTaskModal(null, { taskDetails: quickTaskTitle, category: quickTaskCategory, priority: quickTaskPriority })}
-                className="px-2.5 py-2 rounded-md bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-[#e6edf3] border border-[#30363d] text-xs font-medium transition-all shrink-0"
-                title="Open detailed task creator modal"
-              >
-                <SlidersHorizontal className="w-3.5 h-3.5" />
-              </button>
+              {/* Hidden submit trigger so pressing Enter inside the input or selects reliably saves */}
+              <button type="submit" className="hidden" aria-hidden="true" tabIndex={-1} />
             </div>
           </form>
 
@@ -756,33 +745,13 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
       {/* ============================================================ */}
       {activeTab === 'goals' && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between pb-1 flex-wrap gap-3">
-            <div>
-              <h2 className="text-sm font-semibold text-[#e6edf3] flex items-center gap-2">
-                <Target className="w-4 h-4 text-[#58a6ff]" /> High-Stakes Placement Study Goals
-              </h2>
-              <p className="text-[11px] text-[#8b949e]">
-                Major multi-week placement milestones with target deadlines, sub-milestone execution, and linked daily action tasks.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => openTaskModal()}
-                className="px-3 py-1.5 rounded-md bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-semibold shadow transition flex items-center gap-1.5 cursor-pointer"
-                title="Create a daily task for any goal"
-              >
-                <Plus className="w-4 h-4" /> Add Daily Task
-              </button>
-              <button
-                type="button"
-                onClick={() => openGoalModal()}
-                className="px-3 py-1.5 rounded-md bg-[#1f6feb] hover:bg-[#388bfd] text-white text-xs font-semibold shadow transition flex items-center gap-1.5 cursor-pointer"
-              >
-                <Target className="w-4 h-4" /> Create Goal
-              </button>
-            </div>
+          <div className="pb-1">
+            <h2 className="text-sm font-semibold text-[#e6edf3] flex items-center gap-2">
+              <Target className="w-4 h-4 text-[#58a6ff]" /> High-Stakes Placement Study Goals
+            </h2>
+            <p className="text-[11px] text-[#8b949e]">
+              Major multi-week placement milestones with target deadlines, sub-milestone execution, and linked daily action tasks.
+            </p>
           </div>
 
           {filteredGoals.length === 0 ? (
