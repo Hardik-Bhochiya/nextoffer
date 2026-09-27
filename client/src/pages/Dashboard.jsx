@@ -1,36 +1,24 @@
-import React, { useState, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
-import { allRoles, getRoleConfig, getReadinessTier, calculateCandidateReadiness } from '../data/rolesData';
+import { getRoleConfig, getReadinessTier, calculateCandidateReadiness } from '../data/rolesData';
 import { UserAvatar } from '../components/common/UserAvatar';
 import {
   Target,
   Code2,
   GitBranch,
-  BookOpen,
-  Calendar,
   CheckCircle2,
   Clock,
   Flame,
   ChevronRight,
-  TrendingUp,
-  BrainCircuit,
-  Building,
-  Plus,
-  Layers,
   Briefcase,
   ArrowRight,
   Check,
-  Rocket,
   Terminal,
-  Activity,
   Play,
-  ArrowUpRight,
-  Sparkles,
-  ShieldCheck,
-  CheckCircle,
-  BarChart3
+  BarChart3,
+  Layers
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -38,22 +26,32 @@ import {
   Bar,
   XAxis,
   YAxis,
-  Tooltip,
-  Legend
+  Tooltip
 } from 'recharts';
 
+/**
+ * Dashboard Command Center Component
+ * Serves as the central overview for engineering candidates:
+ * 1. Placement Telemetry: Readiness score calibrated by role, DSA problem tallies, roadmap progress, streak.
+ * 2. Next Immediate Action: Recommends the next unsolved algorithmic challenge and next curriculum milestone.
+ * 3. Topic-by-Topic Distribution Chart: Real, non-mocked count of solved problems across DSA domains.
+ * 4. Daily Action Checklist: Quick-toggle checklist for today's urgent tasks and interview prep items.
+ * 5. Role-Tailored Curriculum Tracks: Recommended roadmaps and prioritized DSA topics based on selected target role.
+ */
 export const Dashboard = () => {
   const { user } = useAuth();
-  const { metrics, dsaProblems, roadmaps, projects, dailyTasks, toggleDailyTask, updateDsaStatus } = useData();
-  const navigate = useNavigate();
+  const { metrics, dsaProblems, roadmaps, projects, dailyTasks, toggleDailyTask } = useData();
 
+  // Selected candidate engineering role (e.g. SDE, Backend, Frontend)
   const currentRole = user?.targetRole || 'Full Stack Engineer';
   const roleConfig = getRoleConfig(currentRole);
 
+  // Dynamic candidate readiness evaluation combining DSA, roadmaps, and projects
   const evaluated = calculateCandidateReadiness(currentRole, { dsaProblems, roadmaps, projects });
   const readiness = metrics?.readinessScore ?? evaluated.score ?? 0;
   const tierInfo = getReadinessTier(readiness);
   
+  // Real DSA problem completion breakdown
   const dsaStats = metrics?.dsaStats || {
     total: dsaProblems.length,
     solved: (dsaProblems || []).filter(p => p.status === 'Solved' || p.status === 'Completed').length,
@@ -62,18 +60,20 @@ export const Dashboard = () => {
     hardSolved: (dsaProblems || []).filter(p => (p.status === 'Solved' || p.status === 'Completed') && p.difficulty === 'Hard').length
   };
 
+  // Career roadmaps progress aggregation
   const totalRoadmapTopics = roadmaps.reduce((acc, r) => acc + (r.topics?.length || 0), 0);
   const completedRoadmapTopics = roadmaps.reduce((acc, r) => acc + (r.topics?.filter(t => t.completed).length || 0), 0);
   const roadmapPct = totalRoadmapTopics > 0 ? Math.round((completedRoadmapTopics / totalRoadmapTopics) * 100) : 0;
 
+  // Active micro-tasks due today (top 4 items)
   const pendingTasks = (dailyTasks || []).filter(t => !t.taskStatus).slice(0, 4);
 
-  // Find next unsolved DSA question for candidate to solve
+  // Identify next uncompleted problem for candidate practice
   const nextDsaProblem = useMemo(() => {
     return (dsaProblems || []).find(p => p.status !== 'Solved' && p.status !== 'Completed') || dsaProblems[0];
   }, [dsaProblems]);
 
-  // Find next in-progress or uncompleted roadmap stage
+  // Identify active or uncompleted roadmap track
   const nextRoadmapTrack = useMemo(() => {
     return (roadmaps || []).find(r => {
       const completed = r.topics?.filter(t => t.completed).length || 0;
@@ -81,7 +81,7 @@ export const Dashboard = () => {
     }) || roadmaps[0];
   }, [roadmaps]);
 
-  // Real countable topic-by-topic solved problems data (1 tick = 1 count)
+  // Algorithmic taxonomy for topic distribution bar chart
   const standardTopicsList = [
     'Arrays & Hashing',
     'Two Pointers',
@@ -97,6 +97,7 @@ export const Dashboard = () => {
     'Strings'
   ];
 
+  // Map real candidate solved counts into Recharts-compatible data series
   const topicCountData = useMemo(() => {
     return standardTopicsList.map(topicName => {
       const firstWord = topicName.toLowerCase().split(' ')[0];
@@ -120,6 +121,7 @@ export const Dashboard = () => {
       };
     });
   }, [dsaProblems]);
+
 
   return (
     <div className="space-y-6 animate-fadeIn max-w-6xl mx-auto pb-16 font-sans">

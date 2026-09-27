@@ -3,12 +3,17 @@ import api from '../services/api';
 
 const AuthContext = createContext();
 
+/**
+ * AuthProvider:
+ * Manages global authentication state, token persistence in localStorage,
+ * automatic profile rehydration on mount, and login/register/logout workflows.
+ */
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(() => localStorage.getItem('nextoffer_token') || null);
   const [loading, setLoading] = useState(true);
 
-  // On mount (or token change), fetch the real profile from backend
+  // On mount (or when JWT token changes), rehydrate the user's profile from the backend
   useEffect(() => {
     const fetchUser = async () => {
       if (!token) {
@@ -21,13 +26,13 @@ export const AuthProvider = ({ children }) => {
         if (res?.user) {
           setUser(res.user);
         } else {
-          // Bad token — clear it
+          // Token invalid or revoked -> purge local state
           localStorage.removeItem('nextoffer_token');
           setToken(null);
           setUser(null);
         }
       } catch (err) {
-        // Token invalid or expired
+        // Network or 401 error -> purge local state
         localStorage.removeItem('nextoffer_token');
         setToken(null);
         setUser(null);
@@ -38,6 +43,9 @@ export const AuthProvider = ({ children }) => {
     fetchUser();
   }, [token]);
 
+  /**
+   * Submits candidate login credentials and stores issued JWT
+   */
   const login = async (email, password) => {
     try {
       const res = await api.post('/auth/login', { email, password });
@@ -53,6 +61,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  /**
+   * Registers a new candidate profile and auto-authenticates with returned JWT
+   */
   const register = async (userData) => {
     try {
       const res = await api.post('/auth/register', userData);
@@ -71,6 +82,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  /**
+   * Updates candidate profile (target roles, dream companies, links)
+   */
   const updateProfile = async (updates) => {
     try {
       const res = await api.put('/auth/profile', updates);
@@ -82,6 +96,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  /**
+   * Clears token and user context
+   */
   const logout = () => {
     localStorage.removeItem('nextoffer_token');
     setToken(null);

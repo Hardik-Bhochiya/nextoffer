@@ -6,19 +6,10 @@ import {
   Target,
   Code2,
   GitBranch,
-  CheckCircle2,
   BookOpen,
   Rocket,
-  ChevronRight,
   AlertCircle,
-  Sparkles,
-  Layers,
-  ArrowUpRight,
-  TrendingUp,
-  Activity,
-  ShieldCheck,
-  Award,
-  Check
+  Layers
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -26,8 +17,7 @@ import {
   Bar,
   XAxis,
   YAxis,
-  Tooltip,
-  Legend
+  Tooltip
 } from 'recharts';
 
 import {
@@ -39,7 +29,19 @@ import {
 import { LeetCodeProgressRing } from '../components/dsa/LeetCodeProgressRing';
 import { Link } from 'react-router-dom';
 
+/**
+ * Placement Analytics & Candidate Readiness Engine
+ * Visualizes candidate preparedness across 4 core engineering competency pillars:
+ * 1. Data Structures & Algorithms (35% weight): Solved count, difficulty ratio, and topic distribution.
+ * 2. Career Curriculum Roadmaps (30% weight): Core milestones and prerequisite completion.
+ * 3. Portfolio Architecture Projects (25% weight): System depth, tech stack diversity, and deployment milestones.
+ * 4. CS Theory & System Design Notes (10% weight): DBMS, OS, Computer Networks, and OOPs mastery.
+ * 
+ * Includes an interactive "Target Role Simulator" to evaluate readiness for other specializations
+ * (e.g. SDE, Backend, Frontend, DevOps, AI/ML) in real time without altering user profile state.
+ */
 export const Analytics = () => {
+
   const { user } = useAuth();
   const { metrics, dsaProblems, roadmaps, notes, projects } = useData();
 

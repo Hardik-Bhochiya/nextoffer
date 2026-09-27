@@ -2,6 +2,12 @@ import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'nextoffer_super_secure_jwt_secret_2026';
 
+/**
+ * Authentication Middleware:
+ * Verifies Bearer JWT tokens in the HTTP Authorization header.
+ * Attaches decoded user payload ({ id, email }) to `req.user` if valid;
+ * returns 401 Unauthorized if missing, forged, or expired.
+ */
 export const authenticate = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {

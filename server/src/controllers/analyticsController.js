@@ -6,9 +6,19 @@ import { DailyTask, StudyGoal } from '../models/Planner.js';
 import { defaultRoadmaps } from '../data/seedData.js';
 import { calculateStreakStatus } from '../utils/streakHelper.js';
 
+// The 4 universal foundational computer science subjects
 export const universalCoreCsIds = ['cs-os', 'cs-dbms', 'cs-networks', 'cs-oop-lld'];
 
-// Calculate Role-Based Placement Readiness & Predictive Placement Score
+/**
+ * Calculates candidate's placement readiness score (0-100%) dynamically based on:
+ * 1. Target Role expectations (SDE vs Backend vs Frontend vs DevOps vs Cloud vs AI/ML vs SDET)
+ * 2. Solved DSA volume, weighted by difficulty (Easy=1x, Med=2.5x, Hard=4.5x) and pattern diversity
+ * 3. Compulsory and specialization roadmap progress
+ * 4. Architecture capstone portfolio projects
+ * 5. Universal Core CS foundations (OS, DBMS, Networks, LLD)
+ * 
+ * Returns the score, tier classification, actionable next steps, and weight breakdowns.
+ */
 export const calculateRoleBasedReadiness = (targetRole = '', dsaProblems = [], userCompletedTopics = [], projects = [], notes = [], enrolledRoadmaps = []) => {
   const role = (targetRole || 'Full Stack Engineer').toLowerCase();
 
@@ -27,9 +37,12 @@ export const calculateRoleBasedReadiness = (targetRole = '', dsaProblems = [], u
     }
   });
 
-  // Easy = 1, Medium = 2.5, Hard = 4.5
+  // Calculate difficulty-weighted DSA score: Easy = 1 pt, Medium = 2.5 pts, Hard = 4.5 pts
   const dsaWeightedScore = (easySolved * 1) + (mediumSolved * 2.5) + (hardSolved * 4.5);
 
+  /**
+   * Evaluates DSA progress against a benchmark point target and topic diversity ratio
+   */
   const getDsaProgress = (benchmarkPoints, requiredTopics) => {
     const rawVolume = Math.min(100, Math.round((dsaWeightedScore / benchmarkPoints) * 100));
     const diversityRatio = Math.min(1.0, 0.4 + (0.6 * (distinctTopics.size / Math.max(1, requiredTopics))));
@@ -39,7 +52,9 @@ export const calculateRoleBasedReadiness = (targetRole = '', dsaProblems = [], u
   // 2. Completed Milestones Set
   const completedSet = new Set(userCompletedTopics || []);
 
-  // Helper to calculate progress for specific roadmap IDs
+  /**
+   * Helper to calculate aggregate milestone completion percentage for specified roadmap IDs
+   */
   const getRoadmapsProgress = (roadmapIds = []) => {
     const relevantRoadmaps = defaultRoadmaps.filter(r => roadmapIds.includes(r.id));
     const totalTopics = relevantRoadmaps.reduce((acc, r) => acc + (r.topics?.length || 0), 0);
@@ -50,7 +65,7 @@ export const calculateRoleBasedReadiness = (targetRole = '', dsaProblems = [], u
     return Math.min(100, Math.round((completedTopics / totalTopics) * 100));
   };
 
-  // 3. Core CS Progress
+  // 3. Core CS Foundation Progress across the 4 universal tracks
   const coreCsProgress = getRoadmapsProgress(universalCoreCsIds);
 
   // 4. Project Progress (benchmarked against 2 completed architecture capstones)
@@ -62,8 +77,11 @@ export const calculateRoleBasedReadiness = (targetRole = '', dsaProblems = [], u
   let nextActionItems = [];
   let weightsExplanation = {};
 
+  // ---------------------------------------------------------------------------
+  // Role-Specific Evaluation Models
+  // ---------------------------------------------------------------------------
   if (role.includes('sde') || role.includes('core dsa') || role.includes('algorithm') || role.includes('software engineer')) {
-    // 1. Software Engineer (SDE)
+    // 1. Software Engineer (SDE) - Heavy focus on DSA (40%) and System Design (25%)
     const dsaProgress = getDsaProgress(75, 8);
 
     recommendedRoadmapIds = ['dsa-foundation', 'dsa-advanced', 'sys-hld'];
@@ -92,7 +110,7 @@ export const calculateRoleBasedReadiness = (targetRole = '', dsaProblems = [], u
       ]
     };
   } else if (role.includes('backend') || role.includes('node') || role.includes('java') || role.includes('spring') || role.includes('express')) {
-    // 2. Backend & Distributed Systems Engineer
+    // 2. Backend & Distributed Systems Engineer - Emphasis on API architecture & projects
     const dsaProgress = getDsaProgress(50, 6);
 
     recommendedRoadmapIds = ['be-node', 'be-spring', 'sys-hld'];
@@ -296,7 +314,7 @@ export const calculateRoleBasedReadiness = (targetRole = '', dsaProblems = [], u
     };
   }
 
-  // Predictive Placement Probability Tier
+  // Predictive Placement Probability Tier Classification
   const calculatedScore = Math.min(100, Math.max(0, Math.round(finalScore)));
   let placementTier = 'Foundation Stage';
   let tierColor = 'text-amber-400';
@@ -322,6 +340,15 @@ export const calculateRoleBasedReadiness = (targetRole = '', dsaProblems = [], u
   };
 };
 
+/**
+ * GET /api/analytics/dashboard
+ * Aggregates candidate statistics from all modules for the dashboard:
+ * - Dynamic role-based readiness score and offer probability tier
+ * - Solved DSA breakdown by difficulty & topic distribution
+ * - Overall curriculum completion percentage
+ * - Daily discipline streak status & risk alert
+ * - Active project and notes count
+ */
 export const getDashboardMetrics = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -331,6 +358,7 @@ export const getDashboardMetrics = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
+    // Execute database queries concurrently via Promise.all
     const [dsaProblems, notes, projects, dailyTasks, studyGoals] = await Promise.all([
       DsaProblem.find({ userId }),
       Note.find({ userId }),
@@ -339,7 +367,7 @@ export const getDashboardMetrics = async (req, res) => {
       StudyGoal.find({ userId })
     ]);
 
-    // Role-based calculation
+    // Compute role-based candidate readiness
     const readinessInfo = calculateRoleBasedReadiness(
       user.targetRole,
       dsaProblems,
@@ -349,19 +377,19 @@ export const getDashboardMetrics = async (req, res) => {
       user.enrolledRoadmaps || []
     );
 
-    // Save updated score to user record
+    // Synchronize latest score back to user document if changed
     if (user.readinessScore !== readinessInfo.score) {
       user.readinessScore = readinessInfo.score;
       await user.save();
     }
 
-    // DSA stats breakdown
+    // Solved problems count by difficulty
     const solvedProblems = dsaProblems.filter(p => p.status === 'Solved');
     const easyCount = solvedProblems.filter(p => p.difficulty === 'Easy').length;
     const mediumCount = solvedProblems.filter(p => p.difficulty === 'Medium').length;
     const hardCount = solvedProblems.filter(p => p.difficulty === 'Hard').length;
 
-    // Topic wise distribution
+    // Solved vs Total count per topic
     const topicBreakdown = {};
     const standardTopics = [
       'Arrays & Hashing',
@@ -388,7 +416,7 @@ export const getDashboardMetrics = async (req, res) => {
       }
     });
 
-    // Roadmap counts
+    // Roadmap milestone statistics
     const totalRoadmapTopics = defaultRoadmaps.reduce((acc, r) => acc + r.topics.length, 0);
     const completedRoadmapTopics = (user.completedTopics || []).length;
     const roadmapPercentage = totalRoadmapTopics > 0 
@@ -445,6 +473,10 @@ export const getDashboardMetrics = async (req, res) => {
   }
 };
 
+/**
+ * POST /api/analytics/study-hours
+ * Endpoint to log self-reported study session hours
+ */
 export const logStudyHours = async (req, res) => {
   try {
     const { hours, dsaSolved } = req.body;

@@ -1,11 +1,16 @@
 import mongoose from 'mongoose';
 
+/**
+ * StudyGoal Schema:
+ * Models high-stakes, multi-week placement milestones (e.g. Master DP, Build Capstone, System Design HLD).
+ * Contains sub-milestones with automated progress recalculation.
+ */
 const studyGoalSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
-    index: true
+    index: true // Indexed for rapid querying by user
   },
   goalTitle: {
     type: String,
@@ -60,9 +65,14 @@ const studyGoalSchema = new mongoose.Schema({
     default: null
   }
 }, {
-  timestamps: true
+  timestamps: true // Automatically tracks createdAt and updatedAt
 });
 
+/**
+ * DailyTask Schema:
+ * Models discrete, actionable day-to-day items (DSA problems, revision topics, project features).
+ * Can optionally be linked to a parent StudyGoal via `associatedGoalId`.
+ */
 const dailyTaskSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,

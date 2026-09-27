@@ -1,7 +1,13 @@
+import mongoose from 'mongoose';
 import { StudyGoal, DailyTask } from '../models/Planner.js';
 import User from '../models/User.js';
 import { recordUserActivity, calculateStreakStatus } from '../utils/streakHelper.js';
 
+/**
+ * Normalizes Mongoose document objects to ensure client-compatible `.id` property
+ * @param {Object} doc - Mongoose document or plain object
+ * @returns {Object|null} - Plain object with both `_id` and string `id`
+ */
 const formatDoc = (doc) => {
   if (!doc) return null;
   const obj = doc.toObject ? doc.toObject() : { ...doc };
@@ -9,12 +15,17 @@ const formatDoc = (doc) => {
   return obj;
 };
 
+/**
+ * GET /api/planner
+ * Fetches all study goals, daily tasks, and current streak discipline metrics for the authenticated user.
+ */
 export const getPlannerData = async (req, res) => {
   try {
     const userId = req.user?.id;
     const user = await User.findById(userId);
     const streakInfo = await calculateStreakStatus(user);
 
+    // Fetch user goals and tasks sorted chronologically by target deadline
     const studyGoals = await StudyGoal.find({ userId }).sort({ deadline: 1, createdAt: -1 });
     const dailyTasks = await DailyTask.find({ userId }).sort({ deadline: 1, createdAt: -1 });
 
@@ -31,6 +42,10 @@ export const getPlannerData = async (req, res) => {
   }
 };
 
+/**
+ * POST /api/planner/goals
+ * Creates a new long-term placement goal with optional key sub-milestones.
+ */
 export const createStudyGoal = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -47,6 +62,7 @@ export const createStudyGoal = async (req, res) => {
       milestones
     } = req.body;
 
+    // Validation: Title is mandatory
     if (!goalTitle || !goalTitle.trim()) {
       return res.status(400).json({ success: false, message: 'Goal title is required' });
     }
@@ -71,6 +87,11 @@ export const createStudyGoal = async (req, res) => {
   }
 };
 
+/**
+ * PUT /api/planner/goals/:id
+ * Updates an existing study goal. Recomputes progress percentage automatically
+ * if milestone completion states have changed.
+ */
 export const updateStudyGoal = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -81,7 +102,7 @@ export const updateStudyGoal = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Goal not found' });
     }
 
-    // Update fields if present in req.body
+    // Selective update for provided fields
     if (req.body.goalTitle !== undefined) goal.goalTitle = req.body.goalTitle.trim();
     if (req.body.description !== undefined) goal.description = req.body.description.trim();
     if (req.body.category !== undefined) goal.category = req.body.category;
@@ -93,7 +114,7 @@ export const updateStudyGoal = async (req, res) => {
     if (req.body.progress !== undefined) goal.progress = req.body.progress;
     if (req.body.milestones !== undefined) goal.milestones = req.body.milestones;
 
-    // Auto-calculate progress if milestones exist and progress wasn't explicitly set
+    // Auto-calculate completion progress if sub-milestones exist and explicit progress was not provided
     if (Array.isArray(goal.milestones) && goal.milestones.length > 0 && req.body.progress === undefined) {
       const completedCount = goal.milestones.filter(m => m.completed).length;
       goal.progress = Math.round((completedCount / goal.milestones.length) * 100);
@@ -110,6 +131,10 @@ export const updateStudyGoal = async (req, res) => {
   }
 };
 
+/**
+ * DELETE /api/planner/goals/:id
+ * Deletes a placement study goal owned by the authenticated user.
+ */
 export const deleteStudyGoal = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -125,6 +150,11 @@ export const deleteStudyGoal = async (req, res) => {
   }
 };
 
+/**
+ * POST /api/planner/tasks
+ * Adds a new daily task. Supports associating with a parent study goal
+ * and validates that associatedGoalId is a valid MongoDB ObjectId to avoid CastError.
+ */
 export const addDailyTask = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -146,6 +176,15 @@ export const addDailyTask = async (req, res) => {
 
     const isCompleted = taskStatus === true || taskStatus === 'Completed' || taskStatus === 'true';
 
+    // Sanitize associatedGoalId to ensure it is a valid 24-character hexadecimal ObjectId
+    let validGoalId = null;
+    if (associatedGoalId) {
+      const goalStr = typeof associatedGoalId === 'object' ? (associatedGoalId._id || associatedGoalId.id) : associatedGoalId;
+      if (goalStr && typeof goalStr === 'string' && mongoose.Types.ObjectId.isValid(goalStr)) {
+        validGoalId = goalStr;
+      }
+    }
+
     const newTask = await DailyTask.create({
       userId,
       taskDetails: taskDetails.trim(),
@@ -155,11 +194,12 @@ export const addDailyTask = async (req, res) => {
       difficulty: difficulty || 'Medium',
       deadline: deadline || new Date().toISOString().split('T')[0],
       dueTime: dueTime || '06:00 PM',
-      associatedGoalId: associatedGoalId || null,
+      associatedGoalId: validGoalId,
       taskStatus: isCompleted,
       completedAt: isCompleted ? new Date() : null
     });
 
+    // If marked completed upon creation, record daily study activity to advance streak
     if (isCompleted) {
       await recordUserActivity(userId, `Completed Task: ${newTask.taskDetails}`);
     }
@@ -170,6 +210,10 @@ export const addDailyTask = async (req, res) => {
   }
 };
 
+/**
+ * PUT /api/planner/tasks/:id
+ * Updates details of an existing daily task, with streak activity tracking on transition to completed.
+ */
 export const updateDailyTask = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -187,7 +231,20 @@ export const updateDailyTask = async (req, res) => {
     if (req.body.difficulty !== undefined) task.difficulty = req.body.difficulty;
     if (req.body.deadline !== undefined) task.deadline = req.body.deadline;
     if (req.body.dueTime !== undefined) task.dueTime = req.body.dueTime;
-    if (req.body.associatedGoalId !== undefined) task.associatedGoalId = req.body.associatedGoalId || null;
+
+    // Validate and sanitize parent goal reference
+    if (req.body.associatedGoalId !== undefined) {
+      let validGoalId = null;
+      if (req.body.associatedGoalId) {
+        const goalStr = typeof req.body.associatedGoalId === 'object' ? (req.body.associatedGoalId._id || req.body.associatedGoalId.id) : req.body.associatedGoalId;
+        if (goalStr && typeof goalStr === 'string' && mongoose.Types.ObjectId.isValid(goalStr)) {
+          validGoalId = goalStr;
+        }
+      }
+      task.associatedGoalId = validGoalId;
+    }
+
+    // Handle status transitions and streak logging
     if (req.body.taskStatus !== undefined) {
       const wasCompleted = task.taskStatus;
       task.taskStatus = !!req.body.taskStatus;
@@ -206,6 +263,10 @@ export const updateDailyTask = async (req, res) => {
   }
 };
 
+/**
+ * PATCH /api/planner/tasks/:id/toggle
+ * Fast toggles completion status for a daily task and returns updated streak discipline info.
+ */
 export const toggleDailyTask = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -238,6 +299,10 @@ export const toggleDailyTask = async (req, res) => {
   }
 };
 
+/**
+ * DELETE /api/planner/tasks/:id
+ * Removes a daily task from the candidate's checklist.
+ */
 export const deleteDailyTask = async (req, res) => {
   try {
     const userId = req.user?.id;

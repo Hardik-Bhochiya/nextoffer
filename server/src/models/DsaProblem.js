@@ -1,5 +1,16 @@
 import mongoose from 'mongoose';
 
+/**
+ * DSA Problem Schema
+ * Represents an algorithmic coding challenge tracked by a user.
+ * Supports:
+ * - Direct indexing on `userId` for fast per-user list queries
+ * - Multi-tag taxonomy (`topic` primary + `topics` multi-tag array)
+ * - Standard difficulty tiers ('Easy', 'Medium', 'Hard')
+ * - Complexity analysis (Big-O Time and Space)
+ * - Target company interview tags (FAANG, MAANG, unicorns)
+ * - Spaced repetition frequency tracking (`revisionsCount`, `lastRevised`)
+ */
 const dsaProblemSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -69,3 +80,4 @@ const dsaProblemSchema = new mongoose.Schema({
 
 const DsaProblem = mongoose.model('DsaProblem', dsaProblemSchema);
 export default DsaProblem;
+

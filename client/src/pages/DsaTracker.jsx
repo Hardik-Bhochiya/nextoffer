@@ -1,29 +1,26 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
+import React, { useState, useMemo } from 'react';
 import { useData } from '../context/DataContext';
 import {
   Code2,
   Search,
   Plus,
   ExternalLink,
-  RotateCcw,
   X,
   FileText,
   Trash2,
-  Building2,
-  Globe,
   Tag,
-  Edit3,
   Layers,
   Check,
   ChevronDown,
-  ChevronUp,
   Filter,
-  Target,
   Sparkles
 } from 'lucide-react';
 import { LeetCodeProgressRing } from '../components/dsa/LeetCodeProgressRing';
 
+/**
+ * Curated list of premier competitive coding and interview platforms.
+ * Provides candidates direct access to standard problem collections (NeetCode 150, Striver A2Z, LeetCode 150).
+ */
 const CODING_PLATFORMS = [
   {
     name: 'LeetCode',
@@ -83,6 +80,7 @@ const CODING_PLATFORMS = [
   }
 ];
 
+// Standard Big-O asymptotic complexity selections for interview preparation
 const COMMON_TC = ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)', 'O(n^2)', 'O(2^n)'];
 const COMMON_SC = ['O(1)', 'O(log n)', 'O(n)', 'O(h)', 'O(n^2)'];
 
@@ -104,6 +102,9 @@ const CORE_DSA_QUICK_TOPICS = [
 
 const TOPIC_PREVIEW_LIMIT = 8;
 
+/**
+ * Normalizes user-submitted URLs to ensure a valid external protocol
+ */
 const formatExternalUrl = (rawUrl) => {
   if (!rawUrl) return '';
   const trimmed = rawUrl.trim();
@@ -112,6 +113,16 @@ const formatExternalUrl = (rawUrl) => {
   return `https://${trimmed}`;
 };
 
+/**
+ * DSA Tracker Component
+ * Complete problem tracking dashboard with:
+ * - LeetCode-style difficulty rings (Easy/Medium/Hard breakdown)
+ * - Multi-topic filtering with configurable AND / OR match logic
+ * - Big-O time and space complexity tags
+ * - Spaced repetition revision counters
+ * - Problem of the day (POTD) calendar rotation
+ * - Full CRUD with inline topic creation and rich notes drawer
+ */
 export const DsaTracker = () => {
   const {
     dsaProblems = [],
@@ -123,6 +134,7 @@ export const DsaTracker = () => {
     deleteDsaProblem,
     incrementRevision
   } = useData();
+
 
   // Search & Multi-Topic Filter state
   const [search, setSearch] = useState('');

@@ -2,11 +2,24 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api';
 import { useAuth } from './AuthContext';
 
+/**
+ * Global Data Context
+ * Central state container for all domain data across the application:
+ * - DSA Tracker (problems, topics, revisions, status)
+ * - Career Roadmaps (tracks, milestone prerequisites, progress)
+ * - Projects (portfolio items, tech stack, deploy links)
+ * - Revision Planner & Daily Tasks (goals, micro-tasks, streak tracking)
+ * - Notes & Spaced Repetition (quick revision, markdown notes)
+ * - Analytics & Readiness Metrics (readiness score, topic proficiency)
+ */
 const DataContext = createContext();
 
 export const DataProvider = ({ children }) => {
   const { isAuthenticated, logout } = useAuth();
 
+  // ==========================================
+  // Global Domain State
+  // ==========================================
   const [dsaProblems, setDsaProblems] = useState([]);
   const [topics, setTopics] = useState([
     'Arrays & Hashing',
@@ -37,12 +50,22 @@ export const DataProvider = ({ children }) => {
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  /**
+   * Global API Error Interceptor
+   * Gracefully logs out the user if the session token expires (401 Unauthorized)
+   */
   const handleApiError = (err) => {
     if (err?.status === 401 || err?.message?.includes('401')) {
       logout();
     }
   };
 
+  /**
+   * Concurrent Data Rehydration
+   * Fetches all 8 module endpoints concurrently using Promise.allSettled.
+   * If any single endpoint fails, the remaining endpoints still hydrate successfully,
+   * preventing a full-app blank-out.
+   */
   const refreshData = async () => {
     if (!isAuthenticated) return;
     try {
@@ -78,10 +101,12 @@ export const DataProvider = ({ children }) => {
     }
   };
 
+  // Re-fetch everything on auth state transition (login/logout)
   useEffect(() => {
     if (isAuthenticated) {
       refreshData();
     } else {
+      // Clear sensitive user state upon logout
       setDsaProblems([]);
       setRoadmaps([]);
       setProjects([]);
@@ -94,7 +119,12 @@ export const DataProvider = ({ children }) => {
     }
   }, [isAuthenticated]);
 
-  // ---- DSA Actions ----
+  // ==========================================
+  // Helper: Resilient ID Matching
+  // ==========================================
+  /**
+   * Matches entity by either custom `id` string or MongoDB `_id` ObjectId
+   */
   const matchDsaId = (problem, targetId) => {
     if (!problem || !targetId) return false;
     return (
@@ -105,6 +135,13 @@ export const DataProvider = ({ children }) => {
     );
   };
 
+  // ==========================================
+  // DSA Tracker Actions
+  // ==========================================
+
+  /**
+   * Adds a new algorithmic category/tag to the user's available topic set
+   */
   const addTopic = async (topicName) => {
     if (!topicName || !topicName.trim()) return;
     const cleanTopic = topicName.trim();
@@ -121,15 +158,24 @@ export const DataProvider = ({ children }) => {
     }
   };
 
+  /**
+   * Updates problem completion status ('Solved' | 'Attempted' | 'To Do') with optimistic UI
+   */
   const updateDsaStatus = async (id, status, notes = '') => {
+    // 1. Optimistic local update
     setDsaProblems(prev => prev.map(p => matchDsaId(p, id) ? { ...p, status, notes: notes || p.notes } : p));
     try {
+      // 2. Persist to server
       await api.put(`/dsa/${id}`, { status, notes });
+      // 3. Re-calculate analytics dashboard metrics in background
       const anRes = await api.get('/analytics/dashboard').catch(() => null);
       if (anRes?.data) setMetrics(anRes.data);
     } catch (err) { handleApiError(err); }
   };
 
+  /**
+   * Updates problem fields (title, difficulty, topics, notes, code snippet)
+   */
   const updateDsaProblem = async (id, updates) => {
     setDsaProblems(prev => prev.map(p => matchDsaId(p, id) ? { ...p, ...updates } : p));
     if (updates.topic) {
@@ -152,12 +198,18 @@ export const DataProvider = ({ children }) => {
     }
   };
 
+  /**
+   * Increments the spaced-repetition count for a mastered problem
+   */
   const incrementRevision = async (id) => {
     const target = dsaProblems.find(p => matchDsaId(p, id));
     const newCount = (target?.revisionsCount || 0) + 1;
     return updateDsaProblem(id, { revisionsCount: newCount });
   };
 
+  /**
+   * Adds a new DSA problem to tracker and registers any new topics
+   */
   const addDsaProblem = async (newProb) => {
     try {
       if (newProb.topic) {
@@ -180,6 +232,9 @@ export const DataProvider = ({ children }) => {
     }
   };
 
+  /**
+   * Deletes a DSA problem from tracker and refreshes metrics
+   */
   const deleteDsaProblem = async (id) => {
     setDsaProblems(prev => prev.filter(p => !matchDsaId(p, id)));
     try {
@@ -189,7 +244,13 @@ export const DataProvider = ({ children }) => {
     } catch (err) { handleApiError(err); }
   };
 
-  // ---- Roadmap Actions ----
+  // ==========================================
+  // Roadmap Actions
+  // ==========================================
+
+  /**
+   * Toggles active enrollment in a structured career roadmap
+   */
   const toggleEnrollRoadmap = async (roadmapId) => {
     setRoadmaps(prev => prev.map(r => {
       if (r.id === roadmapId || r._id?.toString() === roadmapId) {
@@ -204,6 +265,12 @@ export const DataProvider = ({ children }) => {
     } catch (err) { handleApiError(err); }
   };
 
+  /**
+   * Toggles milestone completion with strict sequential prerequisite locks
+   * and cascading uncheck logic:
+   * - To check Milestone N: All previous milestones (0 to N-1) MUST be checked.
+   * - To uncheck Milestone N: All subsequent milestones (N+1 to end) are automatically unchecked.
+   */
   const toggleRoadmapTopic = async (roadmapId, topicId) => {
     let isAllowed = true;
     let warningMsg = '';
@@ -251,13 +318,14 @@ export const DataProvider = ({ children }) => {
       return { success: true };
     } catch (err) {
       handleApiError(err);
-      refreshData();
+      refreshData(); // Rollback local state to match server on error
       return { success: false, message: err.response?.data?.message || err.message };
     }
   };
 
-
-  // ---- Project Actions ----
+  // ==========================================
+  // Project Showcase Actions
+  // ==========================================
   const addProject = async (projectData) => {
     try {
       const res = await api.post('/projects', projectData);
@@ -279,7 +347,9 @@ export const DataProvider = ({ children }) => {
     } catch (err) { handleApiError(err); }
   };
 
-  // ---- Notes Actions ----
+  // ==========================================
+  // Notes & Flashcards Actions
+  // ==========================================
   const addNote = async (noteData) => {
     try {
       const res = await api.post('/notes', noteData);
@@ -315,12 +385,37 @@ export const DataProvider = ({ children }) => {
     } catch (err) { handleApiError(err); }
   };
 
-  // ---- Planner Actions ----
+  // ==========================================
+  // Study Goals & Micro-Milestones
+  // ==========================================
+
+  /**
+   * Creates a high-level study goal with optimistic temporary ID
+   */
   const addStudyGoal = async (goalData) => {
+    const tempId = 'goal_' + Date.now();
+    const optimisticGoal = {
+      _id: tempId,
+      id: tempId,
+      status: 'In Progress',
+      progress: 0,
+      milestones: [],
+      createdAt: new Date().toISOString(),
+      ...goalData
+    };
+    setStudyGoals(prev => [optimisticGoal, ...prev]);
+
     try {
       const res = await api.post('/planner/goals', goalData);
-      if (res?.data) setStudyGoals(prev => [res.data, ...prev]);
-    } catch (err) { handleApiError(err); }
+      const serverData = res?.data || res;
+      if (serverData && (serverData.id || serverData._id)) {
+        setStudyGoals(prev => prev.map(g => (g.id === tempId || g._id === tempId) ? { ...optimisticGoal, ...serverData } : g));
+      }
+    } catch (err) {
+      // Rollback on server failure
+      setStudyGoals(prev => prev.filter(g => g.id !== tempId && g._id !== tempId));
+      handleApiError(err);
+    }
   };
 
   const updateStudyGoal = async (id, updates) => {
@@ -337,15 +432,38 @@ export const DataProvider = ({ children }) => {
     } catch (err) { handleApiError(err); }
   };
 
+  // ==========================================
+  // Daily Action Tasks & Streak Tracking
+  // ==========================================
+
+  /**
+   * Adds an actionable daily task with optimistic UI and linked goal metadata
+   */
   const addDailyTask = async (taskData) => {
+    const tempId = 'task_' + Date.now();
+    const optimisticTask = {
+      _id: tempId,
+      id: tempId,
+      taskStatus: false,
+      deadline: taskData.deadline || new Date().toISOString().split('T')[0],
+      createdAt: new Date().toISOString(),
+      ...taskData
+    };
+    setDailyTasks(prev => [optimisticTask, ...prev]);
+
     try {
       const res = await api.post('/planner/tasks', taskData);
-      if (res?.data) {
-        setDailyTasks(prev => [...prev, res.data]);
-        const anRes = await api.get('/analytics/dashboard').catch(() => null);
-        if (anRes?.data) setMetrics(anRes.data);
+      const serverData = res?.data || res;
+      if (serverData && (serverData.id || serverData._id)) {
+        setDailyTasks(prev => prev.map(t => (t.id === tempId || t._id === tempId) ? { ...optimisticTask, ...serverData } : t));
       }
-    } catch (err) { handleApiError(err); }
+      const anRes = await api.get('/analytics/dashboard').catch(() => null);
+      if (anRes?.data) setMetrics(anRes.data);
+    } catch (err) {
+      // Rollback on server failure
+      setDailyTasks(prev => prev.filter(t => t.id !== tempId && t._id !== tempId));
+      handleApiError(err);
+    }
   };
 
   const updateDailyTask = async (id, updates) => {
@@ -360,6 +478,9 @@ export const DataProvider = ({ children }) => {
     } catch (err) { handleApiError(err); }
   };
 
+  /**
+   * Toggles task completion and triggers streak recalculation on server
+   */
   const toggleDailyTask = async (id) => {
     setDailyTasks(prev => prev.map(t => (t.id === id || t._id === id) ? { ...t, taskStatus: !t.taskStatus } : t));
     try {
@@ -379,7 +500,9 @@ export const DataProvider = ({ children }) => {
     } catch (err) { handleApiError(err); }
   };
 
-  // ---- Revision Actions ----
+  // ==========================================
+  // Spaced Revisions Actions
+  // ==========================================
   const addRevision = async (revData) => {
     try {
       const res = await api.post('/revision', revData);
@@ -424,16 +547,24 @@ export const DataProvider = ({ children }) => {
 
   return (
     <DataContext.Provider value={{
+      // Data State
       dsaProblems, topics, roadmaps, projects, notes, revisions,
       studyGoals, dailyTasks, metrics, loading,
+      // Lifecycle
       refreshData,
+      // DSA
       updateDsaStatus, updateDsaProblem, addDsaProblem, deleteDsaProblem, incrementRevision,
       addTopic,
+      // Roadmaps
       toggleEnrollRoadmap, toggleRoadmapTopic,
+      // Projects
       addProject, updateProject, deleteProject,
+      // Notes
       addNote, updateNote, deleteNote,
+      // Planner
       addStudyGoal, updateStudyGoal, deleteStudyGoal,
       addDailyTask, updateDailyTask, toggleDailyTask, deleteDailyTask,
+      // Revisions
       addRevision, updateRevision, toggleRevision, deleteRevision
     }}>
       {children}
@@ -442,3 +573,4 @@ export const DataProvider = ({ children }) => {
 };
 
 export const useData = () => useContext(DataContext);
+

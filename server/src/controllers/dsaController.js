@@ -2,17 +2,25 @@ import DsaProblem from '../models/DsaProblem.js';
 import User from '../models/User.js';
 import { recordUserActivity } from '../utils/streakHelper.js';
 
+/**
+ * Normalizes Mongoose document and ensures `topics` array is populated
+ * even for legacy records that only have a single `topic` property.
+ * @param {Object} doc - Mongoose document or plain object
+ * @returns {Object|null} - Formatted problem object
+ */
 const formatDoc = (doc) => {
   if (!doc) return null;
   const obj = doc.toObject ? doc.toObject() : { ...doc };
   obj.id = obj._id ? obj._id.toString() : obj.id;
-  // Ensure topics array is populated even for legacy records with only `topic`
   if (!Array.isArray(obj.topics) || obj.topics.length === 0) {
     obj.topics = obj.topic ? [obj.topic] : [];
   }
   return obj;
 };
 
+// -----------------------------------------------------------------------------
+// Canonical LeetCode Patterns & Topics List
+// -----------------------------------------------------------------------------
 export const defaultTopics = [
   'Arrays & Hashing',
   'Two Pointers',
@@ -34,6 +42,13 @@ export const defaultTopics = [
   'Matrix & 2D Grid'
 ];
 
+/**
+ * GET /api/dsa/topics
+ * Fetches all available DSA topics by merging:
+ * 1. Default canonical topic list
+ * 2. User's custom created topics
+ * 3. Topics present in the candidate's solved problem library
+ */
 export const getTopics = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -48,6 +63,10 @@ export const getTopics = async (req, res) => {
   }
 };
 
+/**
+ * POST /api/dsa/topics
+ * Appends a new custom topic tag to the candidate's profile.
+ */
 export const addTopic = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -75,6 +94,9 @@ export const addTopic = async (req, res) => {
   }
 };
 
+// -----------------------------------------------------------------------------
+// Curated Problem of the Day (POTD) Pool
+// -----------------------------------------------------------------------------
 const potdPool = [
   {
     id: 'potd-1',
@@ -118,9 +140,15 @@ const potdPool = [
   }
 ];
 
+/**
+ * GET /api/dsa/potd
+ * Deterministically computes the Problem of the Day based on the current calendar date
+ * and checks whether the candidate has already solved it.
+ */
 export const getProblemOfTheDay = async (req, res) => {
   try {
     const today = new Date();
+    // Deterministic index rotation per calendar day
     const dayIndex = (today.getFullYear() * 365 + today.getMonth() * 31 + today.getDate()) % potdPool.length;
     const potd = potdPool[dayIndex];
 
@@ -141,10 +169,16 @@ export const getProblemOfTheDay = async (req, res) => {
   }
 };
 
+/**
+ * Helper to safely escape user input for RegExp queries
+ */
 const escapeRegex = (str) => {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 };
 
+/**
+ * Normalizes company tags from arrays or comma/semicolon delimited strings
+ */
 const parseCompanies = (input) => {
   if (!input) return [];
   if (Array.isArray(input)) {
@@ -156,6 +190,9 @@ const parseCompanies = (input) => {
   return [];
 };
 
+/**
+ * Normalizes multi-topic tags from inputs
+ */
 const parseTopics = (topicsInput, topicInput) => {
   let list = [];
   if (Array.isArray(topicsInput)) {
@@ -169,6 +206,15 @@ const parseTopics = (topicsInput, topicInput) => {
   return Array.from(new Set(list));
 };
 
+/**
+ * GET /api/dsa
+ * Queries candidate's DSA problem inventory with filtering by:
+ * - Topic / Pattern
+ * - Difficulty (Easy / Medium / Hard)
+ * - Status (Completed / Solved / Attended / Unsolved)
+ * - Target hiring company tag
+ * - Keyword search across titles, notes, and tags
+ */
 export const getProblems = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -221,6 +267,10 @@ export const getProblems = async (req, res) => {
   }
 };
 
+/**
+ * POST /api/dsa
+ * Adds a solved or tracked LeetCode problem with complexities, company tags, and notes.
+ */
 export const addProblem = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -248,7 +298,7 @@ export const addProblem = async (req, res) => {
 
     const primaryTopic = parsedTopics[0];
 
-    // Auto-save any custom topics to user's customDsaTopics
+    // Automatically persist any non-canonical custom topics to user's profile
     if (userId) {
       try {
         const user = await User.findById(userId);
@@ -291,6 +341,10 @@ export const addProblem = async (req, res) => {
   }
 };
 
+/**
+ * PUT /api/dsa/:id
+ * Updates an existing problem's status, revision count, or notes. Records activity to advance daily streak.
+ */
 export const updateProblem = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -308,7 +362,7 @@ export const updateProblem = async (req, res) => {
         updates.topics = parsedTopics;
         updates.topic = parsedTopics[0];
 
-        // Auto-save any new custom topics into user profile
+        // Save new topics to profile
         if (userId) {
           try {
             const user = await User.findById(userId);
@@ -348,6 +402,7 @@ export const updateProblem = async (req, res) => {
       return res.status(404).json({ success: false, message: 'DSA Problem not found' });
     }
 
+    // Advance daily streak if problem was solved
     if (updated.status === 'Solved' || updated.status === 'Completed') {
       await recordUserActivity(userId, `Solved DSA: ${updated.title}`);
     }
@@ -358,6 +413,10 @@ export const updateProblem = async (req, res) => {
   }
 };
 
+/**
+ * DELETE /api/dsa/:id
+ * Removes a problem from the candidate's tracker.
+ */
 export const deleteProblem = async (req, res) => {
   try {
     const userId = req.user?.id;

@@ -7,7 +7,6 @@ import {
   Layout,
   Server,
   Code2,
-  Database,
   Cpu,
   BookOpen,
   Sparkles,
@@ -16,32 +15,45 @@ import {
   Lock,
   Unlock,
   Layers,
-  GraduationCap,
   Plus,
-  ArrowRight,
   BookmarkCheck,
   Compass,
   AlertTriangle,
   Users,
-  Check,
-  ExternalLink,
-  Info
+  Check
 } from 'lucide-react';
 
 import { allRoles, getRoleConfig } from '../data/rolesData';
 import { TopicInspectorModal } from '../components/roadmaps/TopicInspectorModal';
 
+/**
+ * Roadmaps Component
+ * 
+ * Displays the comprehensive engineering curriculum tracks, including:
+ * 1. Dual Priority Banners: Universal Core CS (OS, DBMS, Networks, LLD) + Role Compulsory tracks.
+ * 2. Active Enrolled Workspace: Sequential milestone tracking where prerequisites must be cleared first.
+ * 3. Explore & Enroll Catalog: Category and role-filtered roadmap directory with one-click enrollment.
+ * 4. Topic Inspector Modal: In-depth conceptual explanations, interview insights, and resources.
+ */
 export const Roadmaps = () => {
+  // Authentication & Global Context State
   const { user } = useAuth();
-  const { roadmaps, toggleRoadmapTopic, toggleEnrollRoadmap, enrollBatchRoadmaps } = useData();
+  const { roadmaps, toggleRoadmapTopic, toggleEnrollRoadmap } = useData();
+
+  // Local Filter & UI Modal States
   const [activeTab, setActiveTab] = useState('All');
   const [selectedRoleFilter, setSelectedRoleFilter] = useState('All');
   const [activeInspectorTopic, setActiveInspectorTopic] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
 
+  // Determine current candidate role configuration and requirements
   const currentRole = user?.targetRole || 'Full Stack Software Engineer';
   const roleConfig = getRoleConfig(currentRole);
 
+  /**
+   * Displays an ephemeral warning toast notification (e.g. for prerequisite lockouts)
+   * Automatically clears itself after 4 seconds.
+   */
   const showSequentialToast = (message) => {
     setToastMessage(message);
     setTimeout(() => {
@@ -49,6 +61,9 @@ export const Roadmaps = () => {
     }, 4000);
   };
 
+  /**
+   * Helper function mapping category groups to corresponding Lucide icons
+   */
   const getIcon = (groupId) => {
     switch (groupId?.toLowerCase()) {
       case 'frontend':
@@ -68,24 +83,29 @@ export const Roadmaps = () => {
     }
   };
 
-  // 4 Core CS Roadmap IDs
+  // ---------------------------------------------------------------------------
+  // Metrics & Core Subject Calculations
+  // ---------------------------------------------------------------------------
+
+  // Universal Core CS Roadmap IDs required across all software engineering disciplines
   const coreCsIds = ['cs-os', 'cs-dbms', 'cs-networks', 'cs-oop-lld'];
   const coreCsRoadmaps = roadmaps.filter(r => r.isCoreCS || coreCsIds.includes(r.id));
   const enrolledCoreCsCount = coreCsRoadmaps.filter(r => r.isEnrolled).length;
 
-  // Role Compulsory Roadmaps
+  // Role Compulsory Roadmaps based on the user's selected career target
   const compulsoryIds = roleConfig.compulsoryRoadmapIds || [];
   const compulsoryRoadmaps = roadmaps.filter(r => compulsoryIds.includes(r.id));
   const enrolledCompulsoryCount = compulsoryRoadmaps.filter(r => r.isEnrolled).length;
 
+  // Overall platform milestone completion statistics
   const totalTopics = roadmaps.reduce((acc, r) => acc + (r.topics?.length || 0), 0);
   const completedTopics = roadmaps.reduce((acc, r) => acc + (r.topics?.filter(t => t.completed).length || 0), 0);
   const overallPercentage = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
 
-  // Enrolled Tracks
+  // Filter roadmaps currently added to candidate's active study workspace
   const enrolledRoadmaps = roadmaps.filter(r => r.isEnrolled);
 
-  // Dynamic Tab Definitions with Counts
+  // Dynamic Navigation Tabs with track counters
   const tabDefinitions = [
     { id: 'All', label: `All Tracks (${roadmaps.length})` },
     { id: 'CoreCS', label: `Universal Core CS (4)` },
@@ -99,22 +119,25 @@ export const Roadmaps = () => {
     { id: 'Testing & QA', label: `Testing & QA (${roadmaps.filter(r => (r.categoryGroup || '').toLowerCase() === 'testing & qa').length})` },
   ];
 
-  // Filter Catalog
+  // ---------------------------------------------------------------------------
+  // Filtering Logic (Tab & Career Role Matching)
+  // ---------------------------------------------------------------------------
   const filterRoadmaps = (list) => {
     return list.filter(r => {
-      // 1. Tab Filtering
+      // 1. Tab-based filtering
       let tabMatch = true;
       if (activeTab === 'CoreCS') {
         tabMatch = !!r.isCoreCS || coreCsIds.includes(r.id);
       } else if (activeTab === 'Compulsory') {
         tabMatch = compulsoryIds.includes(r.id);
       } else if (activeTab !== 'All') {
-        tabMatch = (r.categoryGroup || '').toLowerCase() === activeTab.toLowerCase() || (r.category || '').toLowerCase().includes(activeTab.toLowerCase());
+        tabMatch = (r.categoryGroup || '').toLowerCase() === activeTab.toLowerCase() ||
+                   (r.category || '').toLowerCase().includes(activeTab.toLowerCase());
       }
 
       if (!tabMatch) return false;
 
-      // 2. Role Dropdown Filtering
+      // 2. Career Role Dropdown Filtering
       if (selectedRoleFilter !== 'All') {
         const matchingRoleObj = allRoles.find(role => role.id === selectedRoleFilter || role.shortLabel === selectedRoleFilter);
         if (matchingRoleObj) {
@@ -125,6 +148,7 @@ export const Roadmaps = () => {
             role.toLowerCase().includes(roleTitle) ||
             roleTitle.includes(role.toLowerCase())
           );
+          // Core CS subjects are universal and apply to all software roles
           if (!applies && !r.isCoreCS) return false;
         }
       }
@@ -136,12 +160,20 @@ export const Roadmaps = () => {
   const visibleEnrolledRoadmaps = filterRoadmaps(enrolledRoadmaps);
   const visibleCatalogRoadmaps = filterRoadmaps(roadmaps);
 
-  // Handle milestone click with sequential checks
+  // ---------------------------------------------------------------------------
+  // Action Handlers
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Sequential Milestone Progression Handler:
+   * Enforces that all preceding steps in a roadmap track must be completed
+   * before a student can mark a downstream step as complete.
+   */
   const handleMilestoneClick = async (roadmap, topicIndex) => {
     const topic = roadmap.topics[topicIndex];
     if (!topic) return;
 
-    // If trying to complete, verify all previous milestones are completed
+    // Check prerequisites if student is attempting to mark as complete
     if (!topic.completed) {
       for (let j = 0; j < topicIndex; j++) {
         if (!roadmap.topics[j].completed) {
@@ -155,7 +187,7 @@ export const Roadmaps = () => {
     if (res && res.success === false) {
       showSequentialToast(`⚠️ ${res.message || 'Prerequisite locked'}`);
     } else if (!topic.completed && topicIndex === roadmap.topics.length - 1) {
-      // Completed the entire track!
+      // Trigger celebration confetti when candidate completes the final milestone of a track
       confetti({
         particleCount: 60,
         spread: 70,
@@ -164,35 +196,33 @@ export const Roadmaps = () => {
     }
   };
 
+  /**
+   * One-click enroll all 4 Universal Core CS foundational tracks
+   */
   const handleEnrollAllCoreCS = async () => {
-    if (enrollBatchRoadmaps) {
-      await enrollBatchRoadmaps(coreCsIds);
-    } else {
-      for (const id of coreCsIds) {
-        const r = roadmaps.find(item => item.id === id);
-        if (r && !r.isEnrolled) {
-          await toggleEnrollRoadmap(id);
-        }
+    for (const id of coreCsIds) {
+      const r = roadmaps.find(item => item.id === id);
+      if (r && !r.isEnrolled) {
+        await toggleEnrollRoadmap(id);
       }
     }
   };
 
+  /**
+   * One-click enroll all compulsory domain tracks for the user's selected role
+   */
   const handleEnrollAllCompulsory = async () => {
-    if (enrollBatchRoadmaps) {
-      await enrollBatchRoadmaps(compulsoryIds);
-    } else {
-      for (const id of compulsoryIds) {
-        const r = roadmaps.find(item => item.id === id);
-        if (r && !r.isEnrolled) {
-          await toggleEnrollRoadmap(id);
-        }
+    for (const id of compulsoryIds) {
+      const r = roadmaps.find(item => item.id === id);
+      if (r && !r.isEnrolled) {
+        await toggleEnrollRoadmap(id);
       }
     }
   };
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto pb-16">
-      {/* Toast Notification */}
+    <div className="space-y-8 max-w-6xl mx-auto pb-16 font-sans">
+      {/* Toast Notification Alert Banner */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 bg-[#da3633] text-white px-4 py-3 rounded-lg shadow-xl border border-red-400/40 flex items-center gap-3 text-xs font-semibold animate-slideUp">
           <AlertTriangle className="w-4 h-4 shrink-0" />
@@ -200,7 +230,7 @@ export const Roadmaps = () => {
         </div>
       )}
 
-      {/* Page Header */}
+      {/* Header Banner & Global Metric Progress */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#30363d] pb-5">
         <div>
           <h1 className="text-xl font-bold text-[#e6edf3] flex items-center gap-2">
@@ -211,7 +241,7 @@ export const Roadmaps = () => {
           </p>
         </div>
 
-        {/* Global Progress Pill */}
+        {/* Global Progress Metric Box */}
         <div className="bg-[#161b22] border border-[#30363d] px-4 py-2.5 rounded-lg flex items-center gap-3 self-start sm:self-auto shadow-sm">
           <div className="text-right">
             <p className="text-[10px] text-[#8b949e] font-semibold uppercase tracking-wider">Enrolled Tracks: {enrolledRoadmaps.length}</p>
@@ -224,10 +254,10 @@ export const Roadmaps = () => {
       </div>
 
       {/* ============================================================ */}
-      {/* 2 COMPULSORY DUAL BANNERS (CORE CS & TARGET ROLE SPECIALIZATION) */}
+      {/* DUAL PRIORITY BANNERS (CORE CS & TARGET ROLE SPECIALIZATION) */}
       {/* ============================================================ */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Banner 1: Universal Core CS */}
+        {/* Banner 1: Universal Core CS Foundations */}
         <div className="p-4.5 rounded-lg bg-gradient-to-r from-[#161b22] via-[#0d1117] to-[#161b22] border border-[#388bfd]/40 shadow-sm flex flex-col justify-between space-y-3">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 flex-wrap">
@@ -256,7 +286,7 @@ export const Roadmaps = () => {
               <button
                 type="button"
                 onClick={handleEnrollAllCoreCS}
-                className="px-3 py-1 rounded bg-[#1f6feb] hover:bg-[#388bfd] text-white text-[11px] font-semibold shadow transition-all flex items-center gap-1.5"
+                className="px-3 py-1 rounded bg-[#1f6feb] hover:bg-[#388bfd] text-white text-[11px] font-semibold shadow transition-all flex items-center gap-1.5 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" /> Enroll All 4 Core CS
               </button>
@@ -264,7 +294,7 @@ export const Roadmaps = () => {
           </div>
         </div>
 
-        {/* Banner 2: Compulsory Domain Tracks for Role */}
+        {/* Banner 2: Compulsory Domain Specialization Tracks for Role */}
         <div className="p-4.5 rounded-lg bg-gradient-to-r from-[#161b22] via-[#0d1117] to-[#161b22] border border-amber-500/40 shadow-sm flex flex-col justify-between space-y-3">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 flex-wrap">
@@ -293,7 +323,7 @@ export const Roadmaps = () => {
               <button
                 type="button"
                 onClick={handleEnrollAllCompulsory}
-                className="px-3 py-1 rounded bg-[#d29922] hover:bg-[#e3b341] text-[#0d1117] text-[11px] font-bold shadow transition-all flex items-center gap-1.5"
+                className="px-3 py-1 rounded bg-[#d29922] hover:bg-[#e3b341] text-[#0d1117] text-[11px] font-bold shadow transition-all flex items-center gap-1.5 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" /> Enroll {roleConfig.shortLabel} Tracks ({compulsoryIds.length})
               </button>
@@ -313,7 +343,7 @@ export const Roadmaps = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`text-xs px-3 py-1.5 rounded-md font-medium transition-all ${
+                className={`text-xs px-3 py-1.5 rounded-md font-medium transition-all cursor-pointer ${
                   activeTab === tab.id
                     ? 'bg-[#1f6feb] text-white font-semibold shadow-sm'
                     : 'bg-[#21262d] text-[#8b949e] hover:text-[#c9d1d9] border border-[#30363d]'
@@ -324,7 +354,7 @@ export const Roadmaps = () => {
             ))}
           </div>
 
-          {/* Role Dropdown Filter */}
+          {/* Role Filter Dropdown */}
           <div className="flex items-center gap-2 shrink-0">
             <Users className="w-3.5 h-3.5 text-[#8b949e]" />
             <span className="text-[11px] text-[#8b949e] font-medium">Filter Role:</span>
@@ -387,7 +417,7 @@ export const Roadmaps = () => {
                   key={roadmap.id}
                   className="rounded-lg p-5 flex flex-col justify-between space-y-4 border bg-[#161b22] border-[#30363d] hover:border-[#58a6ff]/40 transition-colors shadow-sm"
                 >
-                  {/* Card Header */}
+                  {/* Card Header & Badges */}
                   <div>
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2.5">
@@ -421,7 +451,7 @@ export const Roadmaps = () => {
 
                     <p className="text-xs text-[#8b949e] mb-3 leading-relaxed">{roadmap.description}</p>
 
-                    {/* Multi-role Tags */}
+                    {/* Applicable Role Tags */}
                     {roadmap.applicableRoles && roadmap.applicableRoles.length > 0 && (
                       <div className="flex items-center gap-1 flex-wrap mb-3">
                         <span className="text-[10px] text-[#8b949e] mr-1">Applies to:</span>
@@ -441,7 +471,7 @@ export const Roadmaps = () => {
                       </div>
                     )}
 
-                    {/* Progress Bar */}
+                    {/* Track Completion Progress Bar */}
                     <div className="w-full bg-[#0d1117] h-1.5 rounded-full overflow-hidden border border-[#30363d]">
                       <div
                         className="h-full bg-[#238636] rounded-full transition-all duration-300"
@@ -450,7 +480,7 @@ export const Roadmaps = () => {
                     </div>
                   </div>
 
-                  {/* Actions / Track Header Control */}
+                  {/* Actions / Track Status */}
                   <div className="flex items-center justify-between pt-2 border-t border-[#30363d]">
                     <span className="text-[11px] text-[#3fb950] font-medium">
                       ✓ {completed} of {total} Solved (Strict Sequential)
@@ -458,7 +488,7 @@ export const Roadmaps = () => {
                     <button
                       type="button"
                       onClick={() => toggleEnrollRoadmap(roadmap.id)}
-                      className="text-xs px-2.5 py-1 rounded-md font-medium text-[#8b949e] hover:text-[#f85149] hover:bg-[#f85149]/10 border border-[#30363d] transition-colors"
+                      className="text-xs px-2.5 py-1 rounded-md font-medium text-[#8b949e] hover:text-[#f85149] hover:bg-[#f85149]/10 border border-[#30363d] transition-colors cursor-pointer"
                     >
                       Leave Track
                     </button>
@@ -467,11 +497,10 @@ export const Roadmaps = () => {
                   {/* Sequential Checklist Topics */}
                   <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                     {roadmap.topics?.map((topic, tIdx) => {
-                      // Sequential lock check: topic is locked if prior topic is not completed AND this topic is not completed
+                      // Prerequisite calculation: milestone is locked if any preceding milestone is incomplete
                       const isFirst = tIdx === 0;
                       const prevCompleted = isFirst || !!roadmap.topics[tIdx - 1]?.completed;
                       const isLocked = !prevCompleted && !topic.completed;
-                      const isNextReady = prevCompleted && !topic.completed;
                       const prerequisiteTitle = !isFirst ? roadmap.topics[tIdx - 1]?.title : '';
 
                       return (
@@ -522,7 +551,7 @@ export const Roadmaps = () => {
                                 isLocked,
                                 prerequisiteTitle
                               })}
-                              className={`text-[10px] px-2 py-0.5 rounded border font-mono transition flex items-center gap-1 ${
+                              className={`text-[10px] px-2 py-0.5 rounded border font-mono transition flex items-center gap-1 cursor-pointer ${
                                 isLocked
                                   ? 'bg-[#161b22] border-[#30363d] text-[#8b949e] hover:text-[#c9d1d9]'
                                   : 'bg-[#21262d] hover:bg-[#30363d] border-[#30363d] text-[#58a6ff]'
@@ -650,7 +679,7 @@ export const Roadmaps = () => {
                   <button
                     type="button"
                     onClick={() => toggleEnrollRoadmap(roadmap.id)}
-                    className={`text-xs px-2.5 py-1 rounded-md font-medium transition-all flex items-center gap-1 ${
+                    className={`text-xs px-2.5 py-1 rounded-md font-medium transition-all flex items-center gap-1 cursor-pointer ${
                       isEnrolled
                         ? 'bg-[#21262d] text-[#c9d1d9] hover:bg-[#da3633]/20 hover:text-[#f85149] border border-[#30363d]'
                         : 'bg-[#238636] hover:bg-[#2ea043] text-white'
@@ -673,7 +702,7 @@ export const Roadmaps = () => {
         </div>
       </div>
 
-      {/* Topic Inspector Modal */}
+      {/* Deep-Dive Topic Inspector Modal */}
       <TopicInspectorModal
         isOpen={Boolean(activeInspectorTopic)}
         onClose={() => setActiveInspectorTopic(null)}

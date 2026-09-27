@@ -1,5 +1,9 @@
 import Project from '../models/Project.js';
 
+/**
+ * Normalizes MongoDB document into client-friendly plain object
+ * ensuring standard `.id` string representation.
+ */
 const formatDoc = (doc) => {
   if (!doc) return null;
   const obj = doc.toObject ? doc.toObject() : { ...doc };
@@ -7,6 +11,11 @@ const formatDoc = (doc) => {
   return obj;
 };
 
+/**
+ * GET /api/projects
+ * Fetches all portfolio and technical projects for the authenticated user,
+ * sorted by most recent first.
+ */
 export const getProjects = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -17,6 +26,11 @@ export const getProjects = async (req, res) => {
   }
 };
 
+/**
+ * POST /api/projects
+ * Creates a new project showcase entry.
+ * Automatically handles string comma-separation or array format for techStack.
+ */
 export const createProject = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -42,6 +56,11 @@ export const createProject = async (req, res) => {
   }
 };
 
+/**
+ * PUT /api/projects/:id
+ * Updates project details (status, tech stack, milestones, repository URLs).
+ * Ensures ownership verification by scoping to `userId`.
+ */
 export const updateProject = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -66,6 +85,10 @@ export const updateProject = async (req, res) => {
   }
 };
 
+/**
+ * DELETE /api/projects/:id
+ * Removes a project entry owned by the authenticated user.
+ */
 export const deleteProject = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -80,3 +103,4 @@ export const deleteProject = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+

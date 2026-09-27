@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
-import { Link } from 'react-router-dom';
 import api from '../services/api';
 import {
-  User as UserIcon,
   Briefcase,
   Building,
   GraduationCap,
@@ -14,22 +12,24 @@ import {
   Save,
   CheckCircle2,
   RefreshCw,
-  Flame,
-  Target,
-  GitBranch,
-  Award,
-  ChevronRight,
-  ShieldCheck,
-  Zap,
-  BookOpen,
-  Info
+  ChevronRight
 } from 'lucide-react';
 
 import { allRoles, getRoleConfig, getReadinessTier } from '../data/rolesData';
 import { UserAvatar } from '../components/common/UserAvatar';
 import { AvatarPickerModal } from '../components/profile/AvatarPickerModal';
 
+/**
+ * Candidate Profile & Dossier Management Component
+ * Allows candidates to manage:
+ * 1. Personal & Academic Credentials: Full name, target role, dream company, university, branch, graduation year.
+ * 2. External Coding Profiles: Handles GitHub username and LeetCode handle.
+ * 3. Live External Sync: Invokes backend server to fetch real-time public stats from LeetCode GraphQL
+ *    (total solved, easy/medium/hard breakdown, global ranking, acceptance rate) and GitHub (public repos, followers).
+ * 4. Avatar Customization: Modal picker supporting custom URL input, curated presets, and fallback initials.
+ */
 export const Profile = () => {
+
   const { user, updateProfile, setUser } = useAuth();
   const { metrics, refreshData } = useData();
 

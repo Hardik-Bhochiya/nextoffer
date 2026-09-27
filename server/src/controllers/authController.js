@@ -2,8 +2,14 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
 
+// Secret key used to sign and verify JSON Web Tokens (JWT)
 const JWT_SECRET = process.env.JWT_SECRET || 'nextoffer_super_secure_jwt_secret_2026';
 
+/**
+ * Strips password hash and normalizes document ID for client response
+ * @param {Object} user - Mongoose User document or plain object
+ * @returns {Object|null} - Safe user payload without sensitive credentials
+ */
 const formatUser = (user) => {
   if (!user) return null;
   const obj = user.toObject ? user.toObject() : { ...user };
@@ -12,11 +18,17 @@ const formatUser = (user) => {
   return obj;
 };
 
+/**
+ * POST /api/auth/register
+ * Handles candidate registration: validates fields, hashes password with bcrypt salt,
+ * creates user record with default target role settings, and issues a 7-day JWT.
+ */
 export const register = async (req, res) => {
   try {
     const { fullName, name, email, password, targetRole, dreamCompany, gradYear, college, branch } = req.body;
     const finalName = fullName || name;
 
+    // Field validation
     if (!finalName || !email || !password) {
       return res.status(400).json({ success: false, message: 'Name, email, and password are required' });
     }
@@ -25,14 +37,17 @@ export const register = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
     }
 
+    // Check for email collisions
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
       return res.status(400).json({ success: false, message: 'An account with this email already exists' });
     }
 
+    // Salt and hash plaintext password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Create user record in MongoDB
     const newUser = await User.create({
       name: finalName,
       email: email.toLowerCase(),
@@ -52,6 +67,7 @@ export const register = async (req, res) => {
       }
     });
 
+    // Issue JWT bearer token with 7-day expiry
     const token = jwt.sign({ id: newUser._id, email: newUser.email }, JWT_SECRET, { expiresIn: '7d' });
 
     return res.status(201).json({
@@ -65,6 +81,10 @@ export const register = async (req, res) => {
   }
 };
 
+/**
+ * POST /api/auth/login
+ * Validates candidate credentials against bcrypt password hash and issues a 7-day JWT.
+ */
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -77,11 +97,13 @@ export const login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
+    // Verify password against stored bcrypt hash
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
+    // Issue JWT token
     const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
 
     return res.json({
@@ -95,6 +117,10 @@ export const login = async (req, res) => {
   }
 };
 
+/**
+ * GET /api/auth/profile
+ * Retrieves profile information for the authenticated user.
+ */
 export const getProfile = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -113,6 +139,10 @@ export const getProfile = async (req, res) => {
   }
 };
 
+/**
+ * PUT /api/auth/profile
+ * Updates candidate profile dossier, dream companies, graduation year, and career target role.
+ */
 export const updateProfile = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -131,7 +161,11 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-// Sync live LeetCode and GitHub stats
+/**
+ * POST /api/auth/sync-profiles
+ * Connects to public GitHub and LeetCode REST APIs to pull real solved counts,
+ * public repository counts, ranking, and acceptance rate into candidate profile.
+ */
 export const syncCodingProfiles = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -143,6 +177,7 @@ export const syncCodingProfiles = async (req, res) => {
     const ghUrl = user.socialLinks?.github || req.body?.github || '';
     const lcUrl = user.socialLinks?.leetcode || req.body?.leetcode || '';
 
+    // Extract handle/username from full profile URL or raw username input
     let ghUsername = '';
     if (ghUrl) {
       ghUsername = ghUrl.replace(/^https?:\/\/(www\.)?github\.com\//, '').replace(/\/$/, '').trim();
@@ -168,7 +203,7 @@ export const syncCodingProfiles = async (req, res) => {
       avatarUrl: ''
     };
 
-    // 1. Fetch GitHub stats
+    // 1. Query GitHub Public API for repo count & followers
     if (ghUsername) {
       try {
         const ghRes = await fetch(`https://api.github.com/users/${ghUsername}`, {
@@ -187,7 +222,7 @@ export const syncCodingProfiles = async (req, res) => {
       }
     }
 
-    // 2. Fetch LeetCode stats via public API or fallback
+    // 2. Query LeetCode Public Statistics API for solved breakdown
     if (lcUsername) {
       try {
         const lcRes = await fetch(`https://leetcode-stats-api.herokuapp.com/${lcUsername}`);
@@ -209,6 +244,7 @@ export const syncCodingProfiles = async (req, res) => {
       }
     }
 
+    // Persist synchronized coding stats to user record
     user.codingStats = {
       leetcode: lcStats,
       github: ghStats,

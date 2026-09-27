@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useData } from '../context/DataContext';
 import {
   BookOpen,
@@ -6,22 +6,20 @@ import {
   Search,
   Pin,
   Trash2,
-  Edit3,
   X,
-  FileCode,
   Download,
   Check,
-  Eye,
-  ArrowUpDown,
   FileText,
-  Code2,
   ChevronDown,
-  ChevronUp,
   Filter
 } from 'lucide-react';
 import { MarkdownViewer } from '../components/notes/MarkdownViewer';
 
-// Canonical topic mapping so common acronyms (CN, OS, OOP, DBMS) match cleanly
+/**
+ * Canonical Topic Normalization Aliases
+ * Automatically maps informal CS acronyms (e.g. 'cn', 'os', 'dbms', 'oops')
+ * to standard curriculum titles for clean, unified filtering.
+ */
 const TOPIC_ALIASES = {
   'cn': 'Computer Networks',
   'computer networks': 'Computer Networks',
@@ -44,13 +42,16 @@ const TOPIC_ALIASES = {
   'hr and behavioral': 'HR & Behavioral'
 };
 
+/**
+ * Resolves a raw topic string to its canonical curriculum title
+ */
 const normalizeTopicCanonical = (name) => {
   if (!name) return '';
   const clean = name.trim().toLowerCase();
   return TOPIC_ALIASES[clean] || name.trim();
 };
 
-// Only genuine Core CS, Interview & Coding topics (including HR & Behavioral)
+// Core technical topics for placement interviews
 const PREDEFINED_TOPICS = [
   'DBMS',
   'Operating Systems',
@@ -64,8 +65,18 @@ const PREDEFINED_TOPICS = [
 
 const NOTES_TOPIC_LIMIT = 5;
 
+/**
+ * Notes & Interview Flashcards Component
+ * Features:
+ * - Markdown editor with real-time preview (headers, code snippets, lists)
+ * - Canonical topic mapping (DBMS, OS, CN, OOPs, System Design)
+ * - Multi-topic filter matrix with configurable AND / OR match logic
+ * - Priority pinning (`pinned: true` floats notes to top of the card deck)
+ * - Single-click markdown download (.md file export)
+ */
 export const Notes = () => {
   const { notes = [], addNote, updateNote, deleteNote } = useData();
+
 
   // Selected note for viewing
   const [selectedNote, setSelectedNote] = useState(null);

@@ -1,5 +1,9 @@
 import Note from '../models/Note.js';
 
+/**
+ * Normalizes MongoDB document into client-friendly plain object
+ * ensuring standard `.id` string representation.
+ */
 const formatDoc = (doc) => {
   if (!doc) return null;
   const obj = doc.toObject ? doc.toObject() : { ...doc };
@@ -7,10 +11,18 @@ const formatDoc = (doc) => {
   return obj;
 };
 
+/**
+ * Escapes special characters for safe regular expression queries
+ * to prevent ReDoS (Regular Expression Denial of Service) or unintended query syntax breaks.
+ */
 const escapeRegex = (str) => {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 };
 
+/**
+ * Parses user tag input from comma/semicolon/colon delimited strings or arrays
+ * into a clean, trimmed array of unique strings.
+ */
 const parseTags = (input) => {
   if (!input) return [];
   if (Array.isArray(input)) return input.map(t => String(t).trim()).filter(Boolean);
@@ -18,6 +30,15 @@ const parseTags = (input) => {
   return [];
 };
 
+/**
+ * GET /api/notes
+ * Fetches user notes with optional multi-facet filtering:
+ * - tag: exact tag match
+ * - topic: matches note topic or tags
+ * - importance: 'High' | 'Medium' | 'Low'
+ * - search: case-insensitive regex search across title, content, topic, and tags
+ * - sort: 'title' | 'topic' | 'oldest' | default (recent update). Pinned notes always surface first.
+ */
 export const getNotes = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -52,6 +73,7 @@ export const getNotes = async (req, res) => {
       ];
     }
 
+    // Default sorting keeps pinned notes at the top, then sorts by recent activity
     let sortOption = { pinned: -1, updatedAt: -1 };
     if (sort === 'title') {
       sortOption = { pinned: -1, title: 1 };
@@ -68,6 +90,10 @@ export const getNotes = async (req, res) => {
   }
 };
 
+/**
+ * POST /api/notes
+ * Creates a new note linked to the authenticated user.
+ */
 export const createNote = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -96,6 +122,10 @@ export const createNote = async (req, res) => {
   }
 };
 
+/**
+ * PUT /api/notes/:id
+ * Updates an existing note. Ensures ownership verification by scoping to `userId`.
+ */
 export const updateNote = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -133,6 +163,10 @@ export const updateNote = async (req, res) => {
   }
 };
 
+/**
+ * DELETE /api/notes/:id
+ * Removes a note owned by the authenticated user.
+ */
 export const deleteNote = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -153,3 +187,4 @@ export const deleteNote = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+

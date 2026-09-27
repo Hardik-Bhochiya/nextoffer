@@ -1,5 +1,14 @@
 import mongoose from 'mongoose';
 
+/**
+ * Revision Schema
+ * Models a spaced repetition review task based on cognitive memory retention curves.
+ * Features:
+ * - Intervals based on Ebbinghaus forgetting curve ('Day 1', 'Day 3', 'Day 7', 'Day 14', 'Day 30')
+ * - User self-reported mastery ('Needs Practice', 'Familiar', 'Mastered')
+ * - Scheduled calendar date (YYYY-MM-DD)
+ * - Timestamp recording for streak verification (`completedAt`)
+ */
 const revisionSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -58,3 +67,4 @@ const revisionSchema = new mongoose.Schema({
 
 const Revision = mongoose.model('Revision', revisionSchema);
 export default Revision;
+

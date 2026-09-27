@@ -4,12 +4,9 @@ import {
   FolderGit2,
   Plus,
   ExternalLink,
-  GitBranch,
   CheckCircle2,
   Trash2,
   Edit3,
-  Lock,
-  PlayCircle,
   Globe,
   Search,
   Layers,
@@ -22,21 +19,16 @@ import {
   Workflow,
   Smartphone,
   Boxes,
-  ShieldCheck,
-  RefreshCw,
-  Sliders,
-  BookOpen,
-  HelpCircle,
-  Lightbulb,
-  CheckSquare,
-  Wrench,
-  Copy
+  ShieldCheck
 } from 'lucide-react';
 import {
   ARCHITECTURE_TYPES,
   getArchitectureTypeConfig
 } from '../data/projectTypesData';
 
+/**
+ * Normalizes user-submitted URLs to ensure a valid external protocol
+ */
 const formatExternalUrl = (rawUrl) => {
   if (!rawUrl) return '';
   const trimmed = rawUrl.trim();
@@ -45,6 +37,9 @@ const formatExternalUrl = (rawUrl) => {
   return `https://${trimmed}`;
 };
 
+/**
+ * Maps architectural pattern name to corresponding semantic icon component
+ */
 const renderTypeIcon = (iconName, className = 'w-3.5 h-3.5') => {
   switch (iconName) {
     case 'Server':
@@ -67,8 +62,17 @@ const renderTypeIcon = (iconName, className = 'w-3.5 h-3.5') => {
   }
 };
 
+/**
+ * Projects Showcase Component
+ * Manages portfolio engineering projects with:
+ * - Architecture templates (Full Stack, Microservices, Cloud Native, AI/ML, DevOps CI/CD)
+ * - Milestone breakdown checklists (DB Schema, Auth Flow, Deployment, Tests)
+ * - Live Demo and GitHub repository links
+ * - Status filtering ('Planning', 'In Progress', 'Completed', 'On Hold')
+ */
 export const Projects = () => {
   const { projects = [], addProject, updateProject, deleteProject } = useData();
+
 
   // Search & Filter state
   const [search, setSearch] = useState('');

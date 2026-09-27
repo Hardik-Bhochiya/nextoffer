@@ -21,7 +21,11 @@ import {
   Edit3,
   ChevronDown,
   ChevronRight,
-  AlertTriangle
+  AlertTriangle,
+  SlidersHorizontal,
+  ListPlus,
+  ArrowRight,
+  Sparkles
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -105,7 +109,7 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
   const [quickTaskCategory, setQuickTaskCategory] = useState('DSA Practice');
   const [quickTaskPriority, setQuickTaskPriority] = useState('High');
 
-  // Expanded goal sub-milestones tracking
+  // Expanded goal sub-milestones & linked tasks tracking
   const [expandedGoals, setExpandedGoals] = useState({});
 
   const todayStr = new Date().toISOString().split('T')[0];
@@ -115,6 +119,43 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
   const longestStreak = metrics?.user?.longestStreak ?? user?.longestStreak ?? streak;
   const isActiveToday = metrics?.user?.isActiveToday ?? false;
   const streakAtRisk = metrics?.user?.streakAtRisk ?? (streak > 0 && !isActiveToday);
+
+  // -------------------------------------------------------------
+  // Goal & Task Helpers
+  // -------------------------------------------------------------
+  const getGoalId = (g) => {
+    if (!g) return null;
+    return g.id || g._id || g.goalId || g.plannerId;
+  };
+
+  const getTaskAssociatedGoalId = (t) => {
+    if (!t || !t.associatedGoalId) return null;
+    if (typeof t.associatedGoalId === 'object') {
+      return t.associatedGoalId.id || t.associatedGoalId._id || t.associatedGoalId.goalId || t.associatedGoalId.plannerId;
+    }
+    return t.associatedGoalId;
+  };
+
+  const getAssociatedGoal = (task) => {
+    const goalId = getTaskAssociatedGoalId(task);
+    if (!goalId) return null;
+    return studyGoals.find(g => getGoalId(g) === goalId || g.goalId === goalId || g.plannerId === goalId);
+  };
+
+  const getTasksForGoal = (goal) => {
+    const gId = getGoalId(goal);
+    if (!gId) return [];
+    return dailyTasks.filter(t => {
+      const tGoalId = getTaskAssociatedGoalId(t);
+      return (
+        tGoalId === gId ||
+        (goal._id && tGoalId === goal._id.toString()) ||
+        (goal.id && tGoalId === goal.id.toString()) ||
+        (goal.goalId && tGoalId === goal.goalId) ||
+        (goal.plannerId && tGoalId === goal.plannerId)
+      );
+    });
+  };
 
   // -------------------------------------------------------------
   // Action Handlers
@@ -131,8 +172,8 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
     }
   };
 
-  // Open Task Modal (Create or Edit)
-  const openTaskModal = (taskToEdit = null) => {
+  // Open Task Modal (Create, Edit, or Prefilled from Goal / Quick Add)
+  const openTaskModal = (taskToEdit = null, prefillData = null) => {
     if (taskToEdit) {
       setEditingTask(taskToEdit);
       setTaskTitle(taskToEdit.taskDetails || '');
@@ -142,22 +183,26 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
       setTaskDifficulty(taskToEdit.difficulty || 'Medium');
       setTaskDeadline(taskToEdit.deadline || todayStr);
       setTaskDueTime(taskToEdit.dueTime || '06:00 PM');
-      setTaskGoalId(taskToEdit.associatedGoalId || '');
+      const gId = getTaskAssociatedGoalId(taskToEdit);
+      setTaskGoalId(gId || '');
     } else {
       setEditingTask(null);
-      setTaskTitle('');
-      setTaskDescription('');
-      setTaskCategory('DSA Practice');
-      setTaskPriority('High');
-      setTaskDifficulty('Medium');
-      setTaskDeadline(todayStr);
-      setTaskDueTime('06:00 PM');
-      setTaskGoalId('');
+      setTaskTitle(prefillData?.taskDetails ?? (quickTaskTitle || ''));
+      setTaskDescription(prefillData?.description ?? '');
+      setTaskCategory(prefillData?.category ?? (quickTaskCategory || 'DSA Practice'));
+      setTaskPriority(prefillData?.priority ?? (quickTaskPriority || 'High'));
+      setTaskDifficulty(prefillData?.difficulty ?? 'Medium');
+      setTaskDeadline(prefillData?.deadline ?? todayStr);
+      setTaskDueTime(prefillData?.dueTime ?? '06:00 PM');
+      const gId = prefillData?.associatedGoalId
+        ? (typeof prefillData.associatedGoalId === 'object' ? getGoalId(prefillData.associatedGoalId) : prefillData.associatedGoalId)
+        : '';
+      setTaskGoalId(gId || '');
     }
     setIsTaskModalOpen(true);
   };
 
-  const handleSaveTaskSubmit = (e) => {
+  const handleSaveTaskSubmit = async (e) => {
     e.preventDefault();
     if (!taskTitle.trim()) return;
 
@@ -173,9 +218,10 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
     };
 
     if (editingTask) {
-      updateDailyTask(editingTask.id || editingTask._id, payload);
+      await updateDailyTask(editingTask.id || editingTask._id, payload);
     } else {
-      addDailyTask(payload);
+      await addDailyTask(payload);
+      setQuickTaskTitle('');
     }
 
     setIsTaskModalOpen(false);
@@ -341,7 +387,20 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
     }
   };
 
-  // Helper for priority pill color
+  const getPriorityBadge = (pri) => {
+    switch (pri?.toLowerCase()) {
+      case 'high':
+        return 'bg-[#da3633]/15 text-[#f85149] border-[#da3633]/40';
+      case 'medium':
+        return 'bg-[#d29922]/15 text-[#d29922] border-[#d29922]/40';
+      case 'low':
+        return 'bg-[#1f6feb]/15 text-[#58a6ff] border-[#1f6feb]/40';
+      default:
+        return 'bg-[#21262d] text-[#8b949e] border-[#30363d]';
+    }
+  };
+
+  // Helper for quick task addition
   const handleQuickAddTask = (e) => {
     e.preventDefault();
     if (!quickTaskTitle.trim()) return;
@@ -354,19 +413,6 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
       dueTime: '11:59 PM'
     });
     setQuickTaskTitle('');
-  };
-
-  const getPriorityBadge = (pri) => {
-    switch (pri?.toLowerCase()) {
-      case 'high':
-        return 'bg-[#da3633]/15 text-[#f85149] border-[#da3633]/40';
-      case 'medium':
-        return 'bg-[#d29922]/15 text-[#d29922] border-[#d29922]/40';
-      case 'low':
-        return 'bg-[#1f6feb]/15 text-[#58a6ff] border-[#1f6feb]/40';
-      default:
-        return 'bg-[#21262d] text-[#8b949e] border-[#30363d]';
-    }
   };
 
   return (
@@ -433,7 +479,7 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
           <button
             type="button"
             onClick={() => handleTabChange('tasks')}
-            className={`px-3 py-1.5 rounded text-xs font-medium transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'tasks'
                 ? 'bg-[#1f6feb] text-white font-semibold shadow-sm'
                 : 'text-[#8b949e] hover:text-[#e6edf3]'
@@ -446,7 +492,7 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
           <button
             type="button"
             onClick={() => handleTabChange('goals')}
-            className={`px-3 py-1.5 rounded text-xs font-medium transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'goals'
                 ? 'bg-[#1f6feb] text-white font-semibold shadow-sm'
                 : 'text-[#8b949e] hover:text-[#e6edf3]'
@@ -457,8 +503,29 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
           </button>
         </div>
 
-        {/* Global Search & Filters Header */}
+        {/* Global Action Buttons & Search Header */}
         <div className="flex items-center gap-2 flex-wrap">
+          {/* Direct Action Trigger Buttons */}
+          <button
+            type="button"
+            onClick={() => openTaskModal()}
+            className="px-3 py-1.5 rounded-md bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-semibold shadow transition flex items-center gap-1.5 cursor-pointer"
+            title="Create a new daily placement task"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Task</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => openGoalModal()}
+            className="px-3 py-1.5 rounded-md bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] hover:text-white border border-[#30363d] text-xs font-medium shadow-sm transition flex items-center gap-1.5 cursor-pointer"
+            title="Establish a long-term placement goal"
+          >
+            <Target className="w-3.5 h-3.5 text-[#58a6ff]" />
+            <span>New Goal</span>
+          </button>
+
           <div className="relative">
             <Search className="w-3.5 h-3.5 text-[#8b949e] absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input
@@ -466,7 +533,7 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
               placeholder="Search items..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-[#161b22] border border-[#30363d] text-[#e6edf3] text-xs rounded-md pl-8 pr-3 py-1.5 w-44 focus:w-56 focus:outline-none focus:border-[#58a6ff] transition-all"
+              className="bg-[#161b22] border border-[#30363d] text-[#e6edf3] text-xs rounded-md pl-8 pr-3 py-1.5 w-36 focus:w-48 focus:outline-none focus:border-[#58a6ff] transition-all"
             />
           </div>
 
@@ -502,7 +569,7 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
           {/* Quick Add Task Input Card */}
           <form
             onSubmit={handleQuickAddTask}
-            className="p-3 rounded-lg bg-[#161b22] border border-[#30363d] flex flex-col sm:flex-row items-center gap-2.5 shadow-sm"
+            className="p-3 rounded-lg bg-[#161b22] border border-[#30363d] flex flex-col md:flex-row items-center gap-2.5 shadow-sm"
           >
             <div className="relative flex-1 w-full">
               <input
@@ -510,11 +577,21 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
                 placeholder="Quick-add a daily task (e.g. Solve 3 Binary Search Mediums, Revise DBMS Indexing)..."
                 value={quickTaskTitle}
                 onChange={(e) => setQuickTaskTitle(e.target.value)}
-                className="w-full bg-[#0d1117] border border-[#30363d] text-[#e6edf3] text-xs rounded-md pl-3 pr-3 py-2 focus:outline-none focus:border-[#58a6ff] transition-all"
+                className="w-full bg-[#0d1117] border border-[#30363d] text-[#e6edf3] text-xs rounded-md pl-3 pr-8 py-2 focus:outline-none focus:border-[#58a6ff] transition-all"
               />
+              {quickTaskTitle && (
+                <button
+                  type="button"
+                  onClick={() => setQuickTaskTitle('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#8b949e] hover:text-[#e6edf3]"
+                  title="Clear input"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-between sm:justify-start">
+            <div className="flex items-center gap-2 w-full md:w-auto shrink-0 justify-between md:justify-start">
               <select
                 value={quickTaskCategory}
                 onChange={(e) => setQuickTaskCategory(e.target.value)}
@@ -541,18 +618,20 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
               <button
                 type="submit"
                 disabled={!quickTaskTitle.trim()}
-                className="px-3.5 py-2 rounded-md bg-[#238636] hover:bg-[#2ea043] disabled:opacity-50 text-white text-xs font-semibold shadow transition-all flex items-center gap-1 shrink-0"
+                className="px-4 py-2 rounded-md bg-[#238636] hover:bg-[#2ea043] disabled:opacity-40 text-white text-xs font-semibold shadow transition-all flex items-center gap-1.5 shrink-0 cursor-pointer disabled:cursor-not-allowed"
+                title="Quick Add Task (Press Enter)"
               >
-                <Plus className="w-3.5 h-3.5" /> Add
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add Task</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => openTaskModal()}
-                className="px-3 py-2 rounded-md bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] text-xs font-medium border border-[#30363d] transition shrink-0"
-                title="Open detailed task modal"
+                onClick={() => openTaskModal(null, { taskDetails: quickTaskTitle, category: quickTaskCategory, priority: quickTaskPriority })}
+                className="px-2.5 py-2 rounded-md bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-[#e6edf3] border border-[#30363d] text-xs font-medium transition-all shrink-0"
+                title="Open detailed task creator modal"
               >
-                + Details
+                <SlidersHorizontal className="w-3.5 h-3.5" />
               </button>
             </div>
           </form>
@@ -569,7 +648,7 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
                 <button
                   key={f.id}
                   onClick={() => setTaskStatusFilter(f.id)}
-                  className={`text-xs px-2.5 py-1 rounded-md font-medium transition-all ${
+                  className={`text-xs px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer ${
                     taskStatusFilter === f.id
                       ? 'bg-[#238636] text-white font-semibold'
                       : 'bg-[#21262d] text-[#8b949e] hover:text-[#c9d1d9] border border-[#30363d]'
@@ -609,7 +688,7 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
               <button
                 type="button"
                 onClick={() => openTaskModal()}
-                className="px-3.5 py-1.5 rounded-md bg-[#1f6feb] hover:bg-[#388bfd] text-white text-xs font-semibold inline-flex items-center gap-1.5"
+                className="px-3.5 py-1.5 rounded-md bg-[#1f6feb] hover:bg-[#388bfd] text-white text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
               >
                 <Plus className="w-4 h-4" /> Add First Task
               </button>
@@ -677,23 +756,33 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
       {/* ============================================================ */}
       {activeTab === 'goals' && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between pb-1">
+          <div className="flex items-center justify-between pb-1 flex-wrap gap-3">
             <div>
               <h2 className="text-sm font-semibold text-[#e6edf3] flex items-center gap-2">
                 <Target className="w-4 h-4 text-[#58a6ff]" /> High-Stakes Placement Study Goals
               </h2>
               <p className="text-[11px] text-[#8b949e]">
-                Major multi-week placement milestones with target deadlines and sub-milestone execution.
+                Major multi-week placement milestones with target deadlines, sub-milestone execution, and linked daily action tasks.
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={() => openGoalModal()}
-              className="px-3 py-1.5 rounded-md bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-semibold shadow transition flex items-center gap-1.5"
-            >
-              <Plus className="w-4 h-4" /> Create Goal
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => openTaskModal()}
+                className="px-3 py-1.5 rounded-md bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-semibold shadow transition flex items-center gap-1.5 cursor-pointer"
+                title="Create a daily task for any goal"
+              >
+                <Plus className="w-4 h-4" /> Add Daily Task
+              </button>
+              <button
+                type="button"
+                onClick={() => openGoalModal()}
+                className="px-3 py-1.5 rounded-md bg-[#1f6feb] hover:bg-[#388bfd] text-white text-xs font-semibold shadow transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <Target className="w-4 h-4" /> Create Goal
+              </button>
+            </div>
           </div>
 
           {filteredGoals.length === 0 ? (
@@ -703,22 +792,33 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
               </div>
               <h3 className="text-sm font-semibold text-[#e6edf3]">No Placement Goals Set</h3>
               <p className="text-xs text-[#8b949e] max-w-sm mx-auto">
-                Establish 90-day placement targets, DSA mastery thresholds, or capstone project milestones.
+                Establish 90-day placement targets, DSA mastery thresholds, or capstone project milestones, then break them down into actionable daily tasks.
               </p>
-              <button
-                type="button"
-                onClick={() => openGoalModal()}
-                className="px-3.5 py-1.5 rounded-md bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-semibold inline-flex items-center gap-1.5"
-              >
-                <Plus className="w-4 h-4" /> Create First Goal
-              </button>
+              <div className="flex items-center justify-center gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => openGoalModal()}
+                  className="px-3.5 py-1.5 rounded-md bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" /> Create First Goal
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openTaskModal()}
+                  className="px-3.5 py-1.5 rounded-md bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] border border-[#30363d] text-xs font-medium inline-flex items-center gap-1.5 cursor-pointer"
+                >
+                  <ListTodo className="w-4 h-4 text-[#58a6ff]" /> Add Daily Task
+                </button>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {filteredGoals.map((g) => {
-                const goalId = g.id || g._id;
+                const goalId = getGoalId(g);
                 const isExpanded = !!expandedGoals[goalId];
                 const isCompleted = g.progress === 100 || g.status === 'Completed';
+                const linkedTasks = getTasksForGoal(g);
+                const completedLinkedTasks = linkedTasks.filter(t => t.taskStatus === true || t.taskStatus === 'Completed');
 
                 // Days remaining calculation
                 const targetDeadline = new Date(g.deadline || todayStr);
@@ -752,11 +852,26 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
                           </h3>
                         </div>
 
+                        {/* Card Top Actions: Add Task to this goal, Edit, Delete */}
                         <div className="flex items-center gap-1 shrink-0">
                           <button
                             type="button"
+                            onClick={() => openTaskModal(null, {
+                              associatedGoalId: goalId,
+                              category: g.category === 'SDE & Core DSA' ? 'DSA Practice' : 'Core CS',
+                              priority: g.priority,
+                              deadline: g.deadline
+                            })}
+                            className="px-2 py-1 rounded bg-[#238636]/15 hover:bg-[#238636]/30 text-[#3fb950] border border-[#238636]/40 text-[11px] font-semibold flex items-center gap-1 transition cursor-pointer"
+                            title="Add a daily action task under this goal"
+                          >
+                            <Plus className="w-3 h-3" />
+                            <span>Add Task</span>
+                          </button>
+                          <button
+                            type="button"
                             onClick={() => openGoalModal(g)}
-                            className="p-1 text-[#8b949e] hover:text-[#58a6ff] transition-colors"
+                            className="p-1.5 text-[#8b949e] hover:text-[#58a6ff] transition-colors rounded hover:bg-[#21262d] cursor-pointer"
                             title="Edit Goal"
                           >
                             <Edit3 className="w-3.5 h-3.5" />
@@ -764,7 +879,7 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
                           <button
                             type="button"
                             onClick={() => deleteStudyGoal(goalId)}
-                            className="p-1 text-[#8b949e] hover:text-[#f85149] transition-colors"
+                            className="p-1.5 text-[#8b949e] hover:text-[#f85149] transition-colors rounded hover:bg-[#21262d] cursor-pointer"
                             title="Delete Goal"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -819,13 +934,103 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
                         </div>
                       </div>
 
+                      {/* Linked Daily Tasks Breakdown under this goal */}
+                      <div className="pt-2 border-t border-[#30363d]/60 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-semibold text-[#c9d1d9] flex items-center gap-1.5">
+                            <ListTodo className="w-3.5 h-3.5 text-[#58a6ff]" />
+                            <span>Linked Daily Tasks ({completedLinkedTasks.length}/{linkedTasks.length})</span>
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() => openTaskModal(null, {
+                              associatedGoalId: goalId,
+                              category: g.category === 'SDE & Core DSA' ? 'DSA Practice' : 'Core CS',
+                              priority: g.priority,
+                              deadline: g.deadline
+                            })}
+                            className="text-[10px] font-medium text-[#58a6ff] hover:text-[#79c0ff] hover:underline flex items-center gap-0.5 cursor-pointer"
+                          >
+                            <Plus className="w-3 h-3" />
+                            <span>New Task</span>
+                          </button>
+                        </div>
+
+                        {linkedTasks.length > 0 ? (
+                          <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                            {linkedTasks.map((t) => {
+                              const taskId = t.id || t._id;
+                              const isTaskDone = t.taskStatus === true || t.taskStatus === 'Completed';
+                              return (
+                                <div
+                                  key={taskId}
+                                  className={`p-2 rounded border flex items-center justify-between gap-2 text-xs transition ${
+                                    isTaskDone
+                                      ? 'bg-[#238636]/10 border-[#238636]/30 text-[#8b949e]'
+                                      : 'bg-[#0d1117] border-[#30363d] text-[#c9d1d9] hover:border-[#58a6ff]/40'
+                                  }`}
+                                >
+                                  <div
+                                    onClick={() => handleToggleTask(taskId, isTaskDone)}
+                                    className="flex items-center gap-2 cursor-pointer min-w-0 flex-1"
+                                  >
+                                    {isTaskDone ? (
+                                      <CheckCircle2 className="w-3.5 h-3.5 text-[#3fb950] shrink-0" />
+                                    ) : (
+                                      <Circle className="w-3.5 h-3.5 text-[#484f58] hover:text-[#58a6ff] shrink-0 transition-colors" />
+                                    )}
+                                    <span className={`truncate ${isTaskDone ? 'line-through text-[#8b949e]' : 'font-medium'}`}>
+                                      {t.taskDetails}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center gap-1.5 shrink-0 text-[10px] text-[#8b949e]">
+                                    <span className={`px-1 py-0.2 rounded border font-semibold ${getPriorityBadge(t.priority)}`}>
+                                      {t.priority}
+                                    </span>
+                                    <span>{t.deadline}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => openTaskModal(t)}
+                                      className="p-1 hover:text-[#58a6ff] cursor-pointer"
+                                      title="Edit Task"
+                                    >
+                                      <Edit3 className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="p-2.5 rounded bg-[#0d1117] border border-[#30363d]/80 text-center">
+                            <p className="text-[11px] text-[#8b949e]">
+                              No daily tasks linked to this goal yet.
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => openTaskModal(null, {
+                                associatedGoalId: goalId,
+                                category: g.category === 'SDE & Core DSA' ? 'DSA Practice' : 'Core CS',
+                                priority: g.priority,
+                                deadline: g.deadline
+                              })}
+                              className="mt-1 text-[11px] font-semibold text-[#58a6ff] hover:underline inline-flex items-center gap-1 cursor-pointer"
+                            >
+                              <Plus className="w-3 h-3" /> Add first task for this goal
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
                       {/* Sub-Milestones Checklist Collapsible */}
                       {g.milestones && g.milestones.length > 0 && (
                         <div className="pt-2 border-t border-[#30363d]/60 space-y-2">
                           <button
                             type="button"
                             onClick={() => setExpandedGoals(prev => ({ ...prev, [goalId]: !prev[goalId] }))}
-                            className="text-[11px] text-[#58a6ff] hover:underline flex items-center gap-1 font-medium"
+                            className="text-[11px] text-[#58a6ff] hover:underline flex items-center gap-1 font-medium cursor-pointer"
                           >
                             {isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                             <span>{isExpanded ? 'Hide Key Milestones' : `View Key Milestones (${g.milestones.length})`}</span>
@@ -836,21 +1041,43 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
                               {g.milestones.map((m, mIdx) => (
                                 <div
                                   key={m.id || mIdx}
-                                  onClick={() => handleToggleGoalMilestone(g, mIdx)}
-                                  className={`p-2 rounded border flex items-center gap-2 cursor-pointer transition text-xs ${
+                                  className={`p-2 rounded border flex items-center justify-between gap-2 transition text-xs ${
                                     m.completed
                                       ? 'bg-[#238636]/10 border-[#238636]/30 text-[#8b949e]'
                                       : 'bg-[#0d1117] border-[#30363d] text-[#c9d1d9] hover:border-[#58a6ff]/50'
                                   }`}
                                 >
-                                  {m.completed ? (
-                                    <CheckCircle2 className="w-3.5 h-3.5 text-[#3fb950] shrink-0" />
-                                  ) : (
-                                    <Circle className="w-3.5 h-3.5 text-[#484f58] shrink-0" />
+                                  <div
+                                    onClick={() => handleToggleGoalMilestone(g, mIdx)}
+                                    className="flex items-center gap-2 cursor-pointer min-w-0 flex-1"
+                                  >
+                                    {m.completed ? (
+                                      <CheckCircle2 className="w-3.5 h-3.5 text-[#3fb950] shrink-0" />
+                                    ) : (
+                                      <Circle className="w-3.5 h-3.5 text-[#484f58] shrink-0" />
+                                    )}
+                                    <span className={m.completed ? 'line-through text-[#8b949e]' : 'font-medium truncate'}>
+                                      {m.title}
+                                    </span>
+                                  </div>
+
+                                  {!m.completed && (
+                                    <button
+                                      type="button"
+                                      onClick={() => openTaskModal(null, {
+                                        taskDetails: m.title,
+                                        associatedGoalId: goalId,
+                                        category: g.category === 'SDE & Core DSA' ? 'DSA Practice' : 'Core CS',
+                                        priority: g.priority,
+                                        deadline: g.deadline
+                                      })}
+                                      className="px-2 py-0.5 rounded bg-[#21262d] hover:bg-[#30363d] text-[#58a6ff] text-[10px] font-medium border border-[#30363d] flex items-center gap-1 shrink-0 cursor-pointer"
+                                      title="Convert this milestone into a scheduled daily task"
+                                    >
+                                      <ListPlus className="w-3 h-3" />
+                                      <span>+ Task</span>
+                                    </button>
                                   )}
-                                  <span className={m.completed ? 'line-through text-[#8b949e]' : 'font-medium'}>
-                                    {m.title}
-                                  </span>
                                 </div>
                               ))}
                             </div>
@@ -880,7 +1107,7 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
               <button
                 type="button"
                 onClick={() => setIsTaskModalOpen(false)}
-                className="text-[#8b949e] hover:text-[#e6edf3]"
+                className="text-[#8b949e] hover:text-[#e6edf3] cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -966,37 +1193,44 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
                 </div>
               </div>
 
-              {studyGoals.length > 0 && (
-                <div>
-                  <label className="block text-xs font-semibold text-[#c9d1d9] mb-1">Associated Placement Goal</label>
-                  <select
-                    value={taskGoalId}
-                    onChange={(e) => setTaskGoalId(e.target.value)}
-                    className="w-full bg-[#0d1117] border border-[#30363d] text-[#e6edf3] text-xs rounded-md px-3 py-2 focus:outline-none focus:border-[#58a6ff]"
-                  >
-                    <option value="">None (Stand-alone Task)</option>
-                    {studyGoals.map(g => (
-                      <option key={g.id || g._id} value={g.id || g._id}>
-                        {g.goalTitle}
+              <div>
+                <label className="block text-xs font-semibold text-[#c9d1d9] mb-1">
+                  Associated Placement Goal
+                </label>
+                <select
+                  value={taskGoalId}
+                  onChange={(e) => setTaskGoalId(e.target.value)}
+                  className="w-full bg-[#0d1117] border border-[#30363d] text-[#e6edf3] text-xs rounded-md px-3 py-2 focus:outline-none focus:border-[#58a6ff]"
+                >
+                  <option value="">None (Stand-alone Task)</option>
+                  {studyGoals.map(g => {
+                    const gId = getGoalId(g);
+                    return (
+                      <option key={gId} value={gId}>
+                        🎯 {g.goalTitle} ({g.category})
                       </option>
-                    ))}
-                  </select>
-                </div>
-              )}
+                    );
+                  })}
+                </select>
+                <p className="text-[10px] text-[#8b949e] mt-1">
+                  Linking a task to a goal allows tracking progress against major placement targets.
+                </p>
+              </div>
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#30363d]">
                 <button
                   type="button"
                   onClick={() => setIsTaskModalOpen(false)}
-                  className="px-3.5 py-1.5 rounded-md bg-[#21262d] hover:bg-[#30363d] text-xs font-medium text-[#c9d1d9]"
+                  className="px-3.5 py-1.5 rounded-md bg-[#21262d] hover:bg-[#30363d] text-xs font-medium text-[#c9d1d9] cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 rounded-md bg-[#1f6feb] hover:bg-[#388bfd] text-white text-xs font-semibold shadow"
+                  className="px-4 py-1.5 rounded-md bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-semibold shadow cursor-pointer flex items-center gap-1.5"
                 >
-                  {editingTask ? 'Save Changes' : 'Create Task'}
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{editingTask ? 'Save Changes' : 'Create Task'}</span>
                 </button>
               </div>
             </form>
@@ -1018,7 +1252,7 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
               <button
                 type="button"
                 onClick={() => setIsGoalModalOpen(false)}
-                className="text-[#8b949e] hover:text-[#e6edf3]"
+                className="text-[#8b949e] hover:text-[#e6edf3] cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1124,13 +1358,13 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
                 <button
                   type="button"
                   onClick={() => setIsGoalModalOpen(false)}
-                  className="px-3.5 py-1.5 rounded-md bg-[#21262d] hover:bg-[#30363d] text-xs font-medium text-[#c9d1d9]"
+                  className="px-3.5 py-1.5 rounded-md bg-[#21262d] hover:bg-[#30363d] text-xs font-medium text-[#c9d1d9] cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 rounded-md bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-semibold shadow"
+                  className="px-4 py-1.5 rounded-md bg-[#238636] hover:bg-[#2ea043] text-white text-xs font-semibold shadow cursor-pointer"
                 >
                   {editingGoal ? 'Save Changes' : 'Establish Goal'}
                 </button>
@@ -1150,6 +1384,7 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
     const taskId = t.id || t._id;
     const isCompleted = t.taskStatus === true || t.taskStatus === 'Completed';
     const isOverdue = !isCompleted && (t.deadline || t.date) < todayStr;
+    const linkedGoal = getAssociatedGoal(t);
 
     return (
       <div
@@ -1166,7 +1401,7 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
           <button
             type="button"
             onClick={() => handleToggleTask(taskId, isCompleted)}
-            className="mt-0.5 shrink-0"
+            className="mt-0.5 shrink-0 cursor-pointer"
             title={isCompleted ? 'Mark Incomplete' : 'Complete task and advance streak'}
           >
             {isCompleted ? (
@@ -1176,7 +1411,7 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
             )}
           </button>
 
-          <div className="space-y-1 min-w-0 flex-1">
+          <div className="space-y-1.5 min-w-0 flex-1">
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border uppercase ${getPriorityBadge(t.priority)}`}>
                 {t.priority}
@@ -1205,6 +1440,22 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
                 {t.description}
               </p>
             )}
+
+            {/* Linked Goal Badge */}
+            {linkedGoal && (
+              <div className="pt-0.5">
+                <button
+                  type="button"
+                  onClick={() => handleTabChange('goals')}
+                  className="text-[10px] px-2 py-0.5 rounded bg-[#388bfd]/10 hover:bg-[#388bfd]/20 text-[#58a6ff] border border-[#388bfd]/30 font-medium inline-flex items-center gap-1 transition cursor-pointer"
+                  title="View parent placement goal in Goals tab"
+                >
+                  <Target className="w-3 h-3" />
+                  <span className="truncate max-w-[200px]">Goal: {linkedGoal.goalTitle}</span>
+                  <ArrowRight className="w-2.5 h-2.5 opacity-70" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -1212,7 +1463,7 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
           <button
             type="button"
             onClick={() => openTaskModal(t)}
-            className="p-1 text-[#8b949e] hover:text-[#58a6ff] transition-colors"
+            className="p-1 text-[#8b949e] hover:text-[#58a6ff] transition-colors cursor-pointer"
             title="Edit Task"
           >
             <Edit3 className="w-3.5 h-3.5" />
@@ -1220,7 +1471,7 @@ export const RevisionPlanner = ({ defaultTab = 'tasks' }) => {
           <button
             type="button"
             onClick={() => deleteDailyTask(taskId)}
-            className="p-1 text-[#8b949e] hover:text-[#f85149] transition-colors"
+            className="p-1 text-[#8b949e] hover:text-[#f85149] transition-colors cursor-pointer"
             title="Delete Task"
           >
             <Trash2 className="w-3.5 h-3.5" />

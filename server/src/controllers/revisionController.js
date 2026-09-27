@@ -1,6 +1,10 @@
 import Revision from '../models/Revision.js';
 import { recordUserActivity } from '../utils/streakHelper.js';
 
+/**
+ * Normalizes MongoDB document into client-friendly plain object
+ * ensuring standard `.id` string representation.
+ */
 const formatDoc = (doc) => {
   if (!doc) return null;
   const obj = doc.toObject ? doc.toObject() : { ...doc };
@@ -8,6 +12,11 @@ const formatDoc = (doc) => {
   return obj;
 };
 
+/**
+ * GET /api/revision
+ * Retrieves all spaced repetition schedule items for the authenticated user,
+ * ordered by ascending target review date (due earliest first).
+ */
 export const getRevisions = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -18,6 +27,10 @@ export const getRevisions = async (req, res) => {
   }
 };
 
+/**
+ * POST /api/revision
+ * Schedules a new spaced repetition session for an algorithmic topic or concept.
+ */
 export const createRevision = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -55,6 +68,11 @@ export const createRevision = async (req, res) => {
   }
 };
 
+/**
+ * PUT /api/revision/:id
+ * Updates spaced repetition parameters (interval, confidence rating, notes, completion status).
+ * Triggers streak activity update if marked completed for the first time.
+ */
 export const updateRevision = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -91,6 +109,10 @@ export const updateRevision = async (req, res) => {
   }
 };
 
+/**
+ * PATCH /api/revision/:id/toggle
+ * Atomically toggles revision completion status and logs daily streak progress.
+ */
 export const toggleRevision = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -122,6 +144,10 @@ export const toggleRevision = async (req, res) => {
   }
 };
 
+/**
+ * DELETE /api/revision/:id
+ * Removes a scheduled revision review item.
+ */
 export const deleteRevision = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -136,3 +162,4 @@ export const deleteRevision = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+

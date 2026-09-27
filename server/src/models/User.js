@@ -1,6 +1,13 @@
 import mongoose from 'mongoose';
 
+/**
+ * User Schema
+ * Represents an authenticated engineer in the NextOffer ecosystem.
+ * Stores personal profile details, target career role, streak records,
+ * activity history, custom DSA taxonomy, and live-synced LeetCode/GitHub stats.
+ */
 const userSchema = new mongoose.Schema({
+  // Authentication & Credentials
   name: {
     type: String,
     required: [true, 'Name is required'],
@@ -17,6 +24,8 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Password is required']
   },
+
+  // Career Aspirations & Education
   targetRole: {
     type: String,
     default: 'Full Stack Engineer'
@@ -37,6 +46,8 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+
+  // Daily Consistency & Streak Tracking
   streak: {
     type: Number,
     default: 0
@@ -46,14 +57,16 @@ const userSchema = new mongoose.Schema({
     default: 0
   },
   lastActiveDate: {
-    type: String,
+    type: String, // Stored in YYYY-MM-DD format
     default: null
   },
   activityLog: [{
-    date: { type: String },
+    date: { type: String }, // YYYY-MM-DD
     count: { type: Number, default: 0 },
     activities: [{ type: String }]
   }],
+
+  // Profile Customization & Progress Metrics
   avatar: {
     type: String,
     default: ''
@@ -72,11 +85,15 @@ const userSchema = new mongoose.Schema({
   enrolledRoadmaps: [{
     type: String
   }],
+
+  // Social & External Profile Links
   socialLinks: {
     github: { type: String, default: '' },
     linkedin: { type: String, default: '' },
     leetcode: { type: String, default: '' }
   },
+
+  // External Coding Platforms Live Sync Metrics
   codingStats: {
     leetcode: {
       totalSolved: { type: Number, default: 0 },
@@ -98,4 +115,6 @@ const userSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model('User', userSchema);
+
 export default User;
+

@@ -1,5 +1,14 @@
 import mongoose from 'mongoose';
 
+/**
+ * Note Schema
+ * Represents an engineering study note, interview flashcard, or cheat sheet.
+ * Indexed by `userId` for fast per-user filtering, with support for:
+ * - Multi-tag array for instant search matching
+ * - Importance ratings ('High', 'Medium', 'Low')
+ * - Priority pinning (`pinned: true` floats to the top of note lists)
+ * - Favorite bookmarking
+ */
 const noteSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -44,3 +53,4 @@ const noteSchema = new mongoose.Schema({
 
 const Note = mongoose.model('Note', noteSchema);
 export default Note;
+
